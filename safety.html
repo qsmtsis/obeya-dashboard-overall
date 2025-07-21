@@ -552,6 +552,8 @@ function showSafetyError(message) {
 // ========== CHART FUNCTIONS ==========
 
 // Chart 1: Outstanding Issues (แท่งเดียว สีแดง - ข้อมูลจาก AH20:AH34)
+// แทนที่ฟังก์ชัน createOutstandingChart() ใน safety.html
+
 function createOutstandingChart() {
     const ctx = document.getElementById('outstandingChart');
     if (!ctx) return;
@@ -564,22 +566,25 @@ function createOutstandingChart() {
     let temporaryData = [];
     let noActionData = [];
     
-    // ใช้ข้อมูลใหม่จาก Safety Outstanding
+    // ใช้ข้อมูลใหม่จาก SafetyData.gs
     if (safetyData && safetyData.safety && safetyData.safety.outstanding) {
         labels = safetyData.safety.outstanding.labels || [];
-        temporaryData = safetyData.safety.outstanding.temporaryData || [];
-        noActionData = safetyData.safety.outstanding.noActionData || [];
+        temporaryData = safetyData.safety.outstanding.temporaryData || [];  // ใหม่
+        noActionData = safetyData.safety.outstanding.noActionData || [];    // ใหม่
         
-        console.log('Safety Outstanding Data:');
+        console.log('Safety Outstanding NEW Data:');
         console.log('Labels:', labels);
-        console.log('Temporary:', temporaryData);
-        console.log('No Action:', noActionData);
+        console.log('Temporary Data:', temporaryData);
+        console.log('No Action Data:', noActionData);
     }
     
     if (labels.length === 0) {
         console.error('No Safety outstanding chart data available');
         const context = ctx.getContext('2d');
-        context.fillText('ไม่พบข้อมูลกราฟ Outstanding Issues', 10, 50);
+        context.font = '16px Arial';
+        context.fillStyle = '#666';
+        context.textAlign = 'center';
+        context.fillText('ไม่พบข้อมูลกราฟ Outstanding Issues', ctx.width/2, 50);
         return;
     }
 
@@ -594,7 +599,7 @@ function createOutstandingChart() {
                     backgroundColor: 'rgba(243, 156, 18, 0.85)',  // สีเหลือง
                     borderColor: 'rgba(241, 196, 15, 1)',
                     borderWidth: 2,
-                    borderRadius: 6,
+                    borderRadius: 4,
                     borderSkipped: false,
                 },
                 {
@@ -603,7 +608,7 @@ function createOutstandingChart() {
                     backgroundColor: 'rgba(231, 76, 60, 0.85)',   // สีแดง
                     borderColor: 'rgba(192, 57, 43, 1)',
                     borderWidth: 2,
-                    borderRadius: 6,
+                    borderRadius: 4,
                     borderSkipped: false,
                 }
             ]
@@ -612,7 +617,7 @@ function createOutstandingChart() {
             responsive: true,
             maintainAspectRatio: false,
             layout: {
-                padding: { top: 20, bottom: 5, left: 5, right: 5 }
+                padding: { top: 25, bottom: 5, left: 5, right: 5 }
             },
             scales: {
                 y: { 
@@ -627,18 +632,18 @@ function createOutstandingChart() {
                     ticks: { 
                         maxRotation: 45, 
                         minRotation: 45,
-                        font: { size: 10 }
+                        font: { size: 9 }
                     }
                 }
             },
             plugins: { 
                 legend: { 
-                    display: true,  // แสดง legend เพื่อแยกสี
+                    display: true,  // แสดง legend
                     position: 'top',
                     labels: {
-                        font: { size: 11 },
+                        font: { size: 10 },
                         usePointStyle: true,
-                        padding: 15
+                        padding: 12
                     }
                 }
             }
@@ -659,11 +664,10 @@ function createOutstandingChart() {
                             // กำหนดสีข้อความ
                             ctx.fillStyle = datasetIndex === 0 ? 
                                 "rgba(183, 149, 11, 1)" :  // เหลืองเข้ม สำหรับ Temporary
-                                "rgba(192, 57, 43, 1)";    // แดงเข้ม สำหรับ No Action
+                                "white";                    // ขาว สำหรับ No Action (เพราะพื้นแดง)
                             
                             // แสดงตัวเลขตรงกลางแท่ง
-                            const yPos = bar.y + (bar.height / 2);
-                            ctx.fillText(value, bar.x, yPos);
+                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
                         }
                     });
                 });
