@@ -325,3 +325,483 @@
 
             <!-- Connection Info -->
             <div class="connection-info">
+                🔗 Connected to Google Sheets via Web App API | Safety Data from rows 24, AH20:AH34, V18:AG18
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingSafety" class="loading">
+                <div class="spinner"></div>
+                <p>กำลังโหลดข้อมูล Safety จาก Google Apps Script Web App...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorSafety" class="error" style="display: none;">
+                <h3>⚠️ ไม่สามารถเชื่อมต่อ Google Apps Script Web App ได้</h3>
+                <p id="errorSafetyMessage">กรุณาตรวจสอบการเชื่อมต่อและลองใหม่อีกครั้ง</p>
+                <p style="font-size: 11px; margin-top: 10px;">
+                    ตรวจสอบว่า Web App ได้ Deploy แล้วและมี permission "Anyone" หรือไม่
+                </p>
+                <button class="retry-btn" onclick="loadSafetyData()">ลองใหม่</button>
+            </div>
+
+            <!-- Main Content -->
+            <div id="safetyContent">
+                <!-- Status Cards (B24, C24, G24, H24) -->
+                <div class="status-grid">
+                    <div class="status-card near-miss">
+                        <div class="status-label">Near miss</div>
+                        <div class="status-number" id="nearMissValue">-</div>
+                    </div>
+                    <div class="status-card closed">
+                        <div class="status-label">Closed</div>
+                        <div class="status-number" id="closedValue">-</div>
+                    </div>
+                    <div class="status-card temporary">
+                        <div class="status-label">Temporary Action</div>
+                        <div class="status-number" id="temporaryValue">-</div>
+                    </div>
+                    <div class="status-card no-action">
+                        <div class="status-label">No Action</div>
+                        <div class="status-number" id="noActionValue">-</div>
+                    </div>
+                </div>
+
+                <div class="charts-section">
+                    <!-- กราฟ 2 อันในระนาบเดียวกัน -->
+                    <div class="charts-row">
+                        <!-- Chart 1: Outstanding Issues (ซ้าย) -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">Outstanding Issues</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="outstandingChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 2: Monthly Trend (ขวา) -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">Monthly Trend</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="monthlyChart"></canvas>
+                                <div class="custom-legend-overlay">
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background-color: rgba(52, 152, 219, 0.85);"></span>
+                                        <span class="legend-label">Open</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></span>
+                                        <span class="legend-label">Outstanding</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background-color: rgba(46, 204, 113, 1); width: 12px; height: 2px; border-radius: 1px;"></span>
+                                        <span class="legend-label">%Closed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="last-updated" id="lastUpdatedSafety"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ========== CONFIGURATION ==========
+// 🔥 สำคัญ: เปลี่ยน URL นี้เป็น Web App URL ของคุณ
+const WEB_APP_URL = 'https://script.google.com/macros/s/1dkieMGePj-NYOSMPNZtGUXa0XrmlKGdLsgP9h0ex1VXaBPKQsurhEo87/exec';
+
+let outstandingChart;
+let monthlyChart;
+let safetyData = null;
+
+// ========== NAVIGATION ==========
+function navigateToPage(page) {
+    console.log('Navigating to:', page);
+    
+    // ใน GitHub Pages ใช้ relative path
+    if (page.includes('.html')) {
+        window.location.href = page;
+    } else {
+        window.location.href = page + '.html';
+    }
+}
+
+// ========== API FUNCTIONS ==========
+async function callWebAppAPI(action) {
+    try {
+        console.log(`Calling Web App API: ${action}`);
+        
+        // Method 1: GET request
+        const url = `${WEB_APP_URL}?action=${action}&timestamp=${new Date().getTime()}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(`API Response for ${action}:`, data);
+        
+        return data;
+        
+    } catch (error) {
+        console.error(`API Error for ${action}:`, error);
+        
+        // Fallback: try POST method
+        try {
+            console.log('Trying POST method as fallback...');
+            
+            const postResponse = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action: action })
+            });
+
+            if (postResponse.ok) {
+                const postData = await postResponse.json();
+                console.log(`POST API Response for ${action}:`, postData);
+                return postData;
+            }
+        } catch (postError) {
+            console.error('POST fallback also failed:', postError);
+        }
+        
+        // If both methods fail, return error
+        return {
+            success: false,
+            error: error.toString(),
+            action: action
+        };
+    }
+}
+
+// ========== DATA LOADING ==========
+async function loadSafetyData() {
+    console.log('Loading safety data from Web App...');
+    
+    document.getElementById('loadingSafety').style.display = 'block';
+    document.getElementById('errorSafety').style.display = 'none';
+    document.getElementById('safetyContent').style.display = 'none';
+    
+    // Test connection first
+    console.log('Testing Web App connection...');
+    const testResult = await callWebAppAPI('testConnection');
+    
+    if (!testResult.success) {
+        showSafetyError('การทดสอบการเชื่อมต่อล้มเหลว: ' + testResult.error);
+        return;
+    }
+    
+    console.log('Connection test successful, loading safety data...');
+    
+    // Load actual safety data
+    const data = await callWebAppAPI('getSafetyData');
+    
+    if (!data.success) {
+        showSafetyError(data.error || 'เกิดข้อผิดพลาดในการดึงข้อมูล Safety');
+        return;
+    }
+    
+    onSafetyDataLoaded(data);
+}
+
+function onSafetyDataLoaded(data) {
+    console.log('Safety data loaded from Web App:', data);
+    
+    document.getElementById('loadingSafety').style.display = 'none';
+    
+    safetyData = data;
+    
+    // Update status cards (ใช้ข้อมูลจาก B24, C24, G24, H24)
+    if (data.safety && data.safety.status) {
+        console.log('Updating Safety status cards with:', data.safety.status);
+        document.getElementById('nearMissValue').textContent = data.safety.status.nearMiss?.value || 0;
+        document.getElementById('closedValue').textContent = data.safety.status.closed?.value || 0;
+        document.getElementById('temporaryValue').textContent = data.safety.status.temporaryAction?.value || 0;
+        document.getElementById('noActionValue').textContent = data.safety.status.noAction?.value || 0;
+    }
+    
+    // Update timestamp
+    if (data.lastUpdated) {
+        document.getElementById('lastUpdatedSafety').textContent = `อัพเดทล่าสุด: ${data.lastUpdated} (${data.source || 'Web App'})`;
+    }
+    
+    // Create charts
+    createOutstandingChart();
+    createMonthlyChart();
+    
+    document.getElementById('safetyContent').style.display = 'block';
+}
+
+function showSafetyError(message) {
+    document.getElementById('loadingSafety').style.display = 'none';
+    document.getElementById('safetyContent').style.display = 'none';
+    document.getElementById('errorSafetyMessage').textContent = message;
+    document.getElementById('errorSafety').style.display = 'block';
+}
+
+// ========== CHART FUNCTIONS ==========
+
+// Chart 1: Outstanding Issues (แท่งเดียว สีแดง - ข้อมูลจาก AH20:AH34)
+function createOutstandingChart() {
+    const ctx = document.getElementById('outstandingChart');
+    if (!ctx) return;
+    
+    if (outstandingChart) {
+        outstandingChart.destroy();
+    }
+
+    let labels = [];
+    let chartData = [];
+    
+    // ใช้ข้อมูลเฉพาะ Safety
+    if (safetyData && safetyData.safety && safetyData.safety.outstanding) {
+        labels = safetyData.safety.outstanding.labels || [];
+        chartData = safetyData.safety.outstanding.data || [];
+        
+        console.log('Safety Outstanding Labels:', labels);
+        console.log('Safety Outstanding Data:', chartData);
+    }
+    
+    if (labels.length === 0) {
+        console.error('No Safety outstanding chart data available');
+        // แสดงข้อความแทนกราฟ
+        const context = ctx.getContext('2d');
+        context.fillText('ไม่พบข้อมูลกราฟ Outstanding Issues', 10, 50);
+        return;
+    }
+
+    outstandingChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Outstanding Issues',
+                    data: chartData,
+                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
+                    borderColor: 'rgba(192, 57, 43, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: { top: 20, bottom: 5, left: 5, right: 5 }
+            },
+            scales: {
+                y: { beginAtZero: true, display: false, grid: { display: false } },
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { 
+                        maxRotation: 45, 
+                        minRotation: 45,
+                        font: { size: 10 }
+                    }
+                }
+            },
+            plugins: { legend: { display: false } }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                ctx.font = "bold 11px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                
+                const meta = chart.getDatasetMeta(0);
+                meta.data.forEach(function(bar, index) {
+                    const value = chart.data.datasets[0].data[index];
+                    if (value > 0) {
+                        ctx.fillStyle = "rgba(192, 57, 43, 1)";
+                        const yPos = Math.max(bar.y - 6, 15);
+                        ctx.fillText(value, bar.x, yPos);
+                    }
+                });
+            }
+        }]
+    });
+}
+
+// Chart 2: Monthly Trend (ใช้ข้อมูลเฉพาะ Safety: V18:AG18, V36:AG36, V37:AG37)
+function createMonthlyChart() {
+    const ctx = document.getElementById('monthlyChart');
+    if (!ctx) return;
+    
+    if (monthlyChart) {
+        monthlyChart.destroy();
+    }
+
+    let months = [];
+    let openData = [];
+    let outstandingData = [];
+    let closedPercentage = [];
+    
+    // ใช้ข้อมูลเฉพาะ Safety
+    if (safetyData && safetyData.safety && safetyData.safety.monthly) {
+        months = safetyData.safety.monthly.months || [];
+        openData = safetyData.safety.monthly.openData || [];
+        outstandingData = safetyData.safety.monthly.outstandingData || [];
+        closedPercentage = safetyData.safety.monthly.closedPercentage || [];
+        
+        console.log('Safety Monthly Data:');
+        console.log('Months:', months);
+        console.log('Open:', openData);
+        console.log('Outstanding:', outstandingData);
+        console.log('Closed%:', closedPercentage);
+    }
+    
+    if (months.length === 0) {
+        console.error('No Safety monthly chart data available');
+        // แสดงข้อความแทนกราฟ
+        const context = ctx.getContext('2d');
+        context.fillText('ไม่พบข้อมูลกราฟ Monthly Trend', 10, 50);
+        return;
+    }
+
+    monthlyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Open',
+                    data: openData,
+                    backgroundColor: 'rgba(52, 152, 219, 0.85)',
+                    borderColor: 'rgba(41, 128, 185, 1)',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Outstanding',
+                    data: outstandingData,
+                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
+                    borderColor: 'rgba(192, 57, 43, 1)',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                    yAxisID: 'y'
+                },
+                {
+                    label: '%Closed',
+                    data: closedPercentage,
+                    type: 'line',
+                    borderColor: 'rgba(46, 204, 113, 1)',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(46, 204, 113, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1,
+                    pointRadius: 4,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: { top: 20, bottom: 5, left: 5, right: 5 }
+            },
+            scales: {
+                y: { 
+                    type: 'linear', 
+                    display: false, 
+                    position: 'left', 
+                    beginAtZero: true, 
+                    grid: { display: false } 
+                },
+                y1: { 
+                    type: 'linear', 
+                    display: false, 
+                    position: 'right', 
+                    beginAtZero: true, 
+                    max: 100, 
+                    grid: { display: false } 
+                },
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { 
+                        maxRotation: 0, 
+                        minRotation: 0,
+                        font: { size: 10 }
+                    } 
+                }
+            },
+            plugins: { legend: { display: false } }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                ctx.font = "bold 9px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                
+                chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                    if (dataset.type === 'line') return;
+                    
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    if (!meta || !meta.data) return;
+                    
+                    meta.data.forEach(function(bar, index) {
+                        const value = dataset.data[index];
+                        if (value > 0) {
+                            ctx.fillStyle = datasetIndex === 0 ? "rgba(41, 128, 185, 1)" : "rgba(192, 57, 43, 1)";
+                            const yPos = Math.max(bar.y - 4, 12);
+                            ctx.fillText(value, bar.x, yPos);
+                        }
+                    });
+                });
+
+                // แสดงค่าเปอร์เซ็นต์
+                const lineDataset = chart.data.datasets[2];
+                if (lineDataset && lineDataset.type === 'line') {
+                    const lineMeta = chart.getDatasetMeta(2);
+                    if (lineMeta && lineMeta.data) {
+                        ctx.font = "bold 8px Arial";
+                        
+                        lineMeta.data.forEach(function(point, index) {
+                            const value = lineDataset.data[index];
+                            if (value > 0) {
+                                ctx.fillStyle = "rgba(0, 100, 0, 1)";
+                                ctx.fillText(value.toFixed(1) + '%', point.x, point.y - 8);
+                            }
+                        });
+                    }
+                }
+            }
+        }]
+    });
+}
+
+// ========== INITIALIZATION ==========
+window.addEventListener('load', function() {
+    console.log('Safety dashboard loaded - GitHub Pages Mode');
+    
+    // Check if WEB_APP_URL is configured
+    if (WEB_APP_URL.includes('YOUR_SCRIPT_ID')) {
+        showSafetyError('กรุณาแก้ไข WEB_APP_URL ในโค้ด JavaScript ให้เป็น Web App URL ที่ถูกต้อง');
+        return;
+    }
+    
+    loadSafetyData();
+});
+</script>
+</body>
+</html>
