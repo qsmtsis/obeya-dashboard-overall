@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSIS - Overall Dashboard</title>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .nav-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            border-left-color: #fff;
+        }
+
+        .nav-item.active {
+            background-color: rgba(255,255,255,0.2);
+            border-left-color: #fff;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 18px;
+        }
+
+        .loading .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+            text-align: center;
+        }
+
+        .error h3 {
+            margin-bottom: 10px;
+        }
+
+        .retry-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .retry-btn:hover {
+            background: #0056b3;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .status-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            border-top: 5px solid var(--card-color);
+        }
+
+        .status-card.near-miss {
+            --card-color: #e74c3c;
+        }
+
+        .status-card.closed {
+            --card-color: #27ae60;
+        }
+
+        .status-card.temporary {
+            --card-color: #f39c12;
+        }
+
+        .status-card.no-action {
+            --card-color: #95a5a6;
+        }
+
+        .status-label {
+            font-size: 16px;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .status-number {
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--card-color);
+        }
+
+        .charts-placeholder {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+
+        .charts-placeholder h3 {
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            margin: 30px 0;
+        }
+
+        .custom-legend-overlay {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .legend-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        #overallContent {
+            display: none;
+        }
+
+        .connection-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <h1>TSIS</h1>
+                <p>Dashboard</p>
+            </div>
+            <div class="nav-item active">
+                📊 Overall
+            </div>
+            <div class="nav-item" onclick="navigateToPage('safety.html')">
+                🛡️ Safety
+            </div>
+            <div class="nav-item" onclick="navigateToPage('quality.html')">
+                ⭐ Quality
+            </div>
+        </div>
+
+        <div class="main-content">
+            <h1 class="page-title">Overall Dashboard</h1>
+
+            <!-- Connection Info -->
+            <div class="connection-info">
+                🔗 Connected to Google Sheets via Web App API | GitHub Pages Mode
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingOverall" class="loading">
+                <div class="spinner"></div>
+                <p>กำลังโหลดข้อมูลจาก Google Apps Script Web App...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorOverall" class="error" style="display: none;">
+                <h3>⚠️ ไม่สามารถเชื่อมต่อ Google Apps Script Web App ได้</h3>
+                <p id="errorMessage">กรุณาตรวจสอบการเชื่อมต่อและลองใหม่อีกครั้ง</p>
+                <p style="font-size: 11px; margin-top: 10px;">
+                    ตรวจสอบว่า Web App ได้ Deploy แล้วและมี permission "Anyone" หรือไม่
+                </p>
+                <button class="retry-btn" onclick="loadOverallData()">ลองใหม่</button>
+            </div>
+
+            <!-- Main Content -->
+            <div id="overallContent">
+                <div class="status-grid">
+                    <div class="status-card near-miss">
+                        <div class="status-label">Near miss</div>
+                        <div class="status-number" id="nearMissValue">-</div>
+                    </div>
+                    <div class="status-card closed">
+                        <div class="status-label">Closed</div>
+                        <div class="status-number" id="closedValue">-</div>
+                    </div>
+                    <div class="status-card temporary">
+                        <div class="status-label">Temporary Action</div>
+                        <div class="status-number" id="temporaryValue">-</div>
+                    </div>
+                    <div class="status-card no-action">
+                        <div class="status-label">No Action</div>
+                        <div class="status-number" id="noActionValue">-</div>
+                    </div>
+                </div>
+
+                <div class="charts-placeholder">
+                    <h3>Outstanding issue (Safety & Quality)</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="mainChart"></canvas>
+                        <div class="custom-legend-overlay">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></span>
+                                <span class="legend-label">Safety</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: rgba(52, 152, 219, 0.85);"></span>
+                                <span class="legend-label">Quality</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>Monthly Trend</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="monthlyChart"></canvas>
+                        <div class="custom-legend-overlay">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: rgba(52, 152, 219, 0.85);"></span>
+                                <span class="legend-label">Open</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></span>
+                                <span class="legend-label">Outstanding</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: rgba(46, 204, 113, 1); width: 14px; height: 2px; border-radius: 1px;"></span>
+                                <span class="legend-label">%Closed</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="last-updated" id="lastUpdated"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ========== CONFIGURATION ==========
+// 🔥 สำคัญ: เปลี่ยน URL นี้เป็น Web App URL ของคุณ
+const WEB_APP_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+
+let mainChart;
+let monthlyChart;
+let dashboardData = null;
+
+// ========== NAVIGATION ==========
+function navigateToPage(page) {
+    console.log('Navigating to:', page);
+    
+    // ใน GitHub Pages ใช้ relative path
+    if (page.includes('.html')) {
+        window.location.href = page;
+    } else {
+        window.location.href = page + '.html';
+    }
+}
+
+// ========== API FUNCTIONS ==========
+async function callWebAppAPI(action) {
+    try {
+        console.log(`Calling Web App API: ${action}`);
+        
+        // Method 1: GET request
+        const url = `${WEB_APP_URL}?action=${action}&timestamp=${new Date().getTime()}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(`API Response for ${action}:`, data);
+        
+        return data;
+        
+    } catch (error) {
+        console.error(`API Error for ${action}:`, error);
+        
+        // Fallback: try POST method
+        try {
+            console.log('Trying POST method as fallback...');
+            
+            const postResponse = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action: action })
+            });
+
+            if (postResponse.ok) {
+                const postData = await postResponse.json();
+                console.log(`POST API Response for ${action}:`, postData);
+                return postData;
+            }
+        } catch (postError) {
+            console.error('POST fallback also failed:', postError);
+        }
+        
+        // If both methods fail, return error
+        return {
+            success: false,
+            error: error.toString(),
+            action: action
+        };
+    }
+}
+
+// ========== DATA LOADING ==========
+async function loadOverallData() {
+    console.log('Loading overall data from Web App...');
+    
+    document.getElementById('loadingOverall').style.display = 'block';
+    document.getElementById('errorOverall').style.display = 'none';
+    document.getElementById('overallContent').style.display = 'none';
+    
+    // Test connection first
+    console.log('Testing Web App connection...');
+    const testResult = await callWebAppAPI('testConnection');
+    
+    if (!testResult.success) {
+        showError('การทดสอบการเชื่อมต่อล้มเหลว: ' + testResult.error);
+        return;
+    }
+    
+    console.log('Connection test successful, loading data...');
+    
+    // Load actual data
+    const data = await callWebAppAPI('getOverallData');
+    
+    if (!data.success) {
+        showError(data.error || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
+        return;
+    }
+    
+    onDataLoaded(data);
+}
+
+function onDataLoaded(data) {
+    console.log('Data loaded from Web App:', data);
+    
+    document.getElementById('loadingOverall').style.display = 'none';
+    
+    dashboardData = data;
+    
+    // Update status cards
+    if (data.status) {
+        document.getElementById('nearMissValue').textContent = data.status.nearMiss?.value || 0;
+        document.getElementById('closedValue').textContent = data.status.closed?.value || 0;
+        document.getElementById('temporaryValue').textContent = data.status.temporaryAction?.value || 0;
+        document.getElementById('noActionValue').textContent = data.status.noAction?.value || 0;
+    }
+    
+    // Update timestamp
+    if (data.lastUpdated) {
+        document.getElementById('lastUpdated').textContent = `อัพเดทล่าสุด: ${data.lastUpdated} (${data.source || 'Web App'})`;
+    }
+    
+    // Create charts
+    createChart();
+    createMonthlyChart();
+    
+    document.getElementById('overallContent').style.display = 'block';
+}
+
+function showError(message) {
+    document.getElementById('loadingOverall').style.display = 'none';
+    document.getElementById('overallContent').style.display = 'none';
+    document.getElementById('errorMessage').textContent = message;
+    document.getElementById('errorOverall').style.display = 'block';
+}
+
+// ========== CHART FUNCTIONS (เหมือนเดิม) ==========
+function createChart() {
+    const ctx = document.getElementById('mainChart');
+    if (!ctx) return;
+    
+    if (mainChart) {
+        mainChart.destroy();
+    }
+
+    let labels = [];
+    let safetyData = [];
+    let qualityData = [];
+    
+    if (dashboardData && dashboardData.charts) {
+        labels = dashboardData.charts.labels || [];
+        safetyData = dashboardData.charts.bar1?.data || [];
+        qualityData = dashboardData.charts.bar2?.data || [];
+    }
+    
+    if (labels.length === 0) {
+        console.error('No chart data available from Web App');
+        return;
+    }
+
+    mainChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: dashboardData.charts.bar1?.label || 'Safety',
+                    data: safetyData,
+                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
+                    borderColor: 'rgba(192, 57, 43, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                },
+                {
+                    label: dashboardData.charts.bar2?.label || 'Quality',
+                    data: qualityData,
+                    backgroundColor: 'rgba(52, 152, 219, 0.85)',
+                    borderColor: 'rgba(41, 128, 185, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: { top: 30, bottom: 5, left: 5, right: 5 }
+            },
+            scales: {
+                y: { beginAtZero: true, display: false, grid: { display: false } },
+                x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } }
+            },
+            plugins: { legend: { display: false } }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                ctx.font = "bold 12px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                
+                chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    meta.data.forEach(function(bar, index) {
+                        const value = dataset.data[index];
+                        if (value > 0) {
+                            ctx.fillStyle = datasetIndex === 0 ? "rgba(192, 57, 43, 1)" : "rgba(30, 100, 180, 1)";
+                            const yPos = Math.max(bar.y - 8, 15);
+                            ctx.fillText(value, bar.x, yPos);
+                        }
+                    });
+                });
+            }
+        }]
+    });
+}
+
+function createMonthlyChart() {
+    const ctx = document.getElementById('monthlyChart');
+    if (!ctx) return;
+    
+    if (monthlyChart) {
+        monthlyChart.destroy();
+    }
+
+    let months = [];
+    let openData = [];
+    let outstandingData = [];
+    let closedPercentage = [];
+    
+    if (dashboardData && dashboardData.monthlyTrend) {
+        months = dashboardData.monthlyTrend.months || [];
+        openData = dashboardData.monthlyTrend.openData || [];
+        outstandingData = dashboardData.monthlyTrend.outstandingData || [];
+        closedPercentage = dashboardData.monthlyTrend.closedPercentage || [];
+    }
+    
+    if (months.length === 0) {
+        console.error('No monthly trend data available from Web App');
+        return;
+    }
+
+    monthlyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Open',
+                    data: openData,
+                    backgroundColor: 'rgba(52, 152, 219, 0.85)',
+                    borderColor: 'rgba(41, 128, 185, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Outstanding',
+                    data: outstandingData,
+                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
+                    borderColor: 'rgba(192, 57, 43, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    yAxisID: 'y'
+                },
+                {
+                    label: '%Closed',
+                    data: closedPercentage,
+                    type: 'line',
+                    borderColor: 'rgba(46, 204, 113, 1)',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgba(46, 204, 113, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: { top: 30, bottom: 5, left: 5, right: 5 }
+            },
+            scales: {
+                y: { 
+                    type: 'linear', 
+                    display: false, 
+                    position: 'left', 
+                    beginAtZero: true, 
+                    max: Math.max(...openData, ...outstandingData) + 5,
+                    grid: { display: false } 
+                },
+                y1: { 
+                    type: 'linear', 
+                    display: false, 
+                    position: 'right', 
+                    beginAtZero: true, 
+                    max: 100, 
+                    grid: { display: false } 
+                },
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { 
+                        maxRotation: 0,
+                        minRotation: 0 
+                    } 
+                }
+            },
+            plugins: { legend: { display: false } }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                ctx.font = "bold 11px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                
+                chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                    if (dataset.type === 'line') return;
+                    
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    if (!meta || !meta.data) return;
+                    
+                    meta.data.forEach(function(bar, index) {
+                        const value = dataset.data[index];
+                        if (value > 0) {
+                            ctx.fillStyle = datasetIndex === 0 ? "rgba(41, 128, 185, 1)" : "rgba(192, 57, 43, 1)";
+                            const yPos = Math.max(bar.y - 5, 15);
+                            ctx.fillText(value, bar.x, yPos);
+                        }
+                    });
+                });
+
+                const lineDataset = chart.data.datasets[2];
+                if (lineDataset && lineDataset.type === 'line') {
+                    const lineMeta = chart.getDatasetMeta(2);
+                    if (lineMeta && lineMeta.data) {
+                        ctx.font = "bold 10px Arial";
+                        
+                        lineMeta.data.forEach(function(point, index) {
+                            const value = lineDataset.data[index];
+                            if (value > 0) {
+                                ctx.fillStyle = "rgba(0, 100, 0, 1)";
+                                ctx.fillText(value.toFixed(1) + '%', point.x, point.y - 10);
+                            }
+                        });
+                    }
+                }
+            }
+        }]
+    });
+}
+
+// ========== INITIALIZATION ==========
+window.addEventListener('load', function() {
+    console.log('Overall dashboard loaded - GitHub Pages Mode');
+    
+    // Check if WEB_APP_URL is configured
+    if (WEB_APP_URL.includes('YOUR_SCRIPT_ID')) {
+        showError('กรุณาแก้ไข WEB_APP_URL ในโค้ด JavaScript ให้เป็น Web App URL ที่ถูกต้อง');
+        return;
+    }
+    
+    loadOverallData();
+});
+</script>
+
+</body>
+</html>
