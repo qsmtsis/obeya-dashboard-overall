@@ -113,10 +113,6 @@
             text-align: center;
         }
 
-        .error h3 {
-            margin-bottom: 10px;
-        }
-
         .retry-btn {
             background: #007bff;
             color: white;
@@ -129,6 +125,25 @@
 
         .retry-btn:hover {
             background: #0056b3;
+        }
+
+        .data-source-info {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .data-source-info h4 {
+            color: #155724;
+            margin-bottom: 8px;
+        }
+
+        .data-source-info p {
+            color: #155724;
+            font-size: 14px;
         }
 
         .status-grid {
@@ -243,15 +258,113 @@
             display: none;
         }
 
-        .connection-info {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            color: #0c5460;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 12px;
-            text-align: center;
+        /* Action Buttons Styles */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .dropdown-btn::after {
+            content: '▼';
+            font-size: 10px;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 200px;
+            display: none;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #333;
+            display: block;
+            font-size: 13px;
+            transition: background-color 0.2s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-btn,
+            .dropdown-btn {
+                width: 200px;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -274,31 +387,80 @@
         </div>
 
         <div class="main-content">
-            <h1 class="page-title">Overall Dashboard [DEV TEST]</h1>
-
-            <!-- Connection Info -->
-            <div class="connection-info">
-                🔗 Connected to Google Sheets via Web App API | GitHub Pages Mode
-            </div>
+            <h1 class="page-title">Overall Dashboard</h1>
 
             <!-- Loading State -->
             <div id="loadingOverall" class="loading">
                 <div class="spinner"></div>
-                <p>กำลังโหลดข้อมูลจาก Google Apps Script Web App...</p>
+                <p>กำลังโหลดข้อมูลจาก Google Sheets...</p>
             </div>
 
             <!-- Error State -->
             <div id="errorOverall" class="error" style="display: none;">
-                <h3>⚠️ ไม่สามารถเชื่อมต่อ Google Apps Script Web App ได้</h3>
+                <h3>⚠️ ไม่สามารถเชื่อมต่อ Google Sheets ได้</h3>
                 <p id="errorMessage">กรุณาตรวจสอบการเชื่อมต่อและลองใหม่อีกครั้ง</p>
-                <p style="font-size: 11px; margin-top: 10px;">
-                    ตรวจสอบว่า Web App ได้ Deploy แล้วและมี permission "Anyone" หรือไม่
-                </p>
                 <button class="retry-btn" onclick="loadOverallData()">ลองใหม่</button>
             </div>
 
             <!-- Main Content -->
             <div id="overallContent">
+                <!-- แสดงแหล่งข้อมูล -->
+                <div class="data-source-info">
+                    <h4>🔗 ข้อมูลจาก Google Sheets ผ่าน Apps Script API</h4>
+                    <p>ข้อมูลอัพเดทแบบ Real-time จาก Google Sheets + UI จาก GitHub Pages</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <!-- Near miss Button -->
+                    <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
+                       target="_blank" class="action-btn">
+                        📋 ตาราง Near miss
+                    </a>
+
+                    <!-- แก้ไข Dropdown -->
+                    <div class="dropdown-container">
+                        <button class="dropdown-btn" onclick="toggleDropdown('editDropdown')">
+                            🔧 แก้ไข
+                        </button>
+                        <div id="editDropdown" class="dropdown-menu">
+                            <a href="https://script.google.com/macros/s/AKfycbwif8TTLnCN84_d0xoxvCZmEYb1mu9EO6_DlNkYt8Cc0hmr2dLGS_dnXKhSjKVENSYSEg/exec" 
+                               target="_blank" class="dropdown-item">
+                                🔄 แก้ไขชั่วคราว
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwYBMxA_ymzl1uIS66ZgkAXgHXeCsJvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
+                               target="_blank" class="dropdown-item">
+                                ✅ แก้ไขถาวร
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- อนุมัติ Dropdown -->
+                    <div class="dropdown-container">
+                        <button class="dropdown-btn" onclick="toggleDropdown('approvalDropdown')">
+                            ✅ อนุมัติ
+                        </button>
+                        <div id="approvalDropdown" class="dropdown-menu">
+                            <a href="https://script.google.com/macros/s/AKfycbzzrYpo7XErNPvokQO_uQX8uUJAJqGQdAIm6v3E8AL61bNedxJu3pVxuv9PoXk0X6kilA/exec" 
+                               target="_blank" class="dropdown-item">
+                                🔄 Q&S อนุมัติชั่วคราว
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKKG8ECEQvwkYaCB_6FwleUmMpN9l3DxhWJhLzxOXr/exec" 
+                               target="_blank" class="dropdown-item">
+                                ✅ Q&S อนุมัติถาวร
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwsbkICpwuCzLgIbXJlgWdF7PCUP6vYUsM3la5iqZdOLqXl1nG3qUkiY-4_bkQs8c1NEA/exec" 
+                               target="_blank" class="dropdown-item">
+                                👨‍💼 Manager Approval
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwxtj0YS_MfR1BezMLGCw7hx25FkAha1cN-RKkeuYPukd2jc1AYfXu07i9CC4LHwG88MQ/exec" 
+                               target="_blank" class="dropdown-item">
+                                🏢 GM Approval
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="status-grid">
                     <div class="status-card near-miss">
                         <div class="status-label">Near miss</div>
@@ -319,17 +481,18 @@
                 </div>
 
                 <div class="charts-placeholder">
-                    <h3>Outstanding issue (Safety & Quality)</h3>
+                    <h3>Outstanding Issues (Overall)</h3>
                     <div class="chart-wrapper">
                         <canvas id="mainChart"></canvas>
+                        <!-- อัพเดท Legend สำหรับ Stacked Bar -->
                         <div class="custom-legend-overlay">
                             <div class="legend-item">
-                                <span class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></span>
-                                <span class="legend-label">Safety</span>
+                                <span class="legend-color" style="background-color: rgba(243, 156, 18, 0.85);"></span>
+                                <span class="legend-label">Temporary Action</span>
                             </div>
                             <div class="legend-item">
-                                <span class="legend-color" style="background-color: rgba(52, 152, 219, 0.85);"></span>
-                                <span class="legend-label">Quality</span>
+                                <span class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></span>
+                                <span class="legend-label">No Action</span>
                             </div>
                         </div>
                     </div>
@@ -360,138 +523,83 @@
     </div>
 
 <script>
-// ========== CONFIGURATION ==========
-// 🔥 สำคัญ: เปลี่ยน URL นี้เป็น Web App URL ของคุณ
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycCxWSBGVHVVXiq5As5K4_G3hxy_1YaDXQvTnCtFqBzqKEpmnstgK9-RCtZV2rRi1J3w/exec';
+// Configuration - ใส่ URL ของ Google Apps Script ที่ Deploy แล้ว
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
 
 let mainChart;
 let monthlyChart;
 let dashboardData = null;
 
-// ========== NAVIGATION ==========
-function navigateToPage(page) {
-    console.log('Navigating to:', page);
-    
-    // ใน GitHub Pages ใช้ relative path
-    if (page.includes('.html')) {
-        window.location.href = page;
-    } else {
-        window.location.href = page + '.html';
-    }
+// Navigation function สำหรับ GitHub Pages
+function navigateToPage(pageName) {
+    window.location.href = pageName;
 }
 
-// ========== API FUNCTIONS ==========
-async function callWebAppAPI(action) {
-    try {
-        console.log(`Calling Web App API: ${action}`);
-        
-        // Method 1: GET request
-        const url = `${WEB_APP_URL}?action=${action}&timestamp=${new Date().getTime()}`;
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log(`API Response for ${action}:`, data);
-        
-        return data;
-        
-    } catch (error) {
-        console.error(`API Error for ${action}:`, error);
-        
-        // Fallback: try POST method
-        try {
-            console.log('Trying POST method as fallback...');
-            
-            const postResponse = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ action: action })
-            });
-
-            if (postResponse.ok) {
-                const postData = await postResponse.json();
-                console.log(`POST API Response for ${action}:`, postData);
-                return postData;
-            }
-        } catch (postError) {
-            console.error('POST fallback also failed:', postError);
-        }
-        
-        // If both methods fail, return error
-        return {
-            success: false,
-            error: error.toString(),
-            action: action
-        };
-    }
-}
-
-// ========== DATA LOADING ==========
+// Load data from Google Apps Script API
 async function loadOverallData() {
-    console.log('Loading overall data from Web App...');
+    console.log('Loading overall data from Apps Script API...');
     
     document.getElementById('loadingOverall').style.display = 'block';
     document.getElementById('errorOverall').style.display = 'none';
     document.getElementById('overallContent').style.display = 'none';
     
-    // Test connection first
-    console.log('Testing Web App connection...');
-    const testResult = await callWebAppAPI('testConnection');
-    
-    if (!testResult.success) {
-        showError('การทดสอบการเชื่อมต่อล้มเหลว: ' + testResult.error);
-        return;
+    try {
+        // เรียก API จาก Google Apps Script
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=overall&t=${Date.now()}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'API returned error');
+        }
+        
+        onDataLoaded(data);
+        
+    } catch (error) {
+        console.error('Error loading overall data from API:', error);
+        onDataError(error);
     }
-    
-    console.log('Connection test successful, loading data...');
-    
-    // Load actual data
-    const data = await callWebAppAPI('getOverallData');
-    
-    if (!data.success) {
-        showError(data.error || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
-        return;
-    }
-    
-    onDataLoaded(data);
 }
 
-function onDataLoaded(data) {
-    console.log('Data loaded from Web App:', data);
+function onDataLoaded(apiResponse) {
+    console.log('Overall data loaded from Apps Script API:', apiResponse);
     
     document.getElementById('loadingOverall').style.display = 'none';
     
-    dashboardData = data;
-    
-    // Update status cards
-    if (data.status) {
-        document.getElementById('nearMissValue').textContent = data.status.nearMiss?.value || 0;
-        document.getElementById('closedValue').textContent = data.status.closed?.value || 0;
-        document.getElementById('temporaryValue').textContent = data.status.temporaryAction?.value || 0;
-        document.getElementById('noActionValue').textContent = data.status.noAction?.value || 0;
+    if (!apiResponse.success) {
+        showError(apiResponse.error || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
+        return;
     }
     
-    // Update timestamp
-    if (data.lastUpdated) {
-        document.getElementById('lastUpdated').textContent = `อัพเดทล่าสุด: ${data.lastUpdated} (${data.source || 'Web App'})`;
+    dashboardData = apiResponse.data;
+    
+    // อัพเดท Status Cards (ข้อมูลจริงจาก B72, C72, G72, H72)
+    if (dashboardData.status) {
+        console.log('Updating Overall status cards with real data from API:', dashboardData.status);
+        document.getElementById('nearMissValue').textContent = dashboardData.status.nearMiss?.value || 0;
+        document.getElementById('closedValue').textContent = dashboardData.status.closed?.value || 0;
+        document.getElementById('temporaryValue').textContent = dashboardData.status.temporaryAction?.value || 0;
+        document.getElementById('noActionValue').textContent = dashboardData.status.noAction?.value || 0;
     }
     
-    // Create charts
+    if (apiResponse.lastUpdated) {
+        document.getElementById('lastUpdated').textContent = `อัพเดทล่าสุด: ${apiResponse.lastUpdated} (จาก ${apiResponse.source})`;
+    }
+    
+    // สร้างกราฟ
     createChart();
     createMonthlyChart();
     
     document.getElementById('overallContent').style.display = 'block';
+}
+
+function onDataError(error) {
+    console.error('Error loading overall data from API:', error);
+    showError(error.toString());
 }
 
 function showError(message) {
@@ -501,7 +609,7 @@ function showError(message) {
     document.getElementById('errorOverall').style.display = 'block';
 }
 
-// ========== CHART FUNCTIONS (เหมือนเดิม) ==========
+// กราฟที่ 1: Outstanding Issues - อัพเดทเป็น Stacked Bar Chart
 function createChart() {
     const ctx = document.getElementById('mainChart');
     if (!ctx) return;
@@ -511,19 +619,32 @@ function createChart() {
     }
 
     let labels = [];
-    let safetyData = [];
-    let qualityData = [];
+    let temporaryData = [];
+    let noActionData = [];
     
+    // ใช้ข้อมูลจริงจาก Google Sheets API
     if (dashboardData && dashboardData.charts) {
         labels = dashboardData.charts.labels || [];
-        safetyData = dashboardData.charts.bar1?.data || [];
-        qualityData = dashboardData.charts.bar2?.data || [];
+        temporaryData = dashboardData.charts.temporaryAction?.data || [];
+        noActionData = dashboardData.charts.noAction?.data || [];
     }
     
     if (labels.length === 0) {
-        console.error('No chart data available from Web App');
+        console.error('No chart data available from API');
         return;
     }
+
+    // คำนวณผลรวมสำหรับแสดงบนแท่ง
+    const totalData = temporaryData.map((temp, index) => {
+        const noAct = noActionData[index] || 0;
+        return temp + noAct;
+    });
+
+    console.log('Overall Stacked Chart Data from API:');
+    console.log('Labels:', labels);
+    console.log('Temporary:', temporaryData);
+    console.log('No Action:', noActionData);
+    console.log('Totals:', totalData);
 
     mainChart = new Chart(ctx, {
         type: 'bar',
@@ -531,19 +652,19 @@ function createChart() {
             labels: labels,
             datasets: [
                 {
-                    label: dashboardData.charts.bar1?.label || 'Safety',
-                    data: safetyData,
-                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
-                    borderColor: 'rgba(192, 57, 43, 1)',
+                    label: 'Temporary Action',
+                    data: temporaryData,
+                    backgroundColor: 'rgba(243, 156, 18, 0.85)',  // สีเหลือง
+                    borderColor: 'rgba(241, 196, 15, 1)',
                     borderWidth: 2,
                     borderRadius: 6,
                     borderSkipped: false,
                 },
                 {
-                    label: dashboardData.charts.bar2?.label || 'Quality',
-                    data: qualityData,
-                    backgroundColor: 'rgba(52, 152, 219, 0.85)',
-                    borderColor: 'rgba(41, 128, 185, 1)',
+                    label: 'No Action',
+                    data: noActionData,
+                    backgroundColor: 'rgba(231, 76, 60, 0.85)',  // สีแดง
+                    borderColor: 'rgba(192, 57, 43, 1)',
                     borderWidth: 2,
                     borderRadius: 6,
                     borderSkipped: false,
@@ -554,37 +675,87 @@ function createChart() {
             responsive: true,
             maintainAspectRatio: false,
             layout: {
-                padding: { top: 30, bottom: 5, left: 5, right: 5 }
+                padding: { top: 40, bottom: 5, left: 5, right: 5 } // เพิ่ม top padding สำหรับผลรวม
             },
             scales: {
-                y: { beginAtZero: true, display: false, grid: { display: false } },
-                x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } }
+                y: { 
+                    beginAtZero: true, 
+                    display: false, 
+                    stacked: true,  // สำคัญ: ทำให้แท่งซ้อนกัน
+                    grid: { display: false } 
+                },
+                x: { 
+                    grid: { display: false }, 
+                    stacked: true,  // สำคัญ: ทำให้แท่งซ้อนกัน
+                    ticks: { 
+                        maxRotation: 45, 
+                        minRotation: 45,
+                        font: { size: 10 }
+                    } 
+                }
             },
-            plugins: { legend: { display: false } }
+            plugins: { 
+                legend: { 
+                    display: false // ซ่อน legend เดิม ใช้ custom legend overlay แทน
+                } 
+            }
         },
         plugins: [{
             afterDatasetsDraw: function(chart) {
                 const ctx = chart.ctx;
-                ctx.font = "bold 12px Arial";
+                
+                // แสดงค่าในแต่ละส่วนของแท่ง
+                ctx.font = "bold 11px Arial";
                 ctx.textAlign = "center";
-                ctx.textBaseline = "bottom";
+                ctx.textBaseline = "middle";
                 
                 chart.data.datasets.forEach(function(dataset, datasetIndex) {
                     const meta = chart.getDatasetMeta(datasetIndex);
+                    
                     meta.data.forEach(function(bar, index) {
                         const value = dataset.data[index];
                         if (value > 0) {
-                            ctx.fillStyle = datasetIndex === 0 ? "rgba(192, 57, 43, 1)" : "rgba(30, 100, 180, 1)";
-                            const yPos = Math.max(bar.y - 8, 15);
-                            ctx.fillText(value, bar.x, yPos);
+                            // กำหนดสีข้อความ
+                            ctx.fillStyle = datasetIndex === 0 ? 
+                                "rgba(183, 149, 11, 1)" :  // เหลืองเข้ม สำหรับ Temporary
+                                "white";                    // ขาว สำหรับ No Action
+                            
+                            // แสดงตัวเลขตรงกลางแท่ง
+                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
                         }
                     });
+                });
+
+                // แสดงผลรวมด้านบนแท่ง
+                ctx.font = "bold 13px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                ctx.fillStyle = "#2c3e50"; // สีเข้มสำหรับผลรวม
+                
+                // หาตำแหน่งบนสุดของแท่งแต่ละอัน
+                const tempMeta = chart.getDatasetMeta(0);
+                const noActMeta = chart.getDatasetMeta(1);
+                
+                tempMeta.data.forEach(function(bar, index) {
+                    const total = totalData[index];
+                    if (total > 0) {
+                        // หาตำแหน่ง y ที่สูงที่สุด (บนสุดของแท่ง)
+                        const tempBar = tempMeta.data[index];
+                        const noActBar = noActMeta.data[index];
+                        
+                        // ใช้ตำแหน่ง y ที่น้อยที่สุด (สูงที่สุดบนหน้าจอ)
+                        const topY = Math.min(tempBar.y, noActBar.y);
+                        
+                        // แสดงผลรวมเหนือแท่ง
+                        ctx.fillText(total, bar.x, topY - 10);
+                    }
                 });
             }
         }]
     });
 }
 
+// กราฟที่ 2: Monthly Trend (Mixed Chart)
 function createMonthlyChart() {
     const ctx = document.getElementById('monthlyChart');
     if (!ctx) return;
@@ -595,20 +766,35 @@ function createMonthlyChart() {
 
     let months = [];
     let openData = [];
-    let outstandingData = [];
+    let temporaryData = [];
+    let noActionData = [];
     let closedPercentage = [];
     
+    // ใช้ข้อมูลจริงจาก Google Sheets API
     if (dashboardData && dashboardData.monthlyTrend) {
         months = dashboardData.monthlyTrend.months || [];
         openData = dashboardData.monthlyTrend.openData || [];
-        outstandingData = dashboardData.monthlyTrend.outstandingData || [];
+        temporaryData = dashboardData.monthlyTrend.temporaryData || [];
+        noActionData = dashboardData.monthlyTrend.noActionData || [];
         closedPercentage = dashboardData.monthlyTrend.closedPercentage || [];
     }
     
     if (months.length === 0) {
-        console.error('No monthly trend data available from Web App');
+        console.error('No monthly trend data available from API');
         return;
     }
+
+    // คำนวณ Outstanding Data (Temporary + No Action)
+    const outstandingData = temporaryData.map((temp, index) => {
+        const noAct = noActionData[index] || 0;
+        return temp + noAct;
+    });
+
+    console.log('Overall Monthly Chart Data from API:');
+    console.log('Months:', months);
+    console.log('Open:', openData);
+    console.log('Outstanding:', outstandingData);
+    console.log('%Closed:', closedPercentage);
 
     monthlyChart = new Chart(ctx, {
         type: 'bar',
@@ -727,18 +913,39 @@ function createMonthlyChart() {
     });
 }
 
-// ========== INITIALIZATION ==========
-window.addEventListener('load', function() {
-    console.log('Overall dashboard loaded - GitHub Pages Mode');
+// Initialize when page loads
+window.onload = function() {
+    console.log('Overall dashboard loaded - GitHub Pages with Apps Script API');
+    loadOverallData(); // โหลดข้อมูลจริงจาก Google Sheets ผ่าน API
     
-    // Check if WEB_APP_URL is configured
-    if (WEB_APP_URL.includes('YOUR_SCRIPT_ID')) {
-        showError('กรุณาแก้ไข WEB_APP_URL ในโค้ด JavaScript ให้เป็น Web App URL ที่ถูกต้อง');
-        return;
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.matches('.dropdown-btn')) {
+            closeAllDropdowns();
+        }
+    });
+};
+
+// Dropdown functionality
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const isShowing = dropdown.classList.contains('show');
+    
+    // Close all dropdowns first
+    closeAllDropdowns();
+    
+    // Toggle the clicked dropdown
+    if (!isShowing) {
+        dropdown.classList.add('show');
     }
-    
-    loadOverallData();
-});
+}
+
+function closeAllDropdowns() {
+    const dropdowns = document.querySelectorAll('.dropdown-menu');
+    dropdowns.forEach(dropdown => {
+        dropdown.classList.remove('show');
+    });
+}
 </script>
 
 </body>
