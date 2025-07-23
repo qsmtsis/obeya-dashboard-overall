@@ -639,3 +639,267 @@ function createOutstandingChart() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: { top: 40, bottom: 5, left: 5, right: 5 }
+            },
+            scales: {
+                y: { beginAtZero: true, display: false, stacked: true, grid: { display: false } },
+                x: { grid: { display: false }, stacked: true, ticks: { maxRotation: 45, minRotation: 45, font: { size: 9 } } }
+            },
+            plugins: { 
+                legend: { 
+                    display: true, position: 'top',
+                    labels: { font: { size: 10, weight: 'bold' }, usePointStyle: true, padding: 12 }
+                }
+            }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                
+                // แสดงค่าในแท่ง
+                ctx.font = "bold 10px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                
+                chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    meta.data.forEach(function(bar, index) {
+                        const value = dataset.data[index];
+                        if (value > 0) {
+                            ctx.fillStyle = datasetIndex === 0 ? "rgba(183, 149, 11, 1)" : "white";
+                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
+                        }
+                    });
+                });
+
+                // แสดงผลรวมบนแท่ง
+                ctx.font = "bold 12px Arial";
+                ctx.textBaseline = "bottom";
+                ctx.fillStyle = "#2c3e50";
+                
+                const tempMeta = chart.getDatasetMeta(0);
+                const noActMeta = chart.getDatasetMeta(1);
+                
+                tempMeta.data.forEach(function(bar, index) {
+                    const total = totalData[index];
+                    if (total > 0) {
+                        const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
+                        ctx.fillText(total, bar.x, topY - 10);
+                    }
+                });
+            }
+        }]
+    });
+}
+
+// Initialize when page loads
+window.onload = function() {
+    console.log('Safety dashboard loaded - GitHub Pages with Apps Script API');
+    loadSafetyData(); // โหลดข้อมูลจริงจาก Google Sheets ผ่าน API
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.matches('.dropdown-btn')) {
+            closeAllDropdowns();
+        }
+    });
+};
+
+// Dropdown functionality
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const isShowing = dropdown.classList.contains('show');
+    
+    // Close all dropdowns first
+    closeAllDropdowns();
+    
+    // Toggle the clicked dropdown
+    if (!isShowing) {
+        dropdown.classList.add('show');
+    }
+}
+
+function closeAllDropdowns() {
+    const dropdowns = document.querySelectorAll('.dropdown-menu');
+    dropdowns.forEach(dropdown => {
+        dropdown.classList.remove('show');
+    });
+}
+</script>
+</body>
+</html>
+    });
+}
+
+// Chart 2: Monthly Trend (Mixed Chart)
+function createMonthlyChart() {
+    const ctx = document.getElementById('monthlyChart');
+    if (!ctx) return;
+    
+    if (monthlyChart) {
+        monthlyChart.destroy();
+    }
+
+    let months = [];
+    let openData = [];
+    let temporaryData = [];
+    let noActionData = [];
+    let closedPercentage = [];
+    
+    // ใช้ข้อมูลจริงจาก Google Sheets API
+    if (safetyData && safetyData.monthly) {
+        months = safetyData.monthly.months || [];
+        openData = safetyData.monthly.openData || [];
+        temporaryData = safetyData.monthly.temporaryData || [];
+        noActionData = safetyData.monthly.noActionData || [];
+        closedPercentage = safetyData.monthly.closedPercentage || [];
+    }
+    
+    if (months.length === 0) {
+        console.error('No Safety monthly trend data available from API');
+        return;
+    }
+
+    console.log('Safety Monthly Chart Data from API:');
+    console.log('Months:', months);
+    console.log('Open:', openData);
+    console.log('Temporary:', temporaryData);
+    console.log('No Action:', noActionData);
+    console.log('%Closed:', closedPercentage);
+
+    const stackedTotals = temporaryData.map((temp, index) => {
+        const noAct = noActionData[index] || 0;
+        return temp + noAct;
+    });
+
+    monthlyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Open',
+                    data: openData,
+                    backgroundColor: 'rgba(52, 152, 219, 0.85)',
+                    borderColor: 'rgba(41, 128, 185, 1)',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                    yAxisID: 'y',
+                    stack: 'stack1'
+                },
+                {
+                    label: 'Temporary Action',
+                    data: temporaryData,
+                    backgroundColor: 'rgba(243, 156, 18, 0.85)',
+                    borderColor: 'rgba(241, 196, 15, 1)',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                    yAxisID: 'y',
+                    stack: 'stack2'
+                },
+                {
+                    label: 'No Action',
+                    data: noActionData,
+                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
+                    borderColor: 'rgba(192, 57, 43, 1)',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                    yAxisID: 'y',
+                    stack: 'stack2'
+                },
+                {
+                    label: '%Closed',
+                    data: closedPercentage,
+                    type: 'line',
+                    borderColor: 'rgba(46, 204, 113, 1)',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(46, 204, 113, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1,
+                    pointRadius: 4,
+                    tension: 0.4,
+                    yAxisID: 'y1',
+                    order: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 40, bottom: 5, left: 5, right: 5 } },
+            scales: {
+                y: { type: 'linear', display: false, position: 'left', beginAtZero: true, grid: { display: false } },
+                y1: { type: 'linear', display: false, position: 'right', beginAtZero: true, max: 100, grid: { display: false } },
+                x: { grid: { display: false }, ticks: { maxRotation: 0, minRotation: 0, font: { size: 9 } } }
+            },
+            plugins: { 
+                legend: { 
+                    display: true, position: 'top',
+                    labels: { font: { size: 9, weight: 'bold' }, usePointStyle: true, padding: 10 }
+                }
+            }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                ctx.font = "bold 10px Arial";
+                ctx.textAlign = "center";
+                
+                // แสดงค่าบนแท่ง
+                chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                    if (dataset.type === 'line') return;
+                    
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    meta.data.forEach(function(bar, index) {
+                        const value = dataset.data[index];
+                        if (value > 0) {
+                            ctx.fillStyle = datasetIndex === 0 ? "rgba(41, 128, 185, 1)" : 
+                                           datasetIndex === 1 ? "rgba(183, 149, 11, 1)" : "white";
+                            
+                            if (datasetIndex < 2) {
+                                ctx.textBaseline = datasetIndex === 0 ? "bottom" : "middle";
+                                const yPos = datasetIndex === 0 ? bar.y - 3 : bar.y + (bar.height / 2);
+                                ctx.fillText(value, bar.x, yPos);
+                            }
+                        }
+                    });
+                });
+                
+                // แสดงผลรวม stacked bar
+                ctx.fillStyle = "#333";
+                ctx.textBaseline = "bottom";
+                const tempMeta = chart.getDatasetMeta(1);
+                const noActMeta = chart.getDatasetMeta(2);
+                
+                tempMeta.data.forEach(function(bar, index) {
+                    const total = stackedTotals[index];
+                    if (total > 0) {
+                        const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
+                        ctx.fillText(total, bar.x, topY - 3);
+                    }
+                });
+                
+                // แสดงค่า %Closed บนเส้นกราฟ
+                const lineDataset = chart.data.datasets[3];
+                if (lineDataset && lineDataset.type === 'line') {
+                    const lineMeta = chart.getDatasetMeta(3);
+                    if (lineMeta && lineMeta.data) {
+                        ctx.font = "bold 9px Arial";
+                        ctx.fillStyle = "rgba(0, 120, 0, 1)";
+                        
+                        lineMeta.data.forEach(function(point, index) {
+                            const value = lineDataset.data[index];
+                            if (value > 0) {
+                                ctx.fillText(value.toFixed(0) + '%', point.x, point.y - 8);
+                            }
+                        });
+                    }
+                }
+            }
+        }]
