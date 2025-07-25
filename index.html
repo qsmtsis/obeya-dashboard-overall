@@ -263,22 +263,34 @@
             border-radius: 8px;
         }
 
-        /* Chart specific styling */
-        .chart-legend {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
+/* เพิ่มในส่วน <style> */
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+}
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            font-weight: 600;
-        }
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.legend-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+}
+
+.legend-line {
+    width: 20px;
+    height: 3px;
+    border-radius: 2px;
+}
 
         /* Dropdown Styles */
         .dropdown-container {
@@ -748,39 +760,19 @@ function createMonthlyChart(monthlyData) {
     const ctx = document.getElementById('monthlyChart');
     if (!ctx) return;
     
-    // แก้ไขส่วนแสดง Legend
-    const legendSettings = {
-        display: true,
-        position: 'top',
-        labels: {
-            font: {
-                size: 12,
-                weight: 'bold'
-            },
-            padding: 20,
-            usePointStyle: true,
-            generateLabels: function(chart) {
-                const datasets = chart.data.datasets;
-                return datasets.map(dataset => {
-                    return {
-                        text: dataset.label,
-                        fillStyle: dataset.backgroundColor || dataset.borderColor,
-                        hidden: false,
-                        lineCap: 'round',
-                        lineDash: [],
-                        lineDashOffset: 0,
-                        lineJoin: 'round',
-                        lineWidth: 1,
-                        strokeStyle: dataset.borderColor,
-                        pointStyle: dataset.type === 'line' ? 'circle' : 'rect',
-                        rotation: 0
-                    };
-                });
-            }
-        }
-    };
+    if (monthlyChart) {
+        monthlyChart.destroy();
+    }
 
-    // แก้ไขส่วนเส้น %Closed ให้แสดงถูกต้อง
+    // Debug: ตรวจสอบข้อมูลก่อนสร้างกราฟ
+    console.log('Monthly Data:', {
+        months: monthlyData.months,
+        open: monthlyData.openData,
+        temp: monthlyData.temporaryData,
+        noAction: monthlyData.noActionData,
+        closedPct: monthlyData.closedPercentage
+    });
+
     monthlyChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -827,7 +819,6 @@ function createMonthlyChart(monthlyData) {
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
                     pointRadius: 5,
-                    pointHoverRadius: 7,
                     tension: 0.4,
                     yAxisID: 'y1',
                     order: 0
@@ -838,7 +829,18 @@ function createMonthlyChart(monthlyData) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: legendSettings, // ใช้การตั้งค่า Legend ใหม่
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        },
+                        padding: 20,
+                        usePointStyle: true,
+                    }
+                },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
@@ -875,7 +877,6 @@ function createMonthlyChart(monthlyData) {
         }
     });
 }
-
 // ===== UTILITY FUNCTIONS =====
 function extractArray(valueRange) {
     if (!valueRange || !valueRange.values) return [];
@@ -893,11 +894,28 @@ function extractNumbers(valueRange) {
 
 function extractPercentages(valueRange) {
     if (!valueRange || !valueRange.values) return [];
+    
     return valueRange.values.flat().map(val => {
         if (val === "" || val == null) return 0;
+        
+        // แปลงค่าที่เป็นสตริง (เช่น "85%" หรือ "0.85")
+        if (typeof val === 'string') {
+            val = val.replace('%', '');
+            // แปลงเศษส่วนถ้ามี (เช่น "1/2" → 0.5)
+            if (val.includes('/')) {
+                const [numerator, denominator] = val.split('/');
+                val = Number(numerator) / Number(denominator);
+            }
+        }
+        
         const num = Number(val);
-        if (isNaN(num)) return 0;
-        return num <= 1 ? num * 100 : num;
+        
+        // แปลงทศนิยมเป็นเปอร์เซ็นต์ (0.85 → 85)
+        if (!isNaN(num) && num <= 1 && num !== 0) {
+            return Math.round(num * 100);
+        }
+        
+        return isNaN(num) ? 0 : num;
     });
 }
 
