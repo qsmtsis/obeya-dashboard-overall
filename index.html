@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSIS - Overall Dashboard (Fast Loading)</title>
+    <title>TSIS - Overall Dashboard (GitHub Only)</title>
     
     <!-- Chart.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -81,27 +81,23 @@
             text-align: center;
         }
 
-        /* Fast Loading States */
-        .loading-fast {
+        .api-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 30px;
             text-align: center;
-            padding: 20px;
-            color: #666;
-            font-size: 16px;
         }
 
-        .loading-fast .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+        .api-info h4 {
+            color: #1976d2;
+            margin-bottom: 8px;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .api-info p {
+            color: #1976d2;
+            font-size: 14px;
         }
 
         .connection-status {
@@ -126,7 +122,7 @@
             color: #721c24;
         }
 
-        /* Status Cards - Show immediately */
+        /* Status Cards */
         .status-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -173,59 +169,55 @@
             color: #dee2e6;
         }
 
-        /* Skeleton Loading for Charts */
-        .chart-skeleton {
+        /* Loading Animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .retry-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .retry-btn:hover {
+            background: #218838;
+        }
+
+        /* Chart Placeholder */
+        .chart-placeholder {
             background: white;
             padding: 40px;
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             margin-top: 30px;
+            text-align: center;
+            color: #666;
         }
 
-        .skeleton-title {
-            height: 24px;
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            border-radius: 4px;
-            margin-bottom: 30px;
-            width: 200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .skeleton-chart {
-            height: 300px;
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            border-radius: 8px;
+        .chart-placeholder h3 {
             margin-bottom: 20px;
+            color: #667eea;
         }
 
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .charts-placeholder {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            margin-top: 30px;
-            display: none;
-        }
-
-        .charts-placeholder.show {
-            display: block;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            width: 100%;
-            height: 300px;
-            margin: 30px 0;
+        .chart-placeholder p {
+            font-style: italic;
         }
 
         .last-updated {
@@ -263,21 +255,6 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
-
-        .retry-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-
-        .retry-btn:hover {
-            background: #218838;
-        }
     </style>
 </head>
 <body>
@@ -295,9 +272,15 @@
         <div class="main-content">
             <h1 class="page-title">Overall Dashboard</h1>
 
+            <!-- API Info -->
+            <div class="api-info">
+                <h4>🚀 GitHub Pages + Google Sheets API v4</h4>
+                <p>ไม่ต้องใช้ Apps Script - เชื่อมต่อ Google Sheets โดยตรง</p>
+            </div>
+
             <!-- Connection Status -->
             <div id="connectionStatus" class="connection-status">
-                🔄 กำลังเชื่อมต่อ Google Sheets...
+                <span class="loading-spinner"></span> กำลังเชื่อมต่อ Google Sheets API...
                 <button class="retry-btn" onclick="forceRefresh()" style="display: none;">รีเฟรช</button>
             </div>
 
@@ -307,55 +290,49 @@
                    target="_blank" class="action-btn">📋 ตาราง Near miss</a>
             </div>
 
-            <!-- Status Cards - Show Immediately with Loading State -->
+            <!-- Status Cards -->
             <div class="status-grid">
                 <div class="status-card near-miss loading" id="nearMissCard">
                     <div class="status-label">Near miss</div>
-                    <div class="status-number loading" id="nearMissValue">...</div>
+                    <div class="status-number loading" id="nearMissValue">
+                        <span class="loading-spinner"></span>
+                    </div>
                 </div>
                 <div class="status-card closed loading" id="closedCard">
                     <div class="status-label">Closed</div>
-                    <div class="status-number loading" id="closedValue">...</div>
+                    <div class="status-number loading" id="closedValue">
+                        <span class="loading-spinner"></span>
+                    </div>
                 </div>
                 <div class="status-card temporary loading" id="temporaryCard">
                     <div class="status-label">Temporary Action</div>
-                    <div class="status-number loading" id="temporaryValue">...</div>
+                    <div class="status-number loading" id="temporaryValue">
+                        <span class="loading-spinner"></span>
+                    </div>
                 </div>
                 <div class="status-card no-action loading" id="noActionCard">
                     <div class="status-label">No Action</div>
-                    <div class="status-number loading" id="noActionValue">...</div>
+                    <div class="status-number loading" id="noActionValue">
+                        <span class="loading-spinner"></span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Chart Skeleton Loading -->
-            <div id="chartSkeleton" class="chart-skeleton">
-                <div class="skeleton-title"></div>
-                <div class="skeleton-chart"></div>
-                <div class="skeleton-title"></div>
-                <div class="skeleton-chart"></div>
-            </div>
-
-            <!-- Actual Charts - Hidden Initially -->
-            <div id="chartsContainer" class="charts-placeholder">
-                <h3>Outstanding Issues (Overall)</h3>
-                <div class="chart-wrapper">
-                    <canvas id="mainChart"></canvas>
-                </div>
-                
-                <h3>Monthly Trend</h3>
-                <div class="chart-wrapper">
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-                
+            <!-- Chart Placeholder -->
+            <div class="chart-placeholder">
+                <h3>📊 กราฟจะแสดงในเฟสถัดไป</h3>
+                <p>ขณะนี้โหลดเฉพาะข้อมูล Status Cards เพื่อความเร็ว</p>
                 <div class="last-updated" id="lastUpdated"></div>
             </div>
         </div>
     </div>
 
 <script>
-// Configuration
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwC12o0ncg81GC6lsp1RGzi_EfBRA6G36EQRktUEa4ItzCJOOnJCLqslRJvfgnFvD310g/exec';
-const LOAD_TIMEOUT = 8000; // 8 seconds timeout
+// ===== CONFIGURATION =====
+const SHEET_ID = '1pbtQ82zIg0rI26accNHtWFnjFA-_U_tA9wjavOWHC2s';
+const API_KEY = 'YOUR_GOOGLE_API_KEY'; // จะต้องสร้าง API Key
+
+// ===== FALLBACK DATA =====
 const FALLBACK_DATA = {
     overall: {
         status: {
@@ -364,168 +341,190 @@ const FALLBACK_DATA = {
             temporaryAction: { value: 12 },
             noAction: { value: 15 }
         }
-    },
-    safety: {
-        status: {
-            nearMiss: { value: 113 },
-            closed: { value: 77 },
-            temporaryAction: { value: 5 },
-            noAction: { value: 22 }
-        }
-    },
-    quality: {
-        status: {
-            nearMiss: { value: 82 },
-            closed: { value: 91 },
-            temporaryAction: { value: 7 },
-            noAction: { value: 8 }
-        }
     }
 };
 
+// ===== GLOBAL VARIABLES =====
 let loadStartTime = Date.now();
 let dataLoaded = false;
-let useMinimalLoad = false;
 
 // Navigation function
 function navigateToPage(pageName) {
     window.location.href = pageName;
 }
 
-// Fast Loading Strategy
-async function loadOverallDataFast() {
-    console.log('🚀 Starting fast load process...');
+/**
+ * วิธีที่ 1: ใช้ Google Sheets API v4 (ต้องมี API Key)
+ */
+async function loadWithGoogleAPI() {
+    try {
+        // ถ้าไม่มี API Key ให้ข้าม
+        if (!API_KEY || API_KEY === 'YOUR_GOOGLE_API_KEY') {
+            throw new Error('API Key not configured');
+        }
+        
+        const ranges = [
+            'dashboard!B72:H72'  // Overall status data
+        ];
+        
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?ranges=${ranges.join('&ranges=')}&key=${API_KEY}`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Google API Error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.valueRanges && data.valueRanges[0] && data.valueRanges[0].values) {
+            const statusValues = data.valueRanges[0].values[0];
+            
+            const statusData = {
+                nearMiss: { value: safeNumber(statusValues[0]) },
+                closed: { value: safeNumber(statusValues[1]) },
+                temporaryAction: { value: safeNumber(statusValues[5]) },
+                noAction: { value: safeNumber(statusValues[6]) }
+            };
+            
+            onDataLoaded({
+                success: true,
+                data: { status: statusData },
+                source: 'Google Sheets API v4'
+            });
+            
+            return true;
+        } else {
+            throw new Error('No data received from Google API');
+        }
+        
+    } catch (error) {
+        console.error('Google API method failed:', error);
+        return false;
+    }
+}
+
+/**
+ * วิธีที่ 2: ใช้ CSV Export (Public Sheet เท่านั้น)
+ */
+async function loadWithCSVExport() {
+    try {
+        // URL สำหรับ export CSV
+        const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+        
+        const response = await fetch(csvUrl);
+        
+        if (!response.ok) {
+            throw new Error(`CSV Export Error: ${response.status}`);
+        }
+        
+        const csvText = await response.text();
+        const rows = parseCSV(csvText);
+        
+        // ดึงข้อมูลจากแถวที่ 72 (index 71)
+        if (rows.length > 71) {
+            const statusRow = rows[71];
+            
+            const statusData = {
+                nearMiss: { value: safeNumber(statusRow[1]) },      // Column B
+                closed: { value: safeNumber(statusRow[2]) },        // Column C
+                temporaryAction: { value: safeNumber(statusRow[6]) }, // Column G
+                noAction: { value: safeNumber(statusRow[7]) }       // Column H
+            };
+            
+            onDataLoaded({
+                success: true,
+                data: { status: statusData },
+                source: 'CSV Export'
+            });
+            
+            return true;
+        } else {
+            throw new Error('CSV data insufficient');
+        }
+        
+    } catch (error) {
+        console.error('CSV Export method failed:', error);
+        return false;
+    }
+}
+
+/**
+ * วิธีที่ 3: ใช้ Fallback Data
+ */
+function loadWithFallback() {
+    console.log('🔄 Using fallback data');
+    
+    onDataLoaded({
+        success: true,
+        data: FALLBACK_DATA.overall,
+        source: 'Fallback Data'
+    });
+    
+    return true;
+}
+
+/**
+ * Main Loading Function
+ */
+async function loadOverallData() {
+    console.log('🚀 Starting GitHub-only loading process...');
     loadStartTime = Date.now();
     
     updateConnectionStatus('🔄 กำลังเชื่อมต่อ Google Sheets...', 'loading');
     
-    // Set timeout for fallback
-    const timeoutPromise = new Promise((resolve) => {
-        setTimeout(() => {
-            if (!dataLoaded) {
-                console.log('⏰ Timeout reached, using fallback data');
-                useFallbackData();
-                resolve('timeout');
+    // ลองหลายวิธีตามลำดับ
+    const methods = [
+        { name: 'Google API', func: loadWithGoogleAPI },
+        { name: 'CSV Export', func: loadWithCSVExport },
+        { name: 'Fallback', func: loadWithFallback }
+    ];
+    
+    for (const method of methods) {
+        try {
+            console.log(`📡 Trying ${method.name}...`);
+            
+            const success = await method.func();
+            
+            if (success) {
+                console.log(`✅ ${method.name} succeeded`);
+                return;
             }
-        }, LOAD_TIMEOUT);
-    });
-    
-    // Try multiple loading strategies simultaneously
-    Promise.race([
-        loadWithJSONP(),
-        loadWithFetch(),
-        timeoutPromise
-    ]).then(result => {
-        if (result !== 'timeout' && result !== 'fallback') {
-            console.log('✅ Data loaded successfully');
+        } catch (error) {
+            console.error(`❌ ${method.name} failed:`, error);
         }
-    }).catch(error => {
-        console.error('❌ All loading methods failed:', error);
-        if (!dataLoaded) {
-            useFallbackData();
-        }
-    });
-}
-
-// Method 1: JSONP (Usually faster)
-function loadWithJSONP() {
-    return new Promise((resolve, reject) => {
-        const callbackName = 'jsonp_callback_' + Date.now();
-        const script = document.createElement('script');
-        const timeout = setTimeout(() => {
-            cleanup();
-            reject('JSONP timeout');
-        }, 6000);
-        
-        function cleanup() {
-            clearTimeout(timeout);
-            delete window[callbackName];
-            if (script.parentNode) {
-                script.parentNode.removeChild(script);
-            }
-        }
-        
-        window[callbackName] = function(data) {
-            cleanup();
-            if (data.success) {
-                onDataLoaded(data, 'JSONP');
-                resolve('jsonp');
-            } else {
-                reject('JSONP error: ' + data.error);
-            }
-        };
-        
-        script.src = `${APPS_SCRIPT_URL}?action=overall&callback=${callbackName}&t=${Date.now()}`;
-        script.onerror = () => {
-            cleanup();
-            reject('JSONP script error');
-        };
-        
-        document.head.appendChild(script);
-    });
-}
-
-// Method 2: Regular Fetch (Backup)
-async function loadWithFetch() {
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=overall&t=${Date.now()}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
-        const data = await response.json();
-        if (data.success) {
-            onDataLoaded(data, 'Fetch');
-            return 'fetch';
-        } else {
-            throw new Error(data.error);
-        }
-    } catch (error) {
-        console.error('Fetch method failed:', error);
-        throw error;
-    }
-}
-
-// Handle successful data loading
-function onDataLoaded(apiResponse, method) {
-    if (dataLoaded) return; // Prevent double loading
-    
-    dataLoaded = true;
-    const loadTime = Date.now() - loadStartTime;
-    
-    console.log(`📊 Data loaded via ${method} in ${loadTime}ms`);
-    
-    updateConnectionStatus(`✅ เชื่อมต่อสำเร็จ (${method}, ${loadTime}ms)`, 'success');
-    
-    // Update status cards
-    if (apiResponse.data && apiResponse.data.status) {
-        updateStatusCards(apiResponse.data.status);
     }
     
-    // Show charts area (even if no chart data yet)
-    showChartsArea();
-    
-    // Load chart data separately if needed
-    if (!apiResponse.data.charts) {
-        loadChartDataSeparately();
-    }
+    // ถ้าทุกวิธีล้มเหลว
+    updateConnectionStatus('❌ ไม่สามารถโหลดข้อมูลได้', 'error');
 }
 
-// Use fallback data when all else fails
-function useFallbackData() {
+/**
+ * Handle successful data loading
+ */
+function onDataLoaded(response) {
     if (dataLoaded) return;
     
     dataLoaded = true;
     const loadTime = Date.now() - loadStartTime;
     
-    console.log(`🔄 Using fallback data after ${loadTime}ms`);
+    console.log(`📊 Data loaded via ${response.source} in ${loadTime}ms`);
     
-    updateConnectionStatus(`⚠️ ใช้ข้อมูลสำรอง (Google Sheets ไม่ตอบสนอง)`, 'error');
+    updateConnectionStatus(`✅ เชื่อมต่อสำเร็จ (${response.source}, ${loadTime}ms)`, 'success');
     
-    // Show fallback data
-    updateStatusCards(FALLBACK_DATA.overall.status);
-    showChartsArea();
+    // Update status cards
+    if (response.data && response.data.status) {
+        updateStatusCards(response.data.status);
+    }
+    
+    // Update timestamp
+    document.getElementById('lastUpdated').textContent = 
+        `อัพเดทล่าสุด: ${new Date().toLocaleString('th-TH')} จาก ${response.source}`;
 }
 
-// Update status cards
+/**
+ * Update status cards
+ */
 function updateStatusCards(statusData) {
     const cards = {
         nearMiss: { element: document.getElementById('nearMissValue'), card: document.getElementById('nearMissCard') },
@@ -543,39 +542,28 @@ function updateStatusCards(statusData) {
     });
 }
 
-// Update connection status
+/**
+ * Update connection status
+ */
 function updateConnectionStatus(message, type) {
     const statusElement = document.getElementById('connectionStatus');
-    statusElement.textContent = message;
+    statusElement.innerHTML = message;
     statusElement.className = `connection-status ${type}`;
     
     // Show retry button on error
-    const retryBtn = statusElement.querySelector('.retry-btn');
-    if (retryBtn) {
-        retryBtn.style.display = type === 'error' ? 'inline-block' : 'none';
+    if (type === 'error') {
+        statusElement.innerHTML += '<button class="retry-btn" onclick="forceRefresh()">รีเฟรช</button>';
     }
 }
 
-// Show charts area
-function showChartsArea() {
-    document.getElementById('chartSkeleton').style.display = 'none';
-    document.getElementById('chartsContainer').classList.add('show');
-}
-
-// Load chart data separately (if main load was minimal)
-function loadChartDataSeparately() {
-    // This can be implemented later for full chart data
-    console.log('📈 Chart data can be loaded separately if needed');
-}
-
-// Force refresh function
+/**
+ * Force refresh function
+ */
 function forceRefresh() {
     dataLoaded = false;
     
     // Reset UI
     updateConnectionStatus('🔄 กำลังรีเฟรช...', 'loading');
-    document.getElementById('chartSkeleton').style.display = 'block';
-    document.getElementById('chartsContainer').classList.remove('show');
     
     // Reset status cards to loading state
     const cards = ['nearMissCard', 'closedCard', 'temporaryCard', 'noActionCard'];
@@ -584,18 +572,44 @@ function forceRefresh() {
     cards.forEach(id => document.getElementById(id).classList.add('loading'));
     values.forEach(id => {
         const element = document.getElementById(id);
-        element.textContent = '...';
+        element.innerHTML = '<span class="loading-spinner"></span>';
         element.classList.add('loading');
     });
     
     // Try loading again
-    loadOverallDataFast();
+    setTimeout(loadOverallData, 500);
+}
+
+/**
+ * Utility Functions
+ */
+function safeNumber(value) {
+    if (value === null || value === undefined || value === '') {
+        return 0;
+    }
+    const num = Number(value);
+    return isNaN(num) ? 0 : Math.round(num);
+}
+
+function parseCSV(csvText) {
+    const rows = [];
+    const lines = csvText.split('\n');
+    
+    for (const line of lines) {
+        if (line.trim()) {
+            // Simple CSV parsing (อาจต้องปรับปรุงสำหรับ CSV ที่ซับซ้อน)
+            const row = line.split(',').map(cell => cell.replace(/"/g, '').trim());
+            rows.push(row);
+        }
+    }
+    
+    return rows;
 }
 
 // Initialize when page loads
 window.onload = function() {
-    console.log('🚀 Fast loading Overall dashboard initialized');
-    loadOverallDataFast();
+    console.log('🚀 GitHub-only Overall dashboard initialized');
+    loadOverallData();
 };
 </script>
 
