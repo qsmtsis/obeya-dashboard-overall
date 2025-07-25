@@ -614,6 +614,9 @@ async function loadAllData() {
         // Update status cards
         updateStatusCards(data.data.status);
         
+        // Debug: ดูข้อมูลที่ได้จาก API
+        console.log('Overall Dashboard API Response:', data.data);
+        
         // Load charts
         await loadChartData(data.data);
         
@@ -807,9 +810,26 @@ function createMonthlyChart(data) {
     const openData = data.openData || [];
     const temporaryData = data.temporaryData || [];
     const noActionData = data.noActionData || [];
-    const closedPercentage = data.closedPercentage || [];
+    let closedPercentage = data.closedPercentage || [];
 
-    console.log('Monthly Chart Data:', { months, openData, temporaryData, noActionData, closedPercentage });
+    // Debug: แสดงข้อมูลดิบก่อนประมวลผล
+    console.log('Monthly Chart Raw Data:', { months, openData, temporaryData, noActionData, closedPercentage });
+    
+    // แปลง %Closed ให้ถูกต้อง (กรณีที่ได้เป็นทศนิยม 0-1)
+    closedPercentage = closedPercentage.map(value => {
+        if (value === null || value === undefined || value === '') return 0;
+        const num = Number(value);
+        if (isNaN(num)) return 0;
+        
+        // ถ้าค่าอยู่ระหว่าง 0-1 ให้คูณ 100 (เช่น 0.85 -> 85%)
+        if (num >= 0 && num <= 1) {
+            return num * 100;
+        }
+        // ถ้าค่ามากกว่า 1 แล้วถือว่าเป็น % อยู่แล้ว
+        return num;
+    });
+
+    console.log('Monthly Chart Processed Data:', { months, openData, temporaryData, noActionData, closedPercentage });
 
     monthlyChart = new Chart(ctx, {
         type: 'bar',
@@ -963,8 +983,10 @@ function createMonthlyChart(data) {
                         
                         lineMeta.data.forEach(function(point, index) {
                             const value = lineDataset.data[index];
-                            if (value > 0) {
-                                ctx.fillText(value.toFixed(1) + '%', point.x, point.y - 12);
+                            // แสดงค่าแม้ว่าจะเป็น 0 เพื่อ debug
+                            if (value !== null && value !== undefined) {
+                                const displayValue = value > 0 ? value.toFixed(1) + '%' : '0%';
+                                ctx.fillText(displayValue, point.x, point.y - 12);
                             }
                         });
                     }
