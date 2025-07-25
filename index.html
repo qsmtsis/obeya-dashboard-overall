@@ -573,14 +573,14 @@ async function loadChartData() {
     try {
         // Load data for both charts
         const ranges = [
-            'dashboard!AY85:AY99',   // Outstanding labels
-            'dashboard!BF85:BF99',   // Outstanding Temporary
-            'dashboard!BG85:BG99',   // Outstanding No Action
-            'dashboard!BA2:BL2',     // Monthly months
-            'dashboard!BA78:BL78',   // Monthly Open
-            'dashboard!BA80:BL80',   // Monthly Temporary
-            'dashboard!BA81:BL81',   // Monthly No Action
-            'dashboard!BA82:BL82'    // Monthly %Closed
+            'dashboard!AY85:AY99',   // Outstanding labels (เดิม)
+            'dashboard!BF85:BF99',   // Outstanding Temporary (เดิม)
+            'dashboard!BG85:BG99',   // Outstanding No Action (เดิม)
+            'dashboard!BA2:BL2',     // Monthly months (แกน X)
+            'dashboard!BA78:BL78',   // Monthly Open (แก้จาก BA78:BL78)
+            'dashboard!BA80:BL80',   // Monthly Temporary (แก้จาก BA80:BL80)
+            'dashboard!BA81:BL81',   // Monthly No Action (แก้จาก BA81:BL81)
+            'dashboard!BA82:BL82'    // Monthly %Closed (แก้จาก BA82:BL82)
         ];
         
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?ranges=${ranges.join('&ranges=')}&key=${API_KEY}`;
