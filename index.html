@@ -280,10 +280,72 @@
             font-weight: 600;
         }
 
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 3px;
+        /* Dropdown Styles */
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .dropdown-btn::after {
+            content: '▼';
+            font-size: 10px;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 200px;
+            display: none;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #333;
+            display: block;
+            font-size: 13px;
+            transition: background-color 0.2s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #667eea;
         }
     </style>
 </head>
@@ -315,8 +377,53 @@
 
             <!-- Action Buttons -->
             <div class="action-buttons">
+                <!-- Near miss Button -->
                 <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
                    target="_blank" class="action-btn">📋 ตาราง Near miss</a>
+
+                <!-- แก้ไข Dropdown -->
+                <div class="dropdown-container">
+                    <button class="dropdown-btn" onclick="toggleDropdown('editDropdown')">
+                        🔧 แก้ไข
+                    </button>
+                    <div id="editDropdown" class="dropdown-menu">
+                        <a href="https://script.google.com/macros/s/AKfycbwif8TTLnCN84_d0xoxvCZmEYb1mu9EO6_DlNkYt8Cc0hmr2dLGS_dnXKhSjKVENSYSEg/exec" 
+                           target="_blank" class="dropdown-item">
+                            🔄 แก้ไขชั่วคราว
+                        </a>
+                        <a href="https://script.google.com/macros/s/AKfycbwYBMxA_ymzl1uIS66ZgkAXgHXeCsJvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
+                           target="_blank" class="dropdown-item">
+                            ✅ แก้ไขถาวร
+                        </a>
+                    </div>
+                </div>
+
+                <!-- อนุมัติ Dropdown -->
+                <div class="dropdown-container">
+                    <button class="dropdown-btn" onclick="toggleDropdown('approvalDropdown')">
+                        ✅ อนุมัติ
+                    </button>
+                    <div id="approvalDropdown" class="dropdown-menu">
+                        <a href="https://script.google.com/macros/s/AKfycbzzrYpo7XErNPvokQO_uQX8uUJAJqGQdAIm6v3E8AL61bNedxJu3pVxuv9PoXk0X6kilA/exec" 
+                           target="_blank" class="dropdown-item">
+                            🔄 Q&S อนุมัติชั่วคราว
+                        </a>
+                        <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKKG8ECEQvwkYaCB_6FwleUmMpN9l3DxhWJhLzxOXr/exec" 
+                           target="_blank" class="dropdown-item">
+                            ✅ Q&S อนุมัติถาวร
+                        </a>
+                        <a href="https://script.google.com/macros/s/AKfycbwsbkICpwuCzLgIbXJlgWdF7PCUP6vYUsM3la5iqZdOLqXl1nG3qUkiY-4_bkQs8c1NEA/exec" 
+                           target="_blank" class="dropdown-item">
+                            👨‍💼 Manager Approval
+                        </a>
+                        <a href="https://script.google.com/macros/s/AKfycbwxtj0YS_MfR1BezMLGCw7hx25FkAha1cN-RKkeuYPukd2jc1AYfXu07i9CC4LHwG88MQ/exec" 
+                           target="_blank" class="dropdown-item">
+                            🏢 GM Approval
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Other Buttons -->
                 <button class="action-btn" onclick="loadAllData()">🔄 รีเฟรชข้อมูล</button>
                 <button class="action-btn" onclick="toggleDebug()">🔍 Debug</button>
             </div>
@@ -382,8 +489,12 @@
                                 <span>Open</span>
                             </div>
                             <div class="legend-item">
+                                <div class="legend-color" style="background-color: rgba(243, 156, 18, 0.85);"></div>
+                                <span>Temporary Action</span>
+                            </div>
+                            <div class="legend-item">
                                 <div class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></div>
-                                <span>Outstanding</span>
+                                <span>No Action</span>
                             </div>
                             <div class="legend-item">
                                 <div class="legend-color" style="background-color: rgba(46, 204, 113, 1); height: 3px;"></div>
@@ -646,12 +757,6 @@ function createMonthlyChart(data) {
         monthlyChart.destroy();
     }
 
-    // Calculate Outstanding (Temporary + No Action)
-    const outstandingData = data.temporaryData.map((temp, index) => {
-        const noAct = data.noActionData[index] || 0;
-        return temp + noAct;
-    });
-
     monthlyChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -665,17 +770,30 @@ function createMonthlyChart(data) {
                     borderWidth: 2,
                     borderRadius: 6,
                     borderSkipped: false,
-                    yAxisID: 'y'
+                    yAxisID: 'y',
+                    stack: 'stack1'
                 },
                 {
-                    label: 'Outstanding',
-                    data: outstandingData,
+                    label: 'Temporary Action',
+                    data: data.temporaryData,
+                    backgroundColor: 'rgba(243, 156, 18, 0.85)',
+                    borderColor: 'rgba(241, 196, 15, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    yAxisID: 'y',
+                    stack: 'stack2'
+                },
+                {
+                    label: 'No Action',
+                    data: data.noActionData,
                     backgroundColor: 'rgba(231, 76, 60, 0.85)',
                     borderColor: 'rgba(192, 57, 43, 1)',
                     borderWidth: 2,
                     borderRadius: 6,
                     borderSkipped: false,
-                    yAxisID: 'y'
+                    yAxisID: 'y',
+                    stack: 'stack2'
                 },
                 {
                     label: '%Closed',
@@ -705,7 +823,7 @@ function createMonthlyChart(data) {
                     display: false, 
                     position: 'left', 
                     beginAtZero: true, 
-                    max: Math.max(...data.openData, ...outstandingData) + 5,
+                    max: Math.max(...data.openData, ...(data.temporaryData.map((temp, index) => temp + (data.noActionData[index] || 0)))) + 5,
                     grid: { display: false } 
                 },
                 y1: { 
@@ -734,33 +852,62 @@ function createMonthlyChart(data) {
                 ctx.textAlign = "center";
                 ctx.textBaseline = "bottom";
                 
-                chart.data.datasets.forEach(function(dataset, datasetIndex) {
-                    if (dataset.type === 'line') return;
-                    
-                    const meta = chart.getDatasetMeta(datasetIndex);
-                    if (!meta || !meta.data) return;
-                    
-                    meta.data.forEach(function(bar, index) {
-                        const value = dataset.data[index];
-                        if (value > 0) {
-                            ctx.fillStyle = datasetIndex === 0 ? "rgba(41, 128, 185, 1)" : "rgba(192, 57, 43, 1)";
-                            const yPos = Math.max(bar.y - 5, 15);
-                            ctx.fillText(value, bar.x, yPos);
-                        }
-                    });
+                // แสดงค่าบนแท่ง Open
+                const openMeta = chart.getDatasetMeta(0);
+                openMeta.data.forEach(function(bar, index) {
+                    const value = data.openData[index];
+                    if (value > 0) {
+                        ctx.fillStyle = "rgba(41, 128, 185, 1)";
+                        ctx.fillText(value, bar.x, bar.y - 5);
+                    }
+                });
+
+                // แสดงค่าใน stacked bars (Temporary + No Action)
+                ctx.textBaseline = "middle";
+                
+                // Temporary Action values
+                const tempMeta = chart.getDatasetMeta(1);
+                tempMeta.data.forEach(function(bar, index) {
+                    const value = data.temporaryData[index];
+                    if (value > 0) {
+                        ctx.fillStyle = "rgba(183, 149, 11, 1)";
+                        ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
+                    }
+                });
+
+                // No Action values
+                const noActMeta = chart.getDatasetMeta(2);
+                noActMeta.data.forEach(function(bar, index) {
+                    const value = data.noActionData[index];
+                    if (value > 0) {
+                        ctx.fillStyle = "white";
+                        ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
+                    }
+                });
+
+                // แสดงผลรวม stacked bar ด้านบน
+                ctx.textBaseline = "bottom";
+                ctx.fillStyle = "#333";
+                
+                tempMeta.data.forEach(function(bar, index) {
+                    const total = (data.temporaryData[index] || 0) + (data.noActionData[index] || 0);
+                    if (total > 0) {
+                        const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
+                        ctx.fillText(total, bar.x, topY - 5);
+                    }
                 });
 
                 // Line chart percentage labels
-                const lineDataset = chart.data.datasets[2];
+                const lineDataset = chart.data.datasets[3];
                 if (lineDataset && lineDataset.type === 'line') {
-                    const lineMeta = chart.getDatasetMeta(2);
+                    const lineMeta = chart.getDatasetMeta(3);
                     if (lineMeta && lineMeta.data) {
                         ctx.font = "bold 10px Arial";
                         
                         lineMeta.data.forEach(function(point, index) {
                             const value = lineDataset.data[index];
                             if (value > 0) {
-                                ctx.fillStyle = "rgba(0, 100, 0, 1)";
+                                ctx.fillStyle = "rgba(0, 120, 0, 1)";
                                 ctx.fillText(value.toFixed(1) + '%', point.x, point.y - 10);
                             }
                         });
@@ -866,9 +1013,37 @@ function navigateToPage(pageName) {
     window.location.href = pageName;
 }
 
+// ===== DROPDOWN FUNCTIONS =====
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const isShowing = dropdown.classList.contains('show');
+    
+    // Close all dropdowns first
+    closeAllDropdowns();
+    
+    // Toggle the clicked dropdown
+    if (!isShowing) {
+        dropdown.classList.add('show');
+    }
+}
+
+function closeAllDropdowns() {
+    const dropdowns = document.querySelectorAll('.dropdown-menu');
+    dropdowns.forEach(dropdown => {
+        dropdown.classList.remove('show');
+    });
+}
+
 // ===== INITIALIZATION =====
 window.onload = function() {
     console.log('🚀 Overall Dashboard with Charts initialized');
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.matches('.dropdown-btn')) {
+            closeAllDropdowns();
+        }
+    });
     
     // Load all data on startup
     setTimeout(() => {
