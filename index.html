@@ -596,8 +596,8 @@ async function loadChartData() {
         const response = await fetch(url);
         const data = await response.json();
 
-        // ตรวจสอบข้อมูลที่ได้จาก API
-        console.log("Raw Data from Sheets:", data);
+        // Debug: ตรวจสอบข้อมูลดิบจาก API
+        console.log("Raw Data from API:", data);
 
         const monthlyData = {
             months: extractArray(data.valueRanges[0]),
@@ -607,13 +607,14 @@ async function loadChartData() {
             closedPercentage: extractPercentages(data.valueRanges[4])
         };
 
-        // Debug: ตรวจสอบข้อมูลก่อนสร้างกราฟ
-        console.log("Processed Monthly Data:", monthlyData);
+        // Debug: ตรวจสอบข้อมูลหลังประมวลผล
+        console.log("Processed Data:", monthlyData);
         
         createMonthlyChart(monthlyData);
         
     } catch (error) {
         console.error('❌ Failed to load chart data:', error);
+        showChartError('monthlyChart', 'monthlyLoading');
     }
 }
 // ===== CHART CREATION =====
@@ -735,7 +736,6 @@ function createMonthlyChart(monthlyData) {
     const ctx = document.getElementById('monthlyChart');
     if (!ctx) return;
 
-    // ลบกราฟเก่าถ้ามี
     if (monthlyChart) monthlyChart.destroy();
 
     monthlyChart = new Chart(ctx, {
@@ -743,7 +743,6 @@ function createMonthlyChart(monthlyData) {
         data: {
             labels: monthlyData.months,
             datasets: [
-                // Dataset Open (สีน้ำเงิน)
                 {
                     label: 'Open',
                     data: monthlyData.openData,
@@ -753,7 +752,6 @@ function createMonthlyChart(monthlyData) {
                     borderRadius: 4,
                     stack: 'stack1'
                 },
-                // Dataset Temporary (สีส้ม)
                 {
                     label: 'Temporary Action',
                     data: monthlyData.temporaryData,
@@ -763,7 +761,6 @@ function createMonthlyChart(monthlyData) {
                     borderRadius: 4,
                     stack: 'stack2'
                 },
-                // Dataset No Action (สีแดง)
                 {
                     label: 'No Action',
                     data: monthlyData.noActionData,
@@ -773,7 +770,6 @@ function createMonthlyChart(monthlyData) {
                     borderRadius: 4,
                     stack: 'stack2'
                 },
-                // Dataset %Closed (เส้นสีเขียว)
                 {
                     label: '%Closed',
                     data: monthlyData.closedPercentage,
@@ -784,9 +780,9 @@ function createMonthlyChart(monthlyData) {
                     pointBackgroundColor: 'rgba(46, 204, 113, 1)',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
-                    pointRadius: 5,
+                    pointRadius: 6,
                     tension: 0.3,
-                    yAxisID: 'y-axis-2'
+                    yAxisID: 'y-axis-percent'
                 }
             ]
         },
@@ -820,29 +816,34 @@ function createMonthlyChart(monthlyData) {
                 }
             },
             scales: {
-                'y-axis-1': {
+                'y-axis-count': {
                     type: 'linear',
                     display: true,
                     position: 'left',
                     beginAtZero: true,
                     stacked: true,
-                    grid: {
-                        drawOnChartArea: false
+                    title: {
+                        display: true,
+                        text: 'จำนวน'
                     }
                 },
-                'y-axis-2': {
+                'y-axis-percent': {
                     type: 'linear',
                     display: true,
                     position: 'right',
                     beginAtZero: true,
                     max: 100,
-                    grid: {
-                        drawOnChartArea: false
+                    title: {
+                        display: true,
+                        text: 'เปอร์เซ็นต์'
                     },
                     ticks: {
                         callback: function(value) {
                             return value + '%';
                         }
+                    },
+                    grid: {
+                        drawOnChartArea: false
                     }
                 },
                 x: {
@@ -876,21 +877,16 @@ function extractPercentages(valueRange) {
     return valueRange.values.flat().map(val => {
         if (val === "" || val == null) return 0;
         
-        // แปลงค่าที่เป็นสตริง (เช่น "85%" หรือ "0.85")
-        if (typeof val === 'string') {
+        // กรณีค่าเป็นเปอร์เซ็นต์ (เช่น "100.00%")
+        if (typeof val === 'string' && val.includes('%')) {
             val = val.replace('%', '');
-            // แปลงเศษส่วนถ้ามี (เช่น "1/2" → 0.5)
-            if (val.includes('/')) {
-                const [numerator, denominator] = val.split('/');
-                val = Number(numerator) / Number(denominator);
-            }
         }
         
         const num = Number(val);
         
-        // แปลงทศนิยมเป็นเปอร์เซ็นต์ (0.85 → 85)
-        if (!isNaN(num) && num <= 1 && num !== 0) {
-            return Math.round(num * 100);
+        // กรณีค่าเป็นทศนิยม ≤ 1 (เช่น 0.9091 → 90.91)
+        if (!isNaN(num) && num <= 1) {
+            return Math.round(num * 100 * 100) / 100; // ปัดเศษ 2 ตำแหน่ง
         }
         
         return isNaN(num) ? 0 : num;
