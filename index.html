@@ -366,13 +366,13 @@
 
             <!-- API Info -->
             <div class="api-info">
-                <h4>🚀 GitHub Pages + Google Sheets API v4</h4>
-                <p>Real-time Dashboard ที่เชื่อมต่อ Google Sheets โดยตรง</p>
+                <h4>🚀 Real-time Dashboard</h4>
+                <p>เชื่อมต่อ Google Sheets โดยตรง</p>
             </div>
 
             <!-- Connection Status -->
             <div id="connectionStatus" class="connection-status">
-                ✅ เชื่อมต่อสำเร็จ - พร้อมแสดงข้อมูล Real-time
+                ✅ เชื่อมต่อสำเร็จ - Real-time
             </div>
 
             <!-- Action Buttons -->
@@ -425,7 +425,6 @@
 
                 <!-- Other Buttons -->
                 <button class="action-btn" onclick="loadAllData()">🔄 รีเฟรชข้อมูล</button>
-                <button class="action-btn" onclick="toggleDebug()">🔍 Debug</button>
             </div>
 
             <!-- Status Cards -->
@@ -485,19 +484,19 @@
                         </div>
                         <div class="chart-legend">
                             <div class="legend-item">
-                                <div class="legend-color" style="background-color: rgba(52, 152, 219, 0.85);"></div>
+                                <div class="legend-color" style="background-color: #3498db;"></div>
                                 <span>Open</span>
                             </div>
                             <div class="legend-item">
-                                <div class="legend-color" style="background-color: rgba(243, 156, 18, 0.85);"></div>
+                                <div class="legend-color" style="background-color: #f39c12;"></div>
                                 <span>Temporary Action</span>
                             </div>
                             <div class="legend-item">
-                                <div class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></div>
+                                <div class="legend-color" style="background-color: #e74c3c;"></div>
                                 <span>No Action</span>
                             </div>
                             <div class="legend-item">
-                                <div class="legend-color" style="background-color: rgba(46, 204, 113, 1); height: 3px;"></div>
+                                <div class="legend-color" style="background-color: #2ecc71; height: 3px; border-radius: 1px;"></div>
                                 <span>%Closed</span>
                             </div>
                         </div>
@@ -799,15 +798,16 @@ function createMonthlyChart(data) {
                     label: '%Closed',
                     data: data.closedPercentage,
                     type: 'line',
-                    borderColor: 'rgba(46, 204, 113, 1)',
+                    borderColor: '#2ecc71',
                     backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                    borderWidth: 3,
-                    pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
+                    borderWidth: 4,
+                    pointBackgroundColor: '#2ecc71',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 3,
+                    pointRadius: 8,
                     tension: 0.4,
-                    yAxisID: 'y1'
+                    yAxisID: 'y1',
+                    fill: false
                 }
             ]
         },
@@ -902,13 +902,14 @@ function createMonthlyChart(data) {
                 if (lineDataset && lineDataset.type === 'line') {
                     const lineMeta = chart.getDatasetMeta(3);
                     if (lineMeta && lineMeta.data) {
-                        ctx.font = "bold 10px Arial";
+                        ctx.font = "bold 12px Arial";
+                        ctx.fillStyle = "#27ae60";
+                        ctx.textBaseline = "bottom";
                         
                         lineMeta.data.forEach(function(point, index) {
                             const value = lineDataset.data[index];
                             if (value > 0) {
-                                ctx.fillStyle = "rgba(0, 120, 0, 1)";
-                                ctx.fillText(value.toFixed(1) + '%', point.x, point.y - 10);
+                                ctx.fillText(value.toFixed(1) + '%', point.x, point.y - 12);
                             }
                         });
                     }
@@ -990,7 +991,7 @@ function showChartError(chartId, loadingId) {
 
 function updateLastUpdated() {
     document.getElementById('lastUpdated').innerHTML = 
-        `อัพเดทล่าสุด: <strong>${new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมูล: Google Sheets API v4 (Real-time)`;
+        `อัพเดทล่าสุด: <strong>${new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมูล: Google Sheets API v4`;
 }
 
 function updateConnectionStatus(message, type) {
