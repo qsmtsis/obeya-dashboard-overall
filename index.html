@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSIS - Overall Dashboard (GitHub Only)</title>
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>TSIS - Overall Dashboard (Fixed API)</title>
     
     <!-- Chart.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -82,22 +83,25 @@
         }
 
         .api-info {
-            background: #e3f2fd;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
             border: 1px solid #2196f3;
-            border-radius: 8px;
-            padding: 15px;
+            border-radius: 12px;
+            padding: 20px;
             margin-bottom: 30px;
             text-align: center;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
         }
 
         .api-info h4 {
             color: #1976d2;
             margin-bottom: 8px;
+            font-size: 18px;
         }
 
         .api-info p {
             color: #1976d2;
             font-size: 14px;
+            margin-bottom: 10px;
         }
 
         .connection-status {
@@ -108,6 +112,7 @@
             margin-bottom: 20px;
             text-align: center;
             font-size: 14px;
+            transition: all 0.3s ease;
         }
 
         .connection-status.success {
@@ -120,6 +125,76 @@
             background: #f8d7da;
             border-color: #dc3545;
             color: #721c24;
+        }
+
+        .connection-status.loading {
+            background: #e2e3e5;
+            border-color: #6c757d;
+            color: #495057;
+        }
+
+        /* API Key Setup */
+        .api-setup {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .api-setup h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .api-setup p {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .api-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .api-save-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .api-save-btn:hover {
+            background: #218838;
+        }
+
+        .api-test-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .api-test-btn:hover {
+            background: #0056b3;
         }
 
         /* Status Cards */
@@ -138,6 +213,28 @@
             text-align: center;
             border-top: 5px solid var(--card-color);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .status-card.loading::before {
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
         .status-card.loading {
@@ -194,6 +291,7 @@
             cursor: pointer;
             font-size: 12px;
             margin-left: 10px;
+            transition: background 0.3s ease;
         }
 
         .retry-btn:hover {
@@ -216,15 +314,14 @@
             color: #667eea;
         }
 
-        .chart-placeholder p {
-            font-style: italic;
-        }
-
         .last-updated {
             text-align: center;
             color: #666;
             font-size: 12px;
             margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
         }
 
         /* Action Buttons */
@@ -255,6 +352,25 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
+
+        /* Debug Info */
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6c757d;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .debug-info.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -274,20 +390,36 @@
 
             <!-- API Info -->
             <div class="api-info">
-                <h4>🚀 GitHub Pages + Google Sheets API v4</h4>
-                <p>ไม่ต้องใช้ Apps Script - เชื่อมต่อ Google Sheets โดยตรง</p>
+                <h4>🔧 Google Sheets API v4 (แก้ปัญหา Referrer)</h4>
+                <p>เพิ่ม referrer policy และ alternative request methods</p>
+            </div>
+
+            <!-- API Key Setup -->
+            <div id="apiSetup" class="api-setup">
+                <h4>🔑 ใส่ Google Sheets API Key</h4>
+                <p><strong>API Key ของคุณ:</strong> AIzaSyC9L6Y5vJ9NR--Y9k8efjIEBjRSKjl7FWc</p>
+                <p>ระบบจะลองหลายวิธีในการเรียก API เพื่อแก้ปัญหา referrer</p>
+                
+                <input type="text" id="apiKeyInput" class="api-input" 
+                       value="AIzaSyC9L6Y5vJ9NR--Y9k8efjIEBjRSKjl7FWc"
+                       placeholder="ใส่ Google Sheets API Key ที่นี่" />
+                
+                <div class="button-group">
+                    <button class="api-save-btn" onclick="saveApiKeyAndTest()">บันทึกและทดสอบ</button>
+                    <button class="api-test-btn" onclick="testAllMethods()">ทดสอบทุกวิธี</button>
+                </div>
             </div>
 
             <!-- Connection Status -->
-            <div id="connectionStatus" class="connection-status">
-                <span class="loading-spinner"></span> กำลังเชื่อมต่อ Google Sheets API...
-                <button class="retry-btn" onclick="forceRefresh()" style="display: none;">รีเฟรช</button>
+            <div id="connectionStatus" class="connection-status loading" style="display: none;">
+                <span class="loading-spinner"></span> กำลังทดสอบการเชื่อมต่อ...
             </div>
 
             <!-- Action Buttons -->
             <div class="action-buttons">
                 <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
                    target="_blank" class="action-btn">📋 ตาราง Near miss</a>
+                <button class="action-btn" onclick="showDebugInfo()">🔍 Debug Info</button>
             </div>
 
             <!-- Status Cards -->
@@ -320,9 +452,17 @@
 
             <!-- Chart Placeholder -->
             <div class="chart-placeholder">
-                <h3>📊 กราฟจะแสดงในเฟสถัดไป</h3>
-                <p>ขณะนี้โหลดเฉพาะข้อมูล Status Cards เพื่อความเร็ว</p>
-                <div class="last-updated" id="lastUpdated"></div>
+                <h3>📊 Real-time Dashboard Status</h3>
+                <p>แสดงข้อมูลจาก Google Sheets แบบ Real-time ผ่าน API v4</p>
+                <div class="last-updated" id="lastUpdated">
+                    รอการเชื่อมต่อ...
+                </div>
+            </div>
+
+            <!-- Debug Info -->
+            <div id="debugInfo" class="debug-info">
+                <strong>Debug Log:</strong><br>
+                <div id="debugLog"></div>
             </div>
         </div>
     </div>
@@ -330,201 +470,228 @@
 <script>
 // ===== CONFIGURATION =====
 const SHEET_ID = '1pbtQ82zIg0rI26accNHtWFnjFA-_U_tA9wjavOWHC2s';
-const API_KEY = 'YOUR_GOOGLE_API_KEY'; // จะต้องสร้าง API Key
-
-// ===== FALLBACK DATA =====
-const FALLBACK_DATA = {
-    overall: {
-        status: {
-            nearMiss: { value: 195 },
-            closed: { value: 168 },
-            temporaryAction: { value: 12 },
-            noAction: { value: 15 }
-        }
-    }
-};
+let API_KEY = 'AIzaSyC9L6Y5vJ9NR--Y9k8efjIEBjRSKjl7FWc';
 
 // ===== GLOBAL VARIABLES =====
 let loadStartTime = Date.now();
 let dataLoaded = false;
+let debugLog = [];
 
-// Navigation function
-function navigateToPage(pageName) {
-    window.location.href = pageName;
-}
-
-/**
- * วิธีที่ 1: ใช้ Google Sheets API v4 (ต้องมี API Key)
- */
-async function loadWithGoogleAPI() {
-    try {
-        // ถ้าไม่มี API Key ให้ข้าม
-        if (!API_KEY || API_KEY === 'YOUR_GOOGLE_API_KEY') {
-            throw new Error('API Key not configured');
-        }
-        
-        const ranges = [
-            'dashboard!B72:H72'  // Overall status data
-        ];
-        
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?ranges=${ranges.join('&ranges=')}&key=${API_KEY}`;
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error(`Google API Error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.valueRanges && data.valueRanges[0] && data.valueRanges[0].values) {
-            const statusValues = data.valueRanges[0].values[0];
-            
-            const statusData = {
-                nearMiss: { value: safeNumber(statusValues[0]) },
-                closed: { value: safeNumber(statusValues[1]) },
-                temporaryAction: { value: safeNumber(statusValues[5]) },
-                noAction: { value: safeNumber(statusValues[6]) }
-            };
-            
-            onDataLoaded({
-                success: true,
-                data: { status: statusData },
-                source: 'Google Sheets API v4'
-            });
-            
-            return true;
-        } else {
-            throw new Error('No data received from Google API');
-        }
-        
-    } catch (error) {
-        console.error('Google API method failed:', error);
-        return false;
-    }
-}
-
-/**
- * วิธีที่ 2: ใช้ CSV Export (Public Sheet เท่านั้น)
- */
-async function loadWithCSVExport() {
-    try {
-        // URL สำหรับ export CSV
-        const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
-        
-        const response = await fetch(csvUrl);
-        
-        if (!response.ok) {
-            throw new Error(`CSV Export Error: ${response.status}`);
-        }
-        
-        const csvText = await response.text();
-        const rows = parseCSV(csvText);
-        
-        // ดึงข้อมูลจากแถวที่ 72 (index 71)
-        if (rows.length > 71) {
-            const statusRow = rows[71];
-            
-            const statusData = {
-                nearMiss: { value: safeNumber(statusRow[1]) },      // Column B
-                closed: { value: safeNumber(statusRow[2]) },        // Column C
-                temporaryAction: { value: safeNumber(statusRow[6]) }, // Column G
-                noAction: { value: safeNumber(statusRow[7]) }       // Column H
-            };
-            
-            onDataLoaded({
-                success: true,
-                data: { status: statusData },
-                source: 'CSV Export'
-            });
-            
-            return true;
-        } else {
-            throw new Error('CSV data insufficient');
-        }
-        
-    } catch (error) {
-        console.error('CSV Export method failed:', error);
-        return false;
-    }
-}
-
-/**
- * วิธีที่ 3: ใช้ Fallback Data
- */
-function loadWithFallback() {
-    console.log('🔄 Using fallback data');
+// ===== MAIN FUNCTIONS =====
+function saveApiKeyAndTest() {
+    const input = document.getElementById('apiKeyInput');
+    API_KEY = input.value.trim();
     
-    onDataLoaded({
-        success: true,
-        data: FALLBACK_DATA.overall,
-        source: 'Fallback Data'
+    if (API_KEY.length < 30) {
+        alert('API Key ดูเหมือนจะไม่ถูกต้อง');
+        return;
+    }
+    
+    localStorage.setItem('googleSheetsApiKey', API_KEY);
+    addDebugLog('API Key saved: ' + API_KEY.substring(0, 20) + '...');
+    
+    document.getElementById('apiSetup').style.display = 'none';
+    document.getElementById('connectionStatus').style.display = 'block';
+    
+    testAllMethods();
+}
+
+async function testAllMethods() {
+    addDebugLog('=== Starting API tests ===');
+    loadStartTime = Date.now();
+    dataLoaded = false;
+    
+    updateConnectionStatus('🔄 กำลังทดสอบหลายวิธี...', 'loading');
+    resetCardsToLoading();
+    
+    // Method 1: Standard fetch with referrer policy
+    try {
+        addDebugLog('Method 1: Standard fetch with referrer');
+        await testMethod1();
+        return;
+    } catch (error) {
+        addDebugLog('Method 1 failed: ' + error.message);
+    }
+    
+    // Method 2: JSONP
+    try {
+        addDebugLog('Method 2: JSONP request');
+        await testMethod2();
+        return;
+    } catch (error) {
+        addDebugLog('Method 2 failed: ' + error.message);
+    }
+    
+    // Method 3: Proxy request
+    try {
+        addDebugLog('Method 3: No-referrer policy');
+        await testMethod3();
+        return;
+    } catch (error) {
+        addDebugLog('Method 3 failed: ' + error.message);
+    }
+    
+    // Method 4: Alternative API endpoint
+    try {
+        addDebugLog('Method 4: Alternative endpoint');
+        await testMethod4();
+        return;
+    } catch (error) {
+        addDebugLog('Method 4 failed: ' + error.message);
+    }
+    
+    // All methods failed
+    addDebugLog('=== ALL METHODS FAILED ===');
+    updateConnectionStatus('❌ ทุกวิธีไม่สำเร็จ - ดู Debug Info', 'error');
+}
+
+// ===== API TESTING METHODS =====
+
+// Method 1: Standard fetch with referrer policy
+async function testMethod1() {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/dashboard!B72:H72?key=${API_KEY}`;
+    
+    const response = await fetch(url, {
+        method: 'GET',
+        referrerPolicy: 'strict-origin-when-cross-origin',
+        headers: {
+            'Accept': 'application/json',
+            'Referer': window.location.href
+        }
     });
     
-    return true;
-}
-
-/**
- * Main Loading Function
- */
-async function loadOverallData() {
-    console.log('🚀 Starting GitHub-only loading process...');
-    loadStartTime = Date.now();
-    
-    updateConnectionStatus('🔄 กำลังเชื่อมต่อ Google Sheets...', 'loading');
-    
-    // ลองหลายวิธีตามลำดับ
-    const methods = [
-        { name: 'Google API', func: loadWithGoogleAPI },
-        { name: 'CSV Export', func: loadWithCSVExport },
-        { name: 'Fallback', func: loadWithFallback }
-    ];
-    
-    for (const method of methods) {
-        try {
-            console.log(`📡 Trying ${method.name}...`);
-            
-            const success = await method.func();
-            
-            if (success) {
-                console.log(`✅ ${method.name} succeeded`);
-                return;
-            }
-        } catch (error) {
-            console.error(`❌ ${method.name} failed:`, error);
-        }
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(JSON.stringify(errorData));
     }
     
-    // ถ้าทุกวิธีล้มเหลว
-    updateConnectionStatus('❌ ไม่สามารถโหลดข้อมูลได้', 'error');
+    const data = await response.json();
+    processApiResponse(data, 'Method 1: Standard Fetch');
 }
 
-/**
- * Handle successful data loading
- */
-function onDataLoaded(response) {
+// Method 2: JSONP (ถ้า Google API รองรับ)
+async function testMethod2() {
+    return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_' + Date.now();
+        const script = document.createElement('script');
+        
+        window[callbackName] = function(data) {
+            delete window[callbackName];
+            document.head.removeChild(script);
+            
+            if (data.error) {
+                reject(new Error(JSON.stringify(data.error)));
+            } else {
+                processApiResponse(data, 'Method 2: JSONP');
+                resolve(data);
+            }
+        };
+        
+        script.src = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/dashboard!B72:H72?key=${API_KEY}&callback=${callbackName}`;
+        script.onerror = () => {
+            delete window[callbackName];
+            document.head.removeChild(script);
+            reject(new Error('JSONP request failed'));
+        };
+        
+        document.head.appendChild(script);
+        
+        // Timeout after 10 seconds
+        setTimeout(() => {
+            if (window[callbackName]) {
+                delete window[callbackName];
+                if (script.parentNode) {
+                    document.head.removeChild(script);
+                }
+                reject(new Error('JSONP timeout'));
+            }
+        }, 10000);
+    });
+}
+
+// Method 3: No referrer policy
+async function testMethod3() {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/dashboard!B72:H72?key=${API_KEY}`;
+    
+    const response = await fetch(url, {
+        method: 'GET',
+        referrerPolicy: 'no-referrer',
+        headers: {
+            'Accept': 'application/json'
+        }
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(JSON.stringify(errorData));
+    }
+    
+    const data = await response.json();
+    processApiResponse(data, 'Method 3: No Referrer');
+}
+
+// Method 4: Alternative API approach
+async function testMethod4() {
+    // ลอง batchGet แทน values
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?ranges=dashboard!B72:H72&key=${API_KEY}`;
+    
+    const response = await fetch(url, {
+        method: 'GET',
+        referrerPolicy: 'origin',
+        headers: {
+            'Accept': 'application/json'
+        }
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(JSON.stringify(errorData));
+    }
+    
+    const data = await response.json();
+    
+    // Convert batchGet response to standard format
+    if (data.valueRanges && data.valueRanges[0] && data.valueRanges[0].values) {
+        const convertedData = {
+            values: data.valueRanges[0].values
+        };
+        processApiResponse(convertedData, 'Method 4: BatchGet');
+    } else {
+        throw new Error('No data in batchGet response');
+    }
+}
+
+// ===== RESPONSE PROCESSING =====
+function processApiResponse(data, method) {
     if (dataLoaded) return;
     
     dataLoaded = true;
     const loadTime = Date.now() - loadStartTime;
     
-    console.log(`📊 Data loaded via ${response.source} in ${loadTime}ms`);
+    addDebugLog(`✅ Success with ${method} in ${loadTime}ms`);
+    addDebugLog('Response: ' + JSON.stringify(data).substring(0, 200) + '...');
     
-    updateConnectionStatus(`✅ เชื่อมต่อสำเร็จ (${response.source}, ${loadTime}ms)`, 'success');
-    
-    // Update status cards
-    if (response.data && response.data.status) {
-        updateStatusCards(response.data.status);
+    if (data.values && data.values[0]) {
+        const statusValues = data.values[0];
+        
+        const statusData = {
+            nearMiss: { value: safeNumber(statusValues[0]) },
+            closed: { value: safeNumber(statusValues[1]) },
+            temporaryAction: { value: safeNumber(statusValues[5]) },
+            noAction: { value: safeNumber(statusValues[6]) }
+        };
+        
+        updateConnectionStatus(`✅ เชื่อมต่อสำเร็จ (${method}, ${loadTime}ms)`, 'success');
+        updateStatusCards(statusData);
+        
+        document.getElementById('lastUpdated').innerHTML = 
+            `อัพเดทล่าสุด: <strong>${new Date().toLocaleString('th-TH')}</strong><br>วิธีการ: ${method}`;
+    } else {
+        throw new Error('Invalid response format');
     }
-    
-    // Update timestamp
-    document.getElementById('lastUpdated').textContent = 
-        `อัพเดทล่าสุด: ${new Date().toLocaleString('th-TH')} จาก ${response.source}`;
 }
 
-/**
- * Update status cards
- */
+// ===== UI FUNCTIONS =====
 function updateStatusCards(statusData) {
     const cards = {
         nearMiss: { element: document.getElementById('nearMissValue'), card: document.getElementById('nearMissCard') },
@@ -535,37 +702,37 @@ function updateStatusCards(statusData) {
     
     Object.keys(cards).forEach(key => {
         if (statusData[key] && cards[key].element) {
-            cards[key].element.textContent = statusData[key].value || 0;
+            const targetValue = statusData[key].value || 0;
+            animateNumber(cards[key].element, targetValue);
+            
             cards[key].element.classList.remove('loading');
             cards[key].card.classList.remove('loading');
         }
     });
 }
 
-/**
- * Update connection status
- */
-function updateConnectionStatus(message, type) {
-    const statusElement = document.getElementById('connectionStatus');
-    statusElement.innerHTML = message;
-    statusElement.className = `connection-status ${type}`;
+function animateNumber(element, targetValue) {
+    const duration = 1000;
+    const startValue = 0;
+    const startTime = Date.now();
     
-    // Show retry button on error
-    if (type === 'error') {
-        statusElement.innerHTML += '<button class="retry-btn" onclick="forceRefresh()">รีเฟรช</button>';
+    function update() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const currentValue = Math.round(startValue + (targetValue - startValue) * easeOut);
+        
+        element.textContent = currentValue;
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
     }
+    
+    update();
 }
 
-/**
- * Force refresh function
- */
-function forceRefresh() {
-    dataLoaded = false;
-    
-    // Reset UI
-    updateConnectionStatus('🔄 กำลังรีเฟรช...', 'loading');
-    
-    // Reset status cards to loading state
+function resetCardsToLoading() {
     const cards = ['nearMissCard', 'closedCard', 'temporaryCard', 'noActionCard'];
     const values = ['nearMissValue', 'closedValue', 'temporaryValue', 'noActionValue'];
     
@@ -575,14 +742,38 @@ function forceRefresh() {
         element.innerHTML = '<span class="loading-spinner"></span>';
         element.classList.add('loading');
     });
-    
-    // Try loading again
-    setTimeout(loadOverallData, 500);
 }
 
-/**
- * Utility Functions
- */
+function updateConnectionStatus(message, type) {
+    const statusElement = document.getElementById('connectionStatus');
+    statusElement.innerHTML = message;
+    statusElement.className = `connection-status ${type}`;
+    
+    if (type === 'error') {
+        statusElement.innerHTML += '<button class="retry-btn" onclick="testAllMethods()">ลองใหม่</button>';
+    }
+}
+
+// ===== DEBUG FUNCTIONS =====
+function addDebugLog(message) {
+    const timestamp = new Date().toLocaleTimeString();
+    debugLog.push(`[${timestamp}] ${message}`);
+    
+    const debugElement = document.getElementById('debugLog');
+    if (debugElement) {
+        debugElement.innerHTML = debugLog.slice(-20).join('<br>');
+        debugElement.scrollTop = debugElement.scrollHeight;
+    }
+    
+    console.log(message);
+}
+
+function showDebugInfo() {
+    const debugElement = document.getElementById('debugInfo');
+    debugElement.classList.toggle('show');
+}
+
+// ===== UTILITY FUNCTIONS =====
 function safeNumber(value) {
     if (value === null || value === undefined || value === '') {
         return 0;
@@ -591,25 +782,24 @@ function safeNumber(value) {
     return isNaN(num) ? 0 : Math.round(num);
 }
 
-function parseCSV(csvText) {
-    const rows = [];
-    const lines = csvText.split('\n');
-    
-    for (const line of lines) {
-        if (line.trim()) {
-            // Simple CSV parsing (อาจต้องปรับปรุงสำหรับ CSV ที่ซับซ้อน)
-            const row = line.split(',').map(cell => cell.replace(/"/g, '').trim());
-            rows.push(row);
-        }
-    }
-    
-    return rows;
+function navigateToPage(pageName) {
+    window.location.href = pageName;
 }
 
-// Initialize when page loads
+// ===== INITIALIZATION =====
 window.onload = function() {
-    console.log('🚀 GitHub-only Overall dashboard initialized');
-    loadOverallData();
+    addDebugLog('🚀 Fixed API Dashboard initialized');
+    addDebugLog('Current URL: ' + window.location.href);
+    addDebugLog('User Agent: ' + navigator.userAgent.substring(0, 50) + '...');
+    
+    // Auto-start testing if API key is already present
+    const input = document.getElementById('apiKeyInput');
+    if (input.value.trim().length > 30) {
+        setTimeout(() => {
+            addDebugLog('Auto-starting API test...');
+            testAllMethods();
+        }, 1000);
+    }
 };
 </script>
 
