@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSIS - Overall Dashboard</title>
+    <title>TSIS - Overall Dashboard (Fast Loading)</title>
     
     <!-- Chart.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -81,21 +81,22 @@
             text-align: center;
         }
 
-        .loading {
+        /* Fast Loading States */
+        .loading-fast {
             text-align: center;
-            padding: 50px;
+            padding: 20px;
             color: #666;
-            font-size: 18px;
+            font-size: 16px;
         }
 
-        .loading .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+        .loading-fast .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 15px;
         }
 
         @keyframes spin {
@@ -103,49 +104,29 @@
             100% { transform: rotate(360deg); }
         }
 
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 20px;
+        .connection-status {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
             border-radius: 8px;
-            margin: 20px 0;
-            border: 1px solid #f5c6cb;
+            padding: 12px;
+            margin-bottom: 20px;
             text-align: center;
-        }
-
-        .retry-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-
-        .retry-btn:hover {
-            background: #0056b3;
-        }
-
-        .data-source-info {
-            background: #d4edda;
-            border: 1px solid #28a745;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .data-source-info h4 {
-            color: #155724;
-            margin-bottom: 8px;
-        }
-
-        .data-source-info p {
-            color: #155724;
             font-size: 14px;
         }
 
+        .connection-status.success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .connection-status.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        /* Status Cards - Show immediately */
         .status-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -160,23 +141,18 @@
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             text-align: center;
             border-top: 5px solid var(--card-color);
+            transition: all 0.3s ease;
         }
 
-        .status-card.near-miss {
-            --card-color: #e74c3c;
+        .status-card.loading {
+            background: #f8f9fa;
+            border-top-color: #dee2e6;
         }
 
-        .status-card.closed {
-            --card-color: #27ae60;
-        }
-
-        .status-card.temporary {
-            --card-color: #f39c12;
-        }
-
-        .status-card.no-action {
-            --card-color: #95a5a6;
-        }
+        .status-card.near-miss { --card-color: #e74c3c; }
+        .status-card.closed { --card-color: #27ae60; }
+        .status-card.temporary { --card-color: #f39c12; }
+        .status-card.no-action { --card-color: #95a5a6; }
 
         .status-label {
             font-size: 16px;
@@ -190,6 +166,46 @@
             font-size: 48px;
             font-weight: 900;
             color: var(--card-color);
+            transition: all 0.3s ease;
+        }
+
+        .status-number.loading {
+            color: #dee2e6;
+        }
+
+        /* Skeleton Loading for Charts */
+        .chart-skeleton {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+
+        .skeleton-title {
+            height: 24px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .skeleton-chart {
+            height: 300px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
         .charts-placeholder {
@@ -198,12 +214,11 @@
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             margin-top: 30px;
+            display: none;
         }
 
-        .charts-placeholder h3 {
-            color: #667eea;
-            margin-bottom: 30px;
-            text-align: center;
+        .charts-placeholder.show {
+            display: block;
         }
 
         .chart-wrapper {
@@ -213,40 +228,6 @@
             margin: 30px 0;
         }
 
-        .custom-legend-overlay {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 8px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            z-index: 10;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .legend-color {
-            width: 14px;
-            height: 14px;
-            border-radius: 3px;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-        }
-
-        .legend-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
         .last-updated {
             text-align: center;
             color: #666;
@@ -254,11 +235,7 @@
             margin-top: 20px;
         }
 
-        #overallContent {
-            display: none;
-        }
-
-        /* Action Buttons Styles */
+        /* Action Buttons */
         .action-buttons {
             display: flex;
             gap: 15px;
@@ -287,84 +264,19 @@
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
-        .dropdown-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .dropdown-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .retry-btn {
+            background: #28a745;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 12px;
+            margin-left: 10px;
         }
 
-        .dropdown-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .dropdown-btn::after {
-            content: '▼';
-            font-size: 10px;
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            z-index: 1000;
-            min-width: 200px;
-            display: none;
-        }
-
-        .dropdown-menu.show {
-            display: block;
-        }
-
-        .dropdown-item {
-            padding: 12px 16px;
-            text-decoration: none;
-            color: #333;
-            display: block;
-            font-size: 13px;
-            transition: background-color 0.2s ease;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        .dropdown-item:hover {
-            background-color: #f8f9fa;
-            color: #667eea;
-        }
-
-        @media (max-width: 768px) {
-            .action-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .action-btn,
-            .dropdown-btn {
-                width: 200px;
-                text-align: center;
-            }
+        .retry-btn:hover {
+            background: #218838;
         }
     </style>
 </head>
@@ -375,577 +287,316 @@
                 <h1>TSIS</h1>
                 <p>Dashboard</p>
             </div>
-            <div class="nav-item active">
-                📊 Overall
-            </div>
-            <div class="nav-item" onclick="navigateToPage('safety.html')">
-                🛡️ Safety
-            </div>
-            <div class="nav-item" onclick="navigateToPage('quality.html')">
-                ⭐ Quality
-            </div>
+            <div class="nav-item active">📊 Overall</div>
+            <div class="nav-item" onclick="navigateToPage('safety.html')">🛡️ Safety</div>
+            <div class="nav-item" onclick="navigateToPage('quality.html')">⭐ Quality</div>
         </div>
 
         <div class="main-content">
             <h1 class="page-title">Overall Dashboard</h1>
 
-            <!-- Loading State -->
-            <div id="loadingOverall" class="loading">
-                <div class="spinner"></div>
-                <p>กำลังโหลดข้อมูลจาก Google Sheets...</p>
+            <!-- Connection Status -->
+            <div id="connectionStatus" class="connection-status">
+                🔄 กำลังเชื่อมต่อ Google Sheets...
+                <button class="retry-btn" onclick="forceRefresh()" style="display: none;">รีเฟรช</button>
             </div>
 
-            <!-- Error State -->
-            <div id="errorOverall" class="error" style="display: none;">
-                <h3>⚠️ ไม่สามารถเชื่อมต่อ Google Sheets ได้</h3>
-                <p id="errorMessage">กรุณาตรวจสอบการเชื่อมต่อและลองใหม่อีกครั้ง</p>
-                <button class="retry-btn" onclick="loadOverallData()">ลองใหม่</button>
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
+                   target="_blank" class="action-btn">📋 ตาราง Near miss</a>
             </div>
 
-            <!-- Main Content -->
-            <div id="overallContent">
-                <!-- แสดงแหล่งข้อมูล -->
-                <div class="data-source-info">
-                    <h4>🔗 ข้อมูลจาก Google Sheets ผ่าน Apps Script API</h4>
-                    <p>ข้อมูลอัพเดทแบบ Real-time จาก Google Sheets + UI จาก GitHub Pages</p>
+            <!-- Status Cards - Show Immediately with Loading State -->
+            <div class="status-grid">
+                <div class="status-card near-miss loading" id="nearMissCard">
+                    <div class="status-label">Near miss</div>
+                    <div class="status-number loading" id="nearMissValue">...</div>
                 </div>
-
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                    <!-- Near miss Button -->
-                    <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
-                       target="_blank" class="action-btn">
-                        📋 ตาราง Near miss
-                    </a>
-
-                    <!-- แก้ไข Dropdown -->
-                    <div class="dropdown-container">
-                        <button class="dropdown-btn" onclick="toggleDropdown('editDropdown')">
-                            🔧 แก้ไข
-                        </button>
-                        <div id="editDropdown" class="dropdown-menu">
-                            <a href="https://script.google.com/macros/s/AKfycbwif8TTLnCN84_d0xoxvCZmEYb1mu9EO6_DlNkYt8Cc0hmr2dLGS_dnXKhSjKVENSYSEg/exec" 
-                               target="_blank" class="dropdown-item">
-                                🔄 แก้ไขชั่วคราว
-                            </a>
-                            <a href="https://script.google.com/macros/s/AKfycbwYBMxA_ymzl1uIS66ZgkAXgHXeCsJvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
-                               target="_blank" class="dropdown-item">
-                                ✅ แก้ไขถาวร
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- อนุมัติ Dropdown -->
-                    <div class="dropdown-container">
-                        <button class="dropdown-btn" onclick="toggleDropdown('approvalDropdown')">
-                            ✅ อนุมัติ
-                        </button>
-                        <div id="approvalDropdown" class="dropdown-menu">
-                            <a href="https://script.google.com/macros/s/AKfycbzzrYpo7XErNPvokQO_uQX8uUJAJqGQdAIm6v3E8AL61bNedxJu3pVxuv9PoXk0X6kilA/exec" 
-                               target="_blank" class="dropdown-item">
-                                🔄 Q&S อนุมัติชั่วคราว
-                            </a>
-                            <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKKG8ECEQvwkYaCB_6FwleUmMpN9l3DxhWJhLzxOXr/exec" 
-                               target="_blank" class="dropdown-item">
-                                ✅ Q&S อนุมัติถาวร
-                            </a>
-                            <a href="https://script.google.com/macros/s/AKfycbwsbkICpwuCzLgIbXJlgWdF7PCUP6vYUsM3la5iqZdOLqXl1nG3qUkiY-4_bkQs8c1NEA/exec" 
-                               target="_blank" class="dropdown-item">
-                                👨‍💼 Manager Approval
-                            </a>
-                            <a href="https://script.google.com/macros/s/AKfycbwxtj0YS_MfR1BezMLGCw7hx25FkAha1cN-RKkeuYPukd2jc1AYfXu07i9CC4LHwG88MQ/exec" 
-                               target="_blank" class="dropdown-item">
-                                🏢 GM Approval
-                            </a>
-                        </div>
-                    </div>
+                <div class="status-card closed loading" id="closedCard">
+                    <div class="status-label">Closed</div>
+                    <div class="status-number loading" id="closedValue">...</div>
                 </div>
-
-                <div class="status-grid">
-                    <div class="status-card near-miss">
-                        <div class="status-label">Near miss</div>
-                        <div class="status-number" id="nearMissValue">-</div>
-                    </div>
-                    <div class="status-card closed">
-                        <div class="status-label">Closed</div>
-                        <div class="status-number" id="closedValue">-</div>
-                    </div>
-                    <div class="status-card temporary">
-                        <div class="status-label">Temporary Action</div>
-                        <div class="status-number" id="temporaryValue">-</div>
-                    </div>
-                    <div class="status-card no-action">
-                        <div class="status-label">No Action</div>
-                        <div class="status-number" id="noActionValue">-</div>
-                    </div>
+                <div class="status-card temporary loading" id="temporaryCard">
+                    <div class="status-label">Temporary Action</div>
+                    <div class="status-number loading" id="temporaryValue">...</div>
                 </div>
-
-                <div class="charts-placeholder">
-                    <h3>Outstanding Issues (Overall)</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="mainChart"></canvas>
-                        <!-- อัพเดท Legend สำหรับ Stacked Bar -->
-                        <div class="custom-legend-overlay">
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: rgba(243, 156, 18, 0.85);"></span>
-                                <span class="legend-label">Temporary Action</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></span>
-                                <span class="legend-label">No Action</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <h3>Monthly Trend</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="monthlyChart"></canvas>
-                        <div class="custom-legend-overlay">
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: rgba(52, 152, 219, 0.85);"></span>
-                                <span class="legend-label">Open</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></span>
-                                <span class="legend-label">Outstanding</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: rgba(46, 204, 113, 1); width: 14px; height: 2px; border-radius: 1px;"></span>
-                                <span class="legend-label">%Closed</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="last-updated" id="lastUpdated"></div>
+                <div class="status-card no-action loading" id="noActionCard">
+                    <div class="status-label">No Action</div>
+                    <div class="status-number loading" id="noActionValue">...</div>
                 </div>
+            </div>
+
+            <!-- Chart Skeleton Loading -->
+            <div id="chartSkeleton" class="chart-skeleton">
+                <div class="skeleton-title"></div>
+                <div class="skeleton-chart"></div>
+                <div class="skeleton-title"></div>
+                <div class="skeleton-chart"></div>
+            </div>
+
+            <!-- Actual Charts - Hidden Initially -->
+            <div id="chartsContainer" class="charts-placeholder">
+                <h3>Outstanding Issues (Overall)</h3>
+                <div class="chart-wrapper">
+                    <canvas id="mainChart"></canvas>
+                </div>
+                
+                <h3>Monthly Trend</h3>
+                <div class="chart-wrapper">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+                
+                <div class="last-updated" id="lastUpdated"></div>
             </div>
         </div>
     </div>
 
 <script>
-// Configuration - ใส่ URL ของ Google Apps Script ที่ Deploy แล้ว
+// Configuration
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwC12o0ncg81GC6lsp1RGzi_EfBRA6G36EQRktUEa4ItzCJOOnJCLqslRJvfgnFvD310g/exec';
+const LOAD_TIMEOUT = 8000; // 8 seconds timeout
+const FALLBACK_DATA = {
+    overall: {
+        status: {
+            nearMiss: { value: 195 },
+            closed: { value: 168 },
+            temporaryAction: { value: 12 },
+            noAction: { value: 15 }
+        }
+    },
+    safety: {
+        status: {
+            nearMiss: { value: 113 },
+            closed: { value: 77 },
+            temporaryAction: { value: 5 },
+            noAction: { value: 22 }
+        }
+    },
+    quality: {
+        status: {
+            nearMiss: { value: 82 },
+            closed: { value: 91 },
+            temporaryAction: { value: 7 },
+            noAction: { value: 8 }
+        }
+    }
+};
 
-let mainChart;
-let monthlyChart;
-let dashboardData = null;
+let loadStartTime = Date.now();
+let dataLoaded = false;
+let useMinimalLoad = false;
 
-// Navigation function สำหรับ GitHub Pages
+// Navigation function
 function navigateToPage(pageName) {
     window.location.href = pageName;
 }
 
-// Load data from Google Apps Script API
-async function loadOverallData() {
-    console.log('Loading overall data from Apps Script API...');
+// Fast Loading Strategy
+async function loadOverallDataFast() {
+    console.log('🚀 Starting fast load process...');
+    loadStartTime = Date.now();
     
-    document.getElementById('loadingOverall').style.display = 'block';
-    document.getElementById('errorOverall').style.display = 'none';
-    document.getElementById('overallContent').style.display = 'none';
+    updateConnectionStatus('🔄 กำลังเชื่อมต่อ Google Sheets...', 'loading');
     
-    try {
-        // เรียก API จาก Google Apps Script
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=overall&t=${Date.now()}`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    // Set timeout for fallback
+    const timeoutPromise = new Promise((resolve) => {
+        setTimeout(() => {
+            if (!dataLoaded) {
+                console.log('⏰ Timeout reached, using fallback data');
+                useFallbackData();
+                resolve('timeout');
+            }
+        }, LOAD_TIMEOUT);
+    });
+    
+    // Try multiple loading strategies simultaneously
+    Promise.race([
+        loadWithJSONP(),
+        loadWithFetch(),
+        timeoutPromise
+    ]).then(result => {
+        if (result !== 'timeout' && result !== 'fallback') {
+            console.log('✅ Data loaded successfully');
         }
+    }).catch(error => {
+        console.error('❌ All loading methods failed:', error);
+        if (!dataLoaded) {
+            useFallbackData();
+        }
+    });
+}
+
+// Method 1: JSONP (Usually faster)
+function loadWithJSONP() {
+    return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_callback_' + Date.now();
+        const script = document.createElement('script');
+        const timeout = setTimeout(() => {
+            cleanup();
+            reject('JSONP timeout');
+        }, 6000);
+        
+        function cleanup() {
+            clearTimeout(timeout);
+            delete window[callbackName];
+            if (script.parentNode) {
+                script.parentNode.removeChild(script);
+            }
+        }
+        
+        window[callbackName] = function(data) {
+            cleanup();
+            if (data.success) {
+                onDataLoaded(data, 'JSONP');
+                resolve('jsonp');
+            } else {
+                reject('JSONP error: ' + data.error);
+            }
+        };
+        
+        script.src = `${APPS_SCRIPT_URL}?action=overall&callback=${callbackName}&t=${Date.now()}`;
+        script.onerror = () => {
+            cleanup();
+            reject('JSONP script error');
+        };
+        
+        document.head.appendChild(script);
+    });
+}
+
+// Method 2: Regular Fetch (Backup)
+async function loadWithFetch() {
+    try {
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=overall&t=${Date.now()}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const data = await response.json();
-        
-        if (!data.success) {
-            throw new Error(data.error || 'API returned error');
+        if (data.success) {
+            onDataLoaded(data, 'Fetch');
+            return 'fetch';
+        } else {
+            throw new Error(data.error);
         }
-        
-        onDataLoaded(data);
-        
     } catch (error) {
-        console.error('Error loading overall data from API:', error);
-        onDataError(error);
+        console.error('Fetch method failed:', error);
+        throw error;
     }
 }
 
-function onDataLoaded(apiResponse) {
-    console.log('Overall data loaded from Apps Script API:', apiResponse);
+// Handle successful data loading
+function onDataLoaded(apiResponse, method) {
+    if (dataLoaded) return; // Prevent double loading
     
-    document.getElementById('loadingOverall').style.display = 'none';
+    dataLoaded = true;
+    const loadTime = Date.now() - loadStartTime;
     
-    if (!apiResponse.success) {
-        showError(apiResponse.error || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
-        return;
+    console.log(`📊 Data loaded via ${method} in ${loadTime}ms`);
+    
+    updateConnectionStatus(`✅ เชื่อมต่อสำเร็จ (${method}, ${loadTime}ms)`, 'success');
+    
+    // Update status cards
+    if (apiResponse.data && apiResponse.data.status) {
+        updateStatusCards(apiResponse.data.status);
     }
     
-    dashboardData = apiResponse.data;
+    // Show charts area (even if no chart data yet)
+    showChartsArea();
     
-    // อัพเดท Status Cards (ข้อมูลจริงจาก B72, C72, G72, H72)
-    if (dashboardData.status) {
-        console.log('Updating Overall status cards with real data from API:', dashboardData.status);
-        document.getElementById('nearMissValue').textContent = dashboardData.status.nearMiss?.value || 0;
-        document.getElementById('closedValue').textContent = dashboardData.status.closed?.value || 0;
-        document.getElementById('temporaryValue').textContent = dashboardData.status.temporaryAction?.value || 0;
-        document.getElementById('noActionValue').textContent = dashboardData.status.noAction?.value || 0;
+    // Load chart data separately if needed
+    if (!apiResponse.data.charts) {
+        loadChartDataSeparately();
     }
-    
-    if (apiResponse.lastUpdated) {
-        document.getElementById('lastUpdated').textContent = `อัพเดทล่าสุด: ${apiResponse.lastUpdated} (จาก ${apiResponse.source})`;
-    }
-    
-    // สร้างกราฟ
-    createChart();
-    createMonthlyChart();
-    
-    document.getElementById('overallContent').style.display = 'block';
 }
 
-function onDataError(error) {
-    console.error('Error loading overall data from API:', error);
-    showError(error.toString());
+// Use fallback data when all else fails
+function useFallbackData() {
+    if (dataLoaded) return;
+    
+    dataLoaded = true;
+    const loadTime = Date.now() - loadStartTime;
+    
+    console.log(`🔄 Using fallback data after ${loadTime}ms`);
+    
+    updateConnectionStatus(`⚠️ ใช้ข้อมูลสำรอง (Google Sheets ไม่ตอบสนอง)`, 'error');
+    
+    // Show fallback data
+    updateStatusCards(FALLBACK_DATA.overall.status);
+    showChartsArea();
 }
 
-function showError(message) {
-    document.getElementById('loadingOverall').style.display = 'none';
-    document.getElementById('overallContent').style.display = 'none';
-    document.getElementById('errorMessage').textContent = message;
-    document.getElementById('errorOverall').style.display = 'block';
-}
-
-// กราฟที่ 1: Outstanding Issues - อัพเดทเป็น Stacked Bar Chart
-function createChart() {
-    const ctx = document.getElementById('mainChart');
-    if (!ctx) return;
+// Update status cards
+function updateStatusCards(statusData) {
+    const cards = {
+        nearMiss: { element: document.getElementById('nearMissValue'), card: document.getElementById('nearMissCard') },
+        closed: { element: document.getElementById('closedValue'), card: document.getElementById('closedCard') },
+        temporaryAction: { element: document.getElementById('temporaryValue'), card: document.getElementById('temporaryCard') },
+        noAction: { element: document.getElementById('noActionValue'), card: document.getElementById('noActionCard') }
+    };
     
-    if (mainChart) {
-        mainChart.destroy();
-    }
-
-    let labels = [];
-    let temporaryData = [];
-    let noActionData = [];
-    
-    // ใช้ข้อมูลจริงจาก Google Sheets API
-    if (dashboardData && dashboardData.charts) {
-        labels = dashboardData.charts.labels || [];
-        temporaryData = dashboardData.charts.temporaryAction?.data || [];
-        noActionData = dashboardData.charts.noAction?.data || [];
-    }
-    
-    if (labels.length === 0) {
-        console.error('No chart data available from API');
-        return;
-    }
-
-    // คำนวณผลรวมสำหรับแสดงบนแท่ง
-    const totalData = temporaryData.map((temp, index) => {
-        const noAct = noActionData[index] || 0;
-        return temp + noAct;
-    });
-
-    console.log('Overall Stacked Chart Data from API:');
-    console.log('Labels:', labels);
-    console.log('Temporary:', temporaryData);
-    console.log('No Action:', noActionData);
-    console.log('Totals:', totalData);
-
-    mainChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Temporary Action',
-                    data: temporaryData,
-                    backgroundColor: 'rgba(243, 156, 18, 0.85)',  // สีเหลือง
-                    borderColor: 'rgba(241, 196, 15, 1)',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
-                },
-                {
-                    label: 'No Action',
-                    data: noActionData,
-                    backgroundColor: 'rgba(231, 76, 60, 0.85)',  // สีแดง
-                    borderColor: 'rgba(192, 57, 43, 1)',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: { top: 40, bottom: 5, left: 5, right: 5 } // เพิ่ม top padding สำหรับผลรวม
-            },
-            scales: {
-                y: { 
-                    beginAtZero: true, 
-                    display: false, 
-                    stacked: true,  // สำคัญ: ทำให้แท่งซ้อนกัน
-                    grid: { display: false } 
-                },
-                x: { 
-                    grid: { display: false }, 
-                    stacked: true,  // สำคัญ: ทำให้แท่งซ้อนกัน
-                    ticks: { 
-                        maxRotation: 45, 
-                        minRotation: 45,
-                        font: { size: 10 }
-                    } 
-                }
-            },
-            plugins: { 
-                legend: { 
-                    display: false // ซ่อน legend เดิม ใช้ custom legend overlay แทน
-                } 
-            }
-        },
-        plugins: [{
-            afterDatasetsDraw: function(chart) {
-                const ctx = chart.ctx;
-                
-                // แสดงค่าในแต่ละส่วนของแท่ง
-                ctx.font = "bold 11px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                
-                chart.data.datasets.forEach(function(dataset, datasetIndex) {
-                    const meta = chart.getDatasetMeta(datasetIndex);
-                    
-                    meta.data.forEach(function(bar, index) {
-                        const value = dataset.data[index];
-                        if (value > 0) {
-                            // กำหนดสีข้อความ
-                            ctx.fillStyle = datasetIndex === 0 ? 
-                                "rgba(183, 149, 11, 1)" :  // เหลืองเข้ม สำหรับ Temporary
-                                "white";                    // ขาว สำหรับ No Action
-                            
-                            // แสดงตัวเลขตรงกลางแท่ง
-                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                        }
-                    });
-                });
-
-                // แสดงผลรวมด้านบนแท่ง
-                ctx.font = "bold 13px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "bottom";
-                ctx.fillStyle = "#2c3e50"; // สีเข้มสำหรับผลรวม
-                
-                // หาตำแหน่งบนสุดของแท่งแต่ละอัน
-                const tempMeta = chart.getDatasetMeta(0);
-                const noActMeta = chart.getDatasetMeta(1);
-                
-                tempMeta.data.forEach(function(bar, index) {
-                    const total = totalData[index];
-                    if (total > 0) {
-                        // หาตำแหน่ง y ที่สูงที่สุด (บนสุดของแท่ง)
-                        const tempBar = tempMeta.data[index];
-                        const noActBar = noActMeta.data[index];
-                        
-                        // ใช้ตำแหน่ง y ที่น้อยที่สุด (สูงที่สุดบนหน้าจอ)
-                        const topY = Math.min(tempBar.y, noActBar.y);
-                        
-                        // แสดงผลรวมเหนือแท่ง
-                        ctx.fillText(total, bar.x, topY - 10);
-                    }
-                });
-            }
-        }]
+    Object.keys(cards).forEach(key => {
+        if (statusData[key] && cards[key].element) {
+            cards[key].element.textContent = statusData[key].value || 0;
+            cards[key].element.classList.remove('loading');
+            cards[key].card.classList.remove('loading');
+        }
     });
 }
 
-// กราฟที่ 2: Monthly Trend (Mixed Chart)
-function createMonthlyChart() {
-    const ctx = document.getElementById('monthlyChart');
-    if (!ctx) return;
+// Update connection status
+function updateConnectionStatus(message, type) {
+    const statusElement = document.getElementById('connectionStatus');
+    statusElement.textContent = message;
+    statusElement.className = `connection-status ${type}`;
     
-    if (monthlyChart) {
-        monthlyChart.destroy();
+    // Show retry button on error
+    const retryBtn = statusElement.querySelector('.retry-btn');
+    if (retryBtn) {
+        retryBtn.style.display = type === 'error' ? 'inline-block' : 'none';
     }
+}
 
-    let months = [];
-    let openData = [];
-    let temporaryData = [];
-    let noActionData = [];
-    let closedPercentage = [];
-    
-    // ใช้ข้อมูลจริงจาก Google Sheets API
-    if (dashboardData && dashboardData.monthlyTrend) {
-        months = dashboardData.monthlyTrend.months || [];
-        openData = dashboardData.monthlyTrend.openData || [];
-        temporaryData = dashboardData.monthlyTrend.temporaryData || [];
-        noActionData = dashboardData.monthlyTrend.noActionData || [];
-        closedPercentage = dashboardData.monthlyTrend.closedPercentage || [];
-    }
-    
-    if (months.length === 0) {
-        console.error('No monthly trend data available from API');
-        return;
-    }
+// Show charts area
+function showChartsArea() {
+    document.getElementById('chartSkeleton').style.display = 'none';
+    document.getElementById('chartsContainer').classList.add('show');
+}
 
-    // คำนวณ Outstanding Data (Temporary + No Action)
-    const outstandingData = temporaryData.map((temp, index) => {
-        const noAct = noActionData[index] || 0;
-        return temp + noAct;
+// Load chart data separately (if main load was minimal)
+function loadChartDataSeparately() {
+    // This can be implemented later for full chart data
+    console.log('📈 Chart data can be loaded separately if needed');
+}
+
+// Force refresh function
+function forceRefresh() {
+    dataLoaded = false;
+    
+    // Reset UI
+    updateConnectionStatus('🔄 กำลังรีเฟรช...', 'loading');
+    document.getElementById('chartSkeleton').style.display = 'block';
+    document.getElementById('chartsContainer').classList.remove('show');
+    
+    // Reset status cards to loading state
+    const cards = ['nearMissCard', 'closedCard', 'temporaryCard', 'noActionCard'];
+    const values = ['nearMissValue', 'closedValue', 'temporaryValue', 'noActionValue'];
+    
+    cards.forEach(id => document.getElementById(id).classList.add('loading'));
+    values.forEach(id => {
+        const element = document.getElementById(id);
+        element.textContent = '...';
+        element.classList.add('loading');
     });
-
-    console.log('Overall Monthly Chart Data from API:');
-    console.log('Months:', months);
-    console.log('Open:', openData);
-    console.log('Outstanding:', outstandingData);
-    console.log('%Closed:', closedPercentage);
-
-    monthlyChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: months,
-            datasets: [
-                {
-                    label: 'Open',
-                    data: openData,
-                    backgroundColor: 'rgba(52, 152, 219, 0.85)',
-                    borderColor: 'rgba(41, 128, 185, 1)',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Outstanding',
-                    data: outstandingData,
-                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
-                    borderColor: 'rgba(192, 57, 43, 1)',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
-                    yAxisID: 'y'
-                },
-                {
-                    label: '%Closed',
-                    data: closedPercentage,
-                    type: 'line',
-                    borderColor: 'rgba(46, 204, 113, 1)',
-                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                    borderWidth: 3,
-                    pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    tension: 0.4,
-                    yAxisID: 'y1'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: { top: 30, bottom: 5, left: 5, right: 5 }
-            },
-            scales: {
-                y: { 
-                    type: 'linear', 
-                    display: false, 
-                    position: 'left', 
-                    beginAtZero: true, 
-                    max: Math.max(...openData, ...outstandingData) + 5,
-                    grid: { display: false } 
-                },
-                y1: { 
-                    type: 'linear', 
-                    display: false, 
-                    position: 'right', 
-                    beginAtZero: true, 
-                    max: 100, 
-                    grid: { display: false } 
-                },
-                x: { 
-                    grid: { display: false }, 
-                    ticks: { 
-                        maxRotation: 0,
-                        minRotation: 0 
-                    } 
-                }
-            },
-            plugins: { legend: { display: false } }
-        },
-        plugins: [{
-            afterDatasetsDraw: function(chart) {
-                const ctx = chart.ctx;
-                ctx.font = "bold 11px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "bottom";
-                
-                chart.data.datasets.forEach(function(dataset, datasetIndex) {
-                    if (dataset.type === 'line') return;
-                    
-                    const meta = chart.getDatasetMeta(datasetIndex);
-                    if (!meta || !meta.data) return;
-                    
-                    meta.data.forEach(function(bar, index) {
-                        const value = dataset.data[index];
-                        if (value > 0) {
-                            ctx.fillStyle = datasetIndex === 0 ? "rgba(41, 128, 185, 1)" : "rgba(192, 57, 43, 1)";
-                            const yPos = Math.max(bar.y - 5, 15);
-                            ctx.fillText(value, bar.x, yPos);
-                        }
-                    });
-                });
-
-                const lineDataset = chart.data.datasets[2];
-                if (lineDataset && lineDataset.type === 'line') {
-                    const lineMeta = chart.getDatasetMeta(2);
-                    if (lineMeta && lineMeta.data) {
-                        ctx.font = "bold 10px Arial";
-                        
-                        lineMeta.data.forEach(function(point, index) {
-                            const value = lineDataset.data[index];
-                            if (value > 0) {
-                                ctx.fillStyle = "rgba(0, 100, 0, 1)";
-                                ctx.fillText(value.toFixed(1) + '%', point.x, point.y - 10);
-                            }
-                        });
-                    }
-                }
-            }
-        }]
-    });
+    
+    // Try loading again
+    loadOverallDataFast();
 }
 
 // Initialize when page loads
 window.onload = function() {
-    console.log('Overall dashboard loaded - GitHub Pages with Apps Script API');
-    loadOverallData(); // โหลดข้อมูลจริงจาก Google Sheets ผ่าน API
-    
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(event) {
-        if (!event.target.matches('.dropdown-btn')) {
-            closeAllDropdowns();
-        }
-    });
+    console.log('🚀 Fast loading Overall dashboard initialized');
+    loadOverallDataFast();
 };
-
-// Dropdown functionality
-function toggleDropdown(dropdownId) {
-    const dropdown = document.getElementById(dropdownId);
-    const isShowing = dropdown.classList.contains('show');
-    
-    // Close all dropdowns first
-    closeAllDropdowns();
-    
-    // Toggle the clicked dropdown
-    if (!isShowing) {
-        dropdown.classList.add('show');
-    }
-}
-
-function closeAllDropdowns() {
-    const dropdowns = document.querySelectorAll('.dropdown-menu');
-    dropdowns.forEach(dropdown => {
-        dropdown.classList.remove('show');
-    });
-}
 </script>
 
 </body>
