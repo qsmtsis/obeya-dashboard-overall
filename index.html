@@ -744,178 +744,135 @@ function createOutstandingChart(data) {
     });
 }
 
-function createMonthlyChart(data) {
+function createMonthlyChart(monthlyData) {
     const ctx = document.getElementById('monthlyChart');
     if (!ctx) return;
     
-    // Hide loading, show chart
-    document.getElementById('monthlyLoading').style.display = 'none';
-    ctx.style.display = 'block';
-    
-    if (monthlyChart) {
-        monthlyChart.destroy();
-    }
+    // แก้ไขส่วนแสดง Legend
+    const legendSettings = {
+        display: true,
+        position: 'top',
+        labels: {
+            font: {
+                size: 12,
+                weight: 'bold'
+            },
+            padding: 20,
+            usePointStyle: true,
+            generateLabels: function(chart) {
+                const datasets = chart.data.datasets;
+                return datasets.map(dataset => {
+                    return {
+                        text: dataset.label,
+                        fillStyle: dataset.backgroundColor || dataset.borderColor,
+                        hidden: false,
+                        lineCap: 'round',
+                        lineDash: [],
+                        lineDashOffset: 0,
+                        lineJoin: 'round',
+                        lineWidth: 1,
+                        strokeStyle: dataset.borderColor,
+                        pointStyle: dataset.type === 'line' ? 'circle' : 'rect',
+                        rotation: 0
+                    };
+                });
+            }
+        }
+    };
 
+    // แก้ไขส่วนเส้น %Closed ให้แสดงถูกต้อง
     monthlyChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: data.months,
+            labels: monthlyData.months,
             datasets: [
                 {
                     label: 'Open',
-                    data: data.openData,
+                    data: monthlyData.openData,
                     backgroundColor: 'rgba(52, 152, 219, 0.85)',
                     borderColor: 'rgba(41, 128, 185, 1)',
                     borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
+                    borderRadius: 4,
                     yAxisID: 'y',
                     stack: 'stack1'
                 },
                 {
                     label: 'Temporary Action',
-                    data: data.temporaryData,
+                    data: monthlyData.temporaryData,
                     backgroundColor: 'rgba(243, 156, 18, 0.85)',
                     borderColor: 'rgba(241, 196, 15, 1)',
                     borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
+                    borderRadius: 4,
                     yAxisID: 'y',
                     stack: 'stack2'
                 },
                 {
                     label: 'No Action',
-                    data: data.noActionData,
+                    data: monthlyData.noActionData,
                     backgroundColor: 'rgba(231, 76, 60, 0.85)',
                     borderColor: 'rgba(192, 57, 43, 1)',
                     borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
+                    borderRadius: 4,
                     yAxisID: 'y',
                     stack: 'stack2'
                 },
                 {
                     label: '%Closed',
-                    data: data.closedPercentage,
+                    data: monthlyData.closedPercentage,
                     type: 'line',
                     borderColor: '#2ecc71',
                     backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                    borderWidth: 4,
+                    borderWidth: 3,
                     pointBackgroundColor: '#2ecc71',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 3,
-                    pointRadius: 8,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
                     tension: 0.4,
                     yAxisID: 'y1',
-                    fill: false
+                    order: 0
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            layout: {
-                padding: { top: 30, bottom: 5, left: 5, right: 5 }
+            plugins: {
+                legend: legendSettings, // ใช้การตั้งค่า Legend ใหม่
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label === '%Closed') {
+                                return `${label}: ${context.raw}%`;
+                            }
+                            return `${label}: ${context.raw}`;
+                        }
+                    }
+                }
             },
             scales: {
-                y: { 
-                    type: 'linear', 
-                    display: false, 
-                    position: 'left', 
-                    beginAtZero: true, 
-                    max: Math.max(...data.openData, ...(data.temporaryData.map((temp, index) => temp + (data.noActionData[index] || 0)))) + 5,
-                    grid: { display: false } 
+                y: {
+                    type: 'linear',
+                    display: false,
+                    position: 'left',
+                    beginAtZero: true,
+                    stacked: true
                 },
-                y1: { 
-                    type: 'linear', 
-                    display: false, 
-                    position: 'right', 
-                    beginAtZero: true, 
-                    max: 100, 
-                    grid: { display: false } 
+                y1: {
+                    type: 'linear',
+                    display: false,
+                    position: 'right',
+                    beginAtZero: true,
+                    max: 100,
+                    grid: { display: false }
                 },
-                x: { 
-                    grid: { display: false }, 
-                    ticks: { 
-                        maxRotation: 0,
-                        minRotation: 0,
-                        font: { size: 11 }
-                    } 
-                }
-            },
-            plugins: { legend: { display: false } }
-        },
-        plugins: [{
-            afterDatasetsDraw: function(chart) {
-                const ctx = chart.ctx;
-                ctx.font = "bold 11px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "bottom";
-                
-                // แสดงค่าบนแท่ง Open
-                const openMeta = chart.getDatasetMeta(0);
-                openMeta.data.forEach(function(bar, index) {
-                    const value = data.openData[index];
-                    if (value > 0) {
-                        ctx.fillStyle = "rgba(41, 128, 185, 1)";
-                        ctx.fillText(value, bar.x, bar.y - 5);
-                    }
-                });
-
-                // แสดงค่าใน stacked bars (Temporary + No Action)
-                ctx.textBaseline = "middle";
-                
-                // Temporary Action values
-                const tempMeta = chart.getDatasetMeta(1);
-                tempMeta.data.forEach(function(bar, index) {
-                    const value = data.temporaryData[index];
-                    if (value > 0) {
-                        ctx.fillStyle = "rgba(183, 149, 11, 1)";
-                        ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                    }
-                });
-
-                // No Action values
-                const noActMeta = chart.getDatasetMeta(2);
-                noActMeta.data.forEach(function(bar, index) {
-                    const value = data.noActionData[index];
-                    if (value > 0) {
-                        ctx.fillStyle = "white";
-                        ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                    }
-                });
-
-                // แสดงผลรวม stacked bar ด้านบน
-                ctx.textBaseline = "bottom";
-                ctx.fillStyle = "#333";
-                
-                tempMeta.data.forEach(function(bar, index) {
-                    const total = (data.temporaryData[index] || 0) + (data.noActionData[index] || 0);
-                    if (total > 0) {
-                        const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
-                        ctx.fillText(total, bar.x, topY - 5);
-                    }
-                });
-
-                // Line chart percentage labels
-                const lineDataset = chart.data.datasets[3];
-                if (lineDataset && lineDataset.type === 'line') {
-                    const lineMeta = chart.getDatasetMeta(3);
-                    if (lineMeta && lineMeta.data) {
-                        ctx.font = "bold 12px Arial";
-                        ctx.fillStyle = "#27ae60";
-                        ctx.textBaseline = "bottom";
-                        
-                        lineMeta.data.forEach(function(point, index) {
-                            const value = lineDataset.data[index];
-                            if (value > 0) {
-                                ctx.fillText(value.toFixed(1) + '%', point.x, point.y - 12);
-                            }
-                        });
-                    }
+                x: {
+                    stacked: true,
+                    grid: { display: false }
                 }
             }
-        }]
+        }
     });
 }
 
