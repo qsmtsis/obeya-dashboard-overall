@@ -263,34 +263,22 @@
             border-radius: 8px;
         }
 
-/* เพิ่มในส่วน <style> */
-.chart-legend {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-top: 20px;
-}
+        /* Chart specific styling */
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
 
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.legend-color {
-    width: 15px;
-    height: 15px;
-    border-radius: 3px;
-}
-
-.legend-line {
-    width: 20px;
-    height: 3px;
-    border-radius: 2px;
-}
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
 
         /* Dropdown Styles */
         .dropdown-container {
@@ -583,40 +571,64 @@ async function loadStatusData() {
 
 async function loadChartData() {
     try {
+        // Load data for both charts
         const ranges = [
-            'dashboard!BA2:BL2',     // ชื่อเดือน (แกน X)
-            'dashboard!BA78:BL78',   // Open
-            'dashboard!BA80:BL80',   // Temporary Action
-            'dashboard!BA81:BL81',   // No Action
-            'dashboard!BA82:BL82'    // %Closed
+            'dashboard!AY85:AY99',   // Outstanding labels
+            'dashboard!BF85:BF99',   // Outstanding Temporary
+            'dashboard!BG85:BG99',   // Outstanding No Action
+            'dashboard!BA2:BL2',     // Monthly months
+            'dashboard!BA78:BL78',   // Monthly Open
+            'dashboard!BA80:BL80',   // Monthly Temporary
+            'dashboard!BA81:BL81',   // Monthly No Action
+            'dashboard!BA82:BL82'    // Monthly %Closed
         ];
         
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?ranges=${ranges.join('&ranges=')}&key=${API_KEY}`;
         
-        const response = await fetch(url);
-        const data = await response.json();
-
-        // Debug: ตรวจสอบข้อมูลดิบจาก API
-        console.log("Raw Data from API:", data);
-
-        const monthlyData = {
-            months: extractArray(data.valueRanges[0]),
-            openData: extractNumbers(data.valueRanges[1]),
-            temporaryData: extractNumbers(data.valueRanges[2]),
-            noActionData: extractNumbers(data.valueRanges[3]),
-            closedPercentage: extractPercentages(data.valueRanges[4])
-        };
-
-        // Debug: ตรวจสอบข้อมูลหลังประมวลผล
-        console.log("Processed Data:", monthlyData);
+        const response = await fetch(url, {
+            method: 'GET',
+            referrerPolicy: 'strict-origin-when-cross-origin'
+        });
         
-        createMonthlyChart(monthlyData);
+        if (!response.ok) {
+            throw new Error(`Chart API Error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.valueRanges && data.valueRanges.length >= 8) {
+            // Process Outstanding chart data
+            const outstandingData = {
+                labels: extractArray(data.valueRanges[0]),
+                temporaryData: extractNumbers(data.valueRanges[1]),
+                noActionData: extractNumbers(data.valueRanges[2])
+            };
+            
+            // Process Monthly chart data
+            const monthlyData = {
+                months: extractArray(data.valueRanges[3]),
+                openData: extractNumbers(data.valueRanges[4]),
+                temporaryData: extractNumbers(data.valueRanges[5]),
+                noActionData: extractNumbers(data.valueRanges[6]),
+                closedPercentage: extractPercentages(data.valueRanges[7])
+            };
+            
+            // Create charts
+            createOutstandingChart(outstandingData);
+            createMonthlyChart(monthlyData);
+            
+            console.log('✅ Chart data loaded and rendered');
+        } else {
+            throw new Error('Insufficient chart data received');
+        }
         
     } catch (error) {
-        console.error('❌ Failed to load chart data:', error);
+        console.error('❌ Chart loading failed:', error);
+        showChartError('outstandingChart', 'outstandingLoading');
         showChartError('monthlyChart', 'monthlyLoading');
     }
 }
+
 // ===== CHART CREATION =====
 function createOutstandingChart(data) {
     const ctx = document.getElementById('outstandingChart');
@@ -732,130 +744,181 @@ function createOutstandingChart(data) {
     });
 }
 
-function createMonthlyChart(monthlyData) {
+function createMonthlyChart(data) {
     const ctx = document.getElementById('monthlyChart');
     if (!ctx) return;
-
-    if (monthlyChart) monthlyChart.destroy();
+    
+    // Hide loading, show chart
+    document.getElementById('monthlyLoading').style.display = 'none';
+    ctx.style.display = 'block';
+    
+    if (monthlyChart) {
+        monthlyChart.destroy();
+    }
 
     monthlyChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: monthlyData.months,
+            labels: data.months,
             datasets: [
                 {
                     label: 'Open',
-                    data: monthlyData.openData,
-                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
-                    borderColor: 'rgba(52, 152, 219, 1)',
-                    borderWidth: 1,
-                    borderRadius: 4,
+                    data: data.openData,
+                    backgroundColor: 'rgba(52, 152, 219, 0.85)',
+                    borderColor: 'rgba(41, 128, 185, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    yAxisID: 'y',
                     stack: 'stack1'
                 },
                 {
                     label: 'Temporary Action',
-                    data: monthlyData.temporaryData,
-                    backgroundColor: 'rgba(243, 156, 18, 0.7)',
-                    borderColor: 'rgba(243, 156, 18, 1)',
-                    borderWidth: 1,
-                    borderRadius: 4,
+                    data: data.temporaryData,
+                    backgroundColor: 'rgba(243, 156, 18, 0.85)',
+                    borderColor: 'rgba(241, 196, 15, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    yAxisID: 'y',
                     stack: 'stack2'
                 },
                 {
                     label: 'No Action',
-                    data: monthlyData.noActionData,
-                    backgroundColor: 'rgba(231, 76, 60, 0.7)',
-                    borderColor: 'rgba(231, 76, 60, 1)',
-                    borderWidth: 1,
-                    borderRadius: 4,
+                    data: data.noActionData,
+                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
+                    borderColor: 'rgba(192, 57, 43, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    yAxisID: 'y',
                     stack: 'stack2'
                 },
                 {
                     label: '%Closed',
-                    data: monthlyData.closedPercentage,
+                    data: data.closedPercentage,
                     type: 'line',
-                    borderColor: 'rgba(46, 204, 113, 1)',
+                    borderColor: '#2ecc71',
                     backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                    borderWidth: 3,
-                    pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    tension: 0.3,
-                    yAxisID: 'y-axis-percent'
+                    borderWidth: 4,
+                    pointBackgroundColor: '#2ecc71',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 3,
+                    pointRadius: 8,
+                    tension: 0.4,
+                    yAxisID: 'y1',
+                    fill: false
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: {
-                        color: '#333',
-                        font: {
-                            size: 12,
-                            weight: 'bold'
-                        },
-                        padding: 20,
-                        usePointStyle: true,
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label === '%Closed') {
-                                return `${label}: ${context.raw}%`;
-                            }
-                            return `${label}: ${context.raw}`;
-                        }
-                    }
-                }
+            layout: {
+                padding: { top: 30, bottom: 5, left: 5, right: 5 }
             },
             scales: {
-                'y-axis-count': {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    beginAtZero: true,
-                    stacked: true,
-                    title: {
-                        display: true,
-                        text: 'จำนวน'
-                    }
+                y: { 
+                    type: 'linear', 
+                    display: false, 
+                    position: 'left', 
+                    beginAtZero: true, 
+                    max: Math.max(...data.openData, ...(data.temporaryData.map((temp, index) => temp + (data.noActionData[index] || 0)))) + 5,
+                    grid: { display: false } 
                 },
-                'y-axis-percent': {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    beginAtZero: true,
-                    max: 100,
-                    title: {
-                        display: true,
-                        text: 'เปอร์เซ็นต์'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return value + '%';
-                        }
-                    },
-                    grid: {
-                        drawOnChartArea: false
-                    }
+                y1: { 
+                    type: 'linear', 
+                    display: false, 
+                    position: 'right', 
+                    beginAtZero: true, 
+                    max: 100, 
+                    grid: { display: false } 
                 },
-                x: {
-                    stacked: true,
-                    grid: {
-                        display: false
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { 
+                        maxRotation: 0,
+                        minRotation: 0,
+                        font: { size: 11 }
+                    } 
+                }
+            },
+            plugins: { legend: { display: false } }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                ctx.font = "bold 11px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                
+                // แสดงค่าบนแท่ง Open
+                const openMeta = chart.getDatasetMeta(0);
+                openMeta.data.forEach(function(bar, index) {
+                    const value = data.openData[index];
+                    if (value > 0) {
+                        ctx.fillStyle = "rgba(41, 128, 185, 1)";
+                        ctx.fillText(value, bar.x, bar.y - 5);
+                    }
+                });
+
+                // แสดงค่าใน stacked bars (Temporary + No Action)
+                ctx.textBaseline = "middle";
+                
+                // Temporary Action values
+                const tempMeta = chart.getDatasetMeta(1);
+                tempMeta.data.forEach(function(bar, index) {
+                    const value = data.temporaryData[index];
+                    if (value > 0) {
+                        ctx.fillStyle = "rgba(183, 149, 11, 1)";
+                        ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
+                    }
+                });
+
+                // No Action values
+                const noActMeta = chart.getDatasetMeta(2);
+                noActMeta.data.forEach(function(bar, index) {
+                    const value = data.noActionData[index];
+                    if (value > 0) {
+                        ctx.fillStyle = "white";
+                        ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
+                    }
+                });
+
+                // แสดงผลรวม stacked bar ด้านบน
+                ctx.textBaseline = "bottom";
+                ctx.fillStyle = "#333";
+                
+                tempMeta.data.forEach(function(bar, index) {
+                    const total = (data.temporaryData[index] || 0) + (data.noActionData[index] || 0);
+                    if (total > 0) {
+                        const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
+                        ctx.fillText(total, bar.x, topY - 5);
+                    }
+                });
+
+                // Line chart percentage labels
+                const lineDataset = chart.data.datasets[3];
+                if (lineDataset && lineDataset.type === 'line') {
+                    const lineMeta = chart.getDatasetMeta(3);
+                    if (lineMeta && lineMeta.data) {
+                        ctx.font = "bold 12px Arial";
+                        ctx.fillStyle = "#27ae60";
+                        ctx.textBaseline = "bottom";
+                        
+                        lineMeta.data.forEach(function(point, index) {
+                            const value = lineDataset.data[index];
+                            if (value > 0) {
+                                ctx.fillText(value.toFixed(1) + '%', point.x, point.y - 12);
+                            }
+                        });
                     }
                 }
             }
-        }
+        }]
     });
 }
+
 // ===== UTILITY FUNCTIONS =====
 function extractArray(valueRange) {
     if (!valueRange || !valueRange.values) return [];
@@ -873,23 +936,11 @@ function extractNumbers(valueRange) {
 
 function extractPercentages(valueRange) {
     if (!valueRange || !valueRange.values) return [];
-    
     return valueRange.values.flat().map(val => {
         if (val === "" || val == null) return 0;
-        
-        // กรณีค่าเป็นเปอร์เซ็นต์ (เช่น "100.00%")
-        if (typeof val === 'string' && val.includes('%')) {
-            val = val.replace('%', '');
-        }
-        
         const num = Number(val);
-        
-        // กรณีค่าเป็นทศนิยม ≤ 1 (เช่น 0.9091 → 90.91)
-        if (!isNaN(num) && num <= 1) {
-            return Math.round(num * 100 * 100) / 100; // ปัดเศษ 2 ตำแหน่ง
-        }
-        
-        return isNaN(num) ? 0 : num;
+        if (isNaN(num)) return 0;
+        return num <= 1 ? num * 100 : num;
     });
 }
 
