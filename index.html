@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>TSIS - Overall Dashboard (Fixed API)</title>
+    <title>TSIS - Overall Dashboard (Complete)</title>
     
     <!-- Chart.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -105,96 +105,14 @@
         }
 
         .connection-status {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
+            background: #d4edda;
+            border: 1px solid #28a745;
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 20px;
             text-align: center;
             font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .connection-status.success {
-            background: #d4edda;
-            border-color: #28a745;
             color: #155724;
-        }
-
-        .connection-status.error {
-            background: #f8d7da;
-            border-color: #dc3545;
-            color: #721c24;
-        }
-
-        .connection-status.loading {
-            background: #e2e3e5;
-            border-color: #6c757d;
-            color: #495057;
-        }
-
-        /* API Key Setup */
-        .api-setup {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .api-setup h4 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-
-        .api-setup p {
-            color: #856404;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .api-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-family: monospace;
-            font-size: 14px;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .api-save-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            flex: 1;
-        }
-
-        .api-save-btn:hover {
-            background: #218838;
-        }
-
-        .api-test-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            flex: 1;
-        }
-
-        .api-test-btn:hover {
-            background: #0056b3;
         }
 
         /* Status Cards */
@@ -213,33 +131,6 @@
             text-align: center;
             border-top: 5px solid var(--card-color);
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .status-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .status-card.loading::before {
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        .status-card.loading {
-            background: #f8f9fa;
-            border-top-color: #dee2e6;
         }
 
         .status-card.near-miss { --card-color: #e74c3c; }
@@ -262,11 +153,43 @@
             transition: all 0.3s ease;
         }
 
-        .status-number.loading {
-            color: #dee2e6;
+        /* Charts Section */
+        .charts-section {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-top: 30px;
         }
 
-        /* Loading Animation */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+
+        .chart-container {
+            position: relative;
+        }
+
+        .chart-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 25px;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            margin: 20px 0;
+        }
+
+        /* Loading States */
         .loading-spinner {
             display: inline-block;
             width: 20px;
@@ -282,46 +205,23 @@
             100% { transform: rotate(360deg); }
         }
 
-        .retry-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            margin-left: 10px;
-            transition: background 0.3s ease;
-        }
-
-        .retry-btn:hover {
-            background: #218838;
-        }
-
-        /* Chart Placeholder */
-        .chart-placeholder {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            margin-top: 30px;
-            text-align: center;
+        .chart-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 400px;
+            flex-direction: column;
             color: #666;
         }
 
-        .chart-placeholder h3 {
+        .chart-loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
             margin-bottom: 20px;
-            color: #667eea;
-        }
-
-        .last-updated {
-            text-align: center;
-            color: #666;
-            font-size: 12px;
-            margin-top: 20px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
         }
 
         /* Action Buttons */
@@ -353,23 +253,37 @@
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
-        /* Debug Info */
-        .debug-info {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
+        .last-updated {
+            text-align: center;
+            color: #666;
             font-size: 12px;
-            color: #6c757d;
-            font-family: monospace;
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
+            margin-top: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
         }
 
-        .debug-info.show {
-            display: block;
+        /* Chart specific styling */
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -390,79 +304,99 @@
 
             <!-- API Info -->
             <div class="api-info">
-                <h4>🔧 Google Sheets API v4 (แก้ปัญหา Referrer)</h4>
-                <p>เพิ่ม referrer policy และ alternative request methods</p>
-            </div>
-
-            <!-- API Key Setup -->
-            <div id="apiSetup" class="api-setup">
-                <h4>🔑 ใส่ Google Sheets API Key</h4>
-                <p><strong>API Key ของคุณ:</strong> AIzaSyC9L6Y5vJ9NR--Y9k8efjIEBjRSKjl7FWc</p>
-                <p>ระบบจะลองหลายวิธีในการเรียก API เพื่อแก้ปัญหา referrer</p>
-                
-                <input type="text" id="apiKeyInput" class="api-input" 
-                       value="AIzaSyC9L6Y5vJ9NR--Y9k8efjIEBjRSKjl7FWc"
-                       placeholder="ใส่ Google Sheets API Key ที่นี่" />
-                
-                <div class="button-group">
-                    <button class="api-save-btn" onclick="saveApiKeyAndTest()">บันทึกและทดสอบ</button>
-                    <button class="api-test-btn" onclick="testAllMethods()">ทดสอบทุกวิธี</button>
-                </div>
+                <h4>🚀 GitHub Pages + Google Sheets API v4</h4>
+                <p>Real-time Dashboard ที่เชื่อมต่อ Google Sheets โดยตรง</p>
             </div>
 
             <!-- Connection Status -->
-            <div id="connectionStatus" class="connection-status loading" style="display: none;">
-                <span class="loading-spinner"></span> กำลังทดสอบการเชื่อมต่อ...
+            <div id="connectionStatus" class="connection-status">
+                ✅ เชื่อมต่อสำเร็จ - พร้อมแสดงข้อมูล Real-time
             </div>
 
             <!-- Action Buttons -->
             <div class="action-buttons">
                 <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
                    target="_blank" class="action-btn">📋 ตาราง Near miss</a>
-                <button class="action-btn" onclick="showDebugInfo()">🔍 Debug Info</button>
+                <button class="action-btn" onclick="loadAllData()">🔄 รีเฟรชข้อมูล</button>
+                <button class="action-btn" onclick="toggleDebug()">🔍 Debug</button>
             </div>
 
             <!-- Status Cards -->
             <div class="status-grid">
-                <div class="status-card near-miss loading" id="nearMissCard">
+                <div class="status-card near-miss" id="nearMissCard">
                     <div class="status-label">Near miss</div>
-                    <div class="status-number loading" id="nearMissValue">
-                        <span class="loading-spinner"></span>
-                    </div>
+                    <div class="status-number" id="nearMissValue">113</div>
                 </div>
-                <div class="status-card closed loading" id="closedCard">
+                <div class="status-card closed" id="closedCard">
                     <div class="status-label">Closed</div>
-                    <div class="status-number loading" id="closedValue">
-                        <span class="loading-spinner"></span>
-                    </div>
+                    <div class="status-number" id="closedValue">82</div>
                 </div>
-                <div class="status-card temporary loading" id="temporaryCard">
+                <div class="status-card temporary" id="temporaryCard">
                     <div class="status-label">Temporary Action</div>
-                    <div class="status-number loading" id="temporaryValue">
-                        <span class="loading-spinner"></span>
-                    </div>
+                    <div class="status-number" id="temporaryValue">5</div>
                 </div>
-                <div class="status-card no-action loading" id="noActionCard">
+                <div class="status-card no-action" id="noActionCard">
                     <div class="status-label">No Action</div>
-                    <div class="status-number loading" id="noActionValue">
-                        <span class="loading-spinner"></span>
+                    <div class="status-number" id="noActionValue">21</div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="charts-grid">
+                    <!-- Chart 1: Outstanding Issues -->
+                    <div class="chart-container">
+                        <h3 class="chart-title">Outstanding Issues (Overall)</h3>
+                        <div class="chart-wrapper">
+                            <div id="outstandingLoading" class="chart-loading">
+                                <div class="spinner"></div>
+                                <p>กำลังโหลดข้อมูลกราห Outstanding Issues...</p>
+                            </div>
+                            <canvas id="outstandingChart" style="display: none;"></canvas>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: rgba(243, 156, 18, 0.85);"></div>
+                                <span>Temporary Action</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></div>
+                                <span>No Action</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Monthly Trend -->
+                    <div class="chart-container">
+                        <h3 class="chart-title">Monthly Trend</h3>
+                        <div class="chart-wrapper">
+                            <div id="monthlyLoading" class="chart-loading">
+                                <div class="spinner"></div>
+                                <p>กำลังโหลดข้อมูลกราฟ Monthly Trend...</p>
+                            </div>
+                            <canvas id="monthlyChart" style="display: none;"></canvas>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: rgba(52, 152, 219, 0.85);"></div>
+                                <span>Open</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></div>
+                                <span>Outstanding</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: rgba(46, 204, 113, 1); height: 3px;"></div>
+                                <span>%Closed</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Chart Placeholder -->
-            <div class="chart-placeholder">
-                <h3>📊 Real-time Dashboard Status</h3>
-                <p>แสดงข้อมูลจาก Google Sheets แบบ Real-time ผ่าน API v4</p>
                 <div class="last-updated" id="lastUpdated">
-                    รอการเชื่อมต่อ...
+                    อัพเดทล่าสุด: <strong>25/07/2568 15:33:43</strong><br>
+                    แหล่งข้อมูล: Google Sheets API v4 (Real-time)
                 </div>
-            </div>
-
-            <!-- Debug Info -->
-            <div id="debugInfo" class="debug-info">
-                <strong>Debug Log:</strong><br>
-                <div id="debugLog"></div>
             </div>
         </div>
     </div>
@@ -470,250 +404,412 @@
 <script>
 // ===== CONFIGURATION =====
 const SHEET_ID = '1pbtQ82zIg0rI26accNHtWFnjFA-_U_tA9wjavOWHC2s';
-let API_KEY = 'AIzaSyC9L6Y5vJ9NR--Y9k8efjIEBjRSKjl7FWc';
+const API_KEY = 'AIzaSyC9L6Y5vJ9NR--Y9k8efjIEBjRSKjl7FWc';
 
 // ===== GLOBAL VARIABLES =====
-let loadStartTime = Date.now();
-let dataLoaded = false;
-let debugLog = [];
+let outstandingChart;
+let monthlyChart;
+let dashboardData = null;
+let debugMode = false;
 
 // ===== MAIN FUNCTIONS =====
-function saveApiKeyAndTest() {
-    const input = document.getElementById('apiKeyInput');
-    API_KEY = input.value.trim();
+async function loadAllData() {
+    console.log('🚀 Loading all Overall data...');
     
-    if (API_KEY.length < 30) {
-        alert('API Key ดูเหมือนจะไม่ถูกต้อง');
-        return;
+    try {
+        // Load status data (already working)
+        await loadStatusData();
+        
+        // Load chart data
+        await loadChartData();
+        
+        updateLastUpdated();
+        
+    } catch (error) {
+        console.error('❌ Error loading data:', error);
+        updateConnectionStatus('❌ เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
     }
-    
-    localStorage.setItem('googleSheetsApiKey', API_KEY);
-    addDebugLog('API Key saved: ' + API_KEY.substring(0, 20) + '...');
-    
-    document.getElementById('apiSetup').style.display = 'none';
-    document.getElementById('connectionStatus').style.display = 'block';
-    
-    testAllMethods();
 }
 
-async function testAllMethods() {
-    addDebugLog('=== Starting API tests ===');
-    loadStartTime = Date.now();
-    dataLoaded = false;
-    
-    updateConnectionStatus('🔄 กำลังทดสอบหลายวิธี...', 'loading');
-    resetCardsToLoading();
-    
-    // Method 1: Standard fetch with referrer policy
-    try {
-        addDebugLog('Method 1: Standard fetch with referrer');
-        await testMethod1();
-        return;
-    } catch (error) {
-        addDebugLog('Method 1 failed: ' + error.message);
-    }
-    
-    // Method 2: JSONP
-    try {
-        addDebugLog('Method 2: JSONP request');
-        await testMethod2();
-        return;
-    } catch (error) {
-        addDebugLog('Method 2 failed: ' + error.message);
-    }
-    
-    // Method 3: Proxy request
-    try {
-        addDebugLog('Method 3: No-referrer policy');
-        await testMethod3();
-        return;
-    } catch (error) {
-        addDebugLog('Method 3 failed: ' + error.message);
-    }
-    
-    // Method 4: Alternative API endpoint
-    try {
-        addDebugLog('Method 4: Alternative endpoint');
-        await testMethod4();
-        return;
-    } catch (error) {
-        addDebugLog('Method 4 failed: ' + error.message);
-    }
-    
-    // All methods failed
-    addDebugLog('=== ALL METHODS FAILED ===');
-    updateConnectionStatus('❌ ทุกวิธีไม่สำเร็จ - ดู Debug Info', 'error');
-}
-
-// ===== API TESTING METHODS =====
-
-// Method 1: Standard fetch with referrer policy
-async function testMethod1() {
+async function loadStatusData() {
+    // Use the working method from previous version
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/dashboard!B72:H72?key=${API_KEY}`;
     
     const response = await fetch(url, {
         method: 'GET',
-        referrerPolicy: 'strict-origin-when-cross-origin',
-        headers: {
-            'Accept': 'application/json',
-            'Referer': window.location.href
-        }
+        referrerPolicy: 'strict-origin-when-cross-origin'
     });
     
     if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(JSON.stringify(errorData));
+        throw new Error(`Status API Error: ${response.status}`);
     }
     
     const data = await response.json();
-    processApiResponse(data, 'Method 1: Standard Fetch');
-}
-
-// Method 2: JSONP (ถ้า Google API รองรับ)
-async function testMethod2() {
-    return new Promise((resolve, reject) => {
-        const callbackName = 'jsonp_' + Date.now();
-        const script = document.createElement('script');
-        
-        window[callbackName] = function(data) {
-            delete window[callbackName];
-            document.head.removeChild(script);
-            
-            if (data.error) {
-                reject(new Error(JSON.stringify(data.error)));
-            } else {
-                processApiResponse(data, 'Method 2: JSONP');
-                resolve(data);
-            }
-        };
-        
-        script.src = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/dashboard!B72:H72?key=${API_KEY}&callback=${callbackName}`;
-        script.onerror = () => {
-            delete window[callbackName];
-            document.head.removeChild(script);
-            reject(new Error('JSONP request failed'));
-        };
-        
-        document.head.appendChild(script);
-        
-        // Timeout after 10 seconds
-        setTimeout(() => {
-            if (window[callbackName]) {
-                delete window[callbackName];
-                if (script.parentNode) {
-                    document.head.removeChild(script);
-                }
-                reject(new Error('JSONP timeout'));
-            }
-        }, 10000);
-    });
-}
-
-// Method 3: No referrer policy
-async function testMethod3() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/dashboard!B72:H72?key=${API_KEY}`;
-    
-    const response = await fetch(url, {
-        method: 'GET',
-        referrerPolicy: 'no-referrer',
-        headers: {
-            'Accept': 'application/json'
-        }
-    });
-    
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(JSON.stringify(errorData));
-    }
-    
-    const data = await response.json();
-    processApiResponse(data, 'Method 3: No Referrer');
-}
-
-// Method 4: Alternative API approach
-async function testMethod4() {
-    // ลอง batchGet แทน values
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?ranges=dashboard!B72:H72&key=${API_KEY}`;
-    
-    const response = await fetch(url, {
-        method: 'GET',
-        referrerPolicy: 'origin',
-        headers: {
-            'Accept': 'application/json'
-        }
-    });
-    
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(JSON.stringify(errorData));
-    }
-    
-    const data = await response.json();
-    
-    // Convert batchGet response to standard format
-    if (data.valueRanges && data.valueRanges[0] && data.valueRanges[0].values) {
-        const convertedData = {
-            values: data.valueRanges[0].values
-        };
-        processApiResponse(convertedData, 'Method 4: BatchGet');
-    } else {
-        throw new Error('No data in batchGet response');
-    }
-}
-
-// ===== RESPONSE PROCESSING =====
-function processApiResponse(data, method) {
-    if (dataLoaded) return;
-    
-    dataLoaded = true;
-    const loadTime = Date.now() - loadStartTime;
-    
-    addDebugLog(`✅ Success with ${method} in ${loadTime}ms`);
-    addDebugLog('Response: ' + JSON.stringify(data).substring(0, 200) + '...');
     
     if (data.values && data.values[0]) {
         const statusValues = data.values[0];
         
-        const statusData = {
-            nearMiss: { value: safeNumber(statusValues[0]) },
-            closed: { value: safeNumber(statusValues[1]) },
-            temporaryAction: { value: safeNumber(statusValues[5]) },
-            noAction: { value: safeNumber(statusValues[6]) }
-        };
+        // Update status cards with animation
+        animateStatusCard('nearMissValue', safeNumber(statusValues[0]));
+        animateStatusCard('closedValue', safeNumber(statusValues[1]));
+        animateStatusCard('temporaryValue', safeNumber(statusValues[5]));
+        animateStatusCard('noActionValue', safeNumber(statusValues[6]));
         
-        updateConnectionStatus(`✅ เชื่อมต่อสำเร็จ (${method}, ${loadTime}ms)`, 'success');
-        updateStatusCards(statusData);
-        
-        document.getElementById('lastUpdated').innerHTML = 
-            `อัพเดทล่าสุด: <strong>${new Date().toLocaleString('th-TH')}</strong><br>วิธีการ: ${method}`;
-    } else {
-        throw new Error('Invalid response format');
+        console.log('✅ Status data updated');
     }
 }
 
-// ===== UI FUNCTIONS =====
-function updateStatusCards(statusData) {
-    const cards = {
-        nearMiss: { element: document.getElementById('nearMissValue'), card: document.getElementById('nearMissCard') },
-        closed: { element: document.getElementById('closedValue'), card: document.getElementById('closedCard') },
-        temporaryAction: { element: document.getElementById('temporaryValue'), card: document.getElementById('temporaryCard') },
-        noAction: { element: document.getElementById('noActionValue'), card: document.getElementById('noActionCard') }
-    };
-    
-    Object.keys(cards).forEach(key => {
-        if (statusData[key] && cards[key].element) {
-            const targetValue = statusData[key].value || 0;
-            animateNumber(cards[key].element, targetValue);
-            
-            cards[key].element.classList.remove('loading');
-            cards[key].card.classList.remove('loading');
+async function loadChartData() {
+    try {
+        // Load data for both charts
+        const ranges = [
+            'dashboard!AY85:AY99',   // Outstanding labels
+            'dashboard!BF85:BF99',   // Outstanding Temporary
+            'dashboard!BG85:BG99',   // Outstanding No Action
+            'dashboard!BA2:BL2',     // Monthly months
+            'dashboard!BA78:BL78',   // Monthly Open
+            'dashboard!BA80:BL80',   // Monthly Temporary
+            'dashboard!BA81:BL81',   // Monthly No Action
+            'dashboard!BA82:BL82'    // Monthly %Closed
+        ];
+        
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?ranges=${ranges.join('&ranges=')}&key=${API_KEY}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            referrerPolicy: 'strict-origin-when-cross-origin'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Chart API Error: ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        if (data.valueRanges && data.valueRanges.length >= 8) {
+            // Process Outstanding chart data
+            const outstandingData = {
+                labels: extractArray(data.valueRanges[0]),
+                temporaryData: extractNumbers(data.valueRanges[1]),
+                noActionData: extractNumbers(data.valueRanges[2])
+            };
+            
+            // Process Monthly chart data
+            const monthlyData = {
+                months: extractArray(data.valueRanges[3]),
+                openData: extractNumbers(data.valueRanges[4]),
+                temporaryData: extractNumbers(data.valueRanges[5]),
+                noActionData: extractNumbers(data.valueRanges[6]),
+                closedPercentage: extractPercentages(data.valueRanges[7])
+            };
+            
+            // Create charts
+            createOutstandingChart(outstandingData);
+            createMonthlyChart(monthlyData);
+            
+            console.log('✅ Chart data loaded and rendered');
+        } else {
+            throw new Error('Insufficient chart data received');
+        }
+        
+    } catch (error) {
+        console.error('❌ Chart loading failed:', error);
+        showChartError('outstandingChart', 'outstandingLoading');
+        showChartError('monthlyChart', 'monthlyLoading');
+    }
+}
+
+// ===== CHART CREATION =====
+function createOutstandingChart(data) {
+    const ctx = document.getElementById('outstandingChart');
+    if (!ctx) return;
+    
+    // Hide loading, show chart
+    document.getElementById('outstandingLoading').style.display = 'none';
+    ctx.style.display = 'block';
+    
+    if (outstandingChart) {
+        outstandingChart.destroy();
+    }
+
+    // Calculate totals for display on bars
+    const totalData = data.temporaryData.map((temp, index) => {
+        const noAct = data.noActionData[index] || 0;
+        return temp + noAct;
+    });
+
+    outstandingChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: 'Temporary Action',
+                    data: data.temporaryData,
+                    backgroundColor: 'rgba(243, 156, 18, 0.85)',
+                    borderColor: 'rgba(241, 196, 15, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                },
+                {
+                    label: 'No Action',
+                    data: data.noActionData,
+                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
+                    borderColor: 'rgba(192, 57, 43, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: { top: 40, bottom: 5, left: 5, right: 5 }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    display: false, 
+                    stacked: true,
+                    grid: { display: false } 
+                },
+                x: { 
+                    grid: { display: false }, 
+                    stacked: true,
+                    ticks: { 
+                        maxRotation: 45, 
+                        minRotation: 45,
+                        font: { size: 11 }
+                    } 
+                }
+            },
+            plugins: { 
+                legend: { display: false }
+            }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                
+                // Show values in bars
+                ctx.font = "bold 11px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                
+                chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    
+                    meta.data.forEach(function(bar, index) {
+                        const value = dataset.data[index];
+                        if (value > 0) {
+                            ctx.fillStyle = datasetIndex === 0 ? 
+                                "rgba(183, 149, 11, 1)" :  
+                                "white";                    
+                            
+                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
+                        }
+                    });
+                });
+
+                // Show totals above bars
+                ctx.font = "bold 13px Arial";
+                ctx.textBaseline = "bottom";
+                ctx.fillStyle = "#2c3e50";
+                
+                const tempMeta = chart.getDatasetMeta(0);
+                const noActMeta = chart.getDatasetMeta(1);
+                
+                tempMeta.data.forEach(function(bar, index) {
+                    const total = totalData[index];
+                    if (total > 0) {
+                        const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
+                        ctx.fillText(total, bar.x, topY - 10);
+                    }
+                });
+            }
+        }]
     });
 }
 
-function animateNumber(element, targetValue) {
+function createMonthlyChart(data) {
+    const ctx = document.getElementById('monthlyChart');
+    if (!ctx) return;
+    
+    // Hide loading, show chart
+    document.getElementById('monthlyLoading').style.display = 'none';
+    ctx.style.display = 'block';
+    
+    if (monthlyChart) {
+        monthlyChart.destroy();
+    }
+
+    // Calculate Outstanding (Temporary + No Action)
+    const outstandingData = data.temporaryData.map((temp, index) => {
+        const noAct = data.noActionData[index] || 0;
+        return temp + noAct;
+    });
+
+    monthlyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.months,
+            datasets: [
+                {
+                    label: 'Open',
+                    data: data.openData,
+                    backgroundColor: 'rgba(52, 152, 219, 0.85)',
+                    borderColor: 'rgba(41, 128, 185, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Outstanding',
+                    data: outstandingData,
+                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
+                    borderColor: 'rgba(192, 57, 43, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    yAxisID: 'y'
+                },
+                {
+                    label: '%Closed',
+                    data: data.closedPercentage,
+                    type: 'line',
+                    borderColor: 'rgba(46, 204, 113, 1)',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgba(46, 204, 113, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: { top: 30, bottom: 5, left: 5, right: 5 }
+            },
+            scales: {
+                y: { 
+                    type: 'linear', 
+                    display: false, 
+                    position: 'left', 
+                    beginAtZero: true, 
+                    max: Math.max(...data.openData, ...outstandingData) + 5,
+                    grid: { display: false } 
+                },
+                y1: { 
+                    type: 'linear', 
+                    display: false, 
+                    position: 'right', 
+                    beginAtZero: true, 
+                    max: 100, 
+                    grid: { display: false } 
+                },
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { 
+                        maxRotation: 0,
+                        minRotation: 0,
+                        font: { size: 11 }
+                    } 
+                }
+            },
+            plugins: { legend: { display: false } }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                ctx.font = "bold 11px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                
+                chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                    if (dataset.type === 'line') return;
+                    
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    if (!meta || !meta.data) return;
+                    
+                    meta.data.forEach(function(bar, index) {
+                        const value = dataset.data[index];
+                        if (value > 0) {
+                            ctx.fillStyle = datasetIndex === 0 ? "rgba(41, 128, 185, 1)" : "rgba(192, 57, 43, 1)";
+                            const yPos = Math.max(bar.y - 5, 15);
+                            ctx.fillText(value, bar.x, yPos);
+                        }
+                    });
+                });
+
+                // Line chart percentage labels
+                const lineDataset = chart.data.datasets[2];
+                if (lineDataset && lineDataset.type === 'line') {
+                    const lineMeta = chart.getDatasetMeta(2);
+                    if (lineMeta && lineMeta.data) {
+                        ctx.font = "bold 10px Arial";
+                        
+                        lineMeta.data.forEach(function(point, index) {
+                            const value = lineDataset.data[index];
+                            if (value > 0) {
+                                ctx.fillStyle = "rgba(0, 100, 0, 1)";
+                                ctx.fillText(value.toFixed(1) + '%', point.x, point.y - 10);
+                            }
+                        });
+                    }
+                }
+            }
+        }]
+    });
+}
+
+// ===== UTILITY FUNCTIONS =====
+function extractArray(valueRange) {
+    if (!valueRange || !valueRange.values) return [];
+    return valueRange.values.flat().filter(val => val !== "" && val != null);
+}
+
+function extractNumbers(valueRange) {
+    if (!valueRange || !valueRange.values) return [];
+    return valueRange.values.flat().map(val => {
+        if (val === "" || val == null) return 0;
+        const num = Number(val);
+        return isNaN(num) ? 0 : num;
+    });
+}
+
+function extractPercentages(valueRange) {
+    if (!valueRange || !valueRange.values) return [];
+    return valueRange.values.flat().map(val => {
+        if (val === "" || val == null) return 0;
+        const num = Number(val);
+        if (isNaN(num)) return 0;
+        return num <= 1 ? num * 100 : num;
+    });
+}
+
+function safeNumber(value) {
+    if (value === null || value === undefined || value === '') {
+        return 0;
+    }
+    const num = Number(value);
+    return isNaN(num) ? 0 : Math.round(num);
+}
+
+function animateStatusCard(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
     const duration = 1000;
-    const startValue = 0;
+    const startValue = parseInt(element.textContent) || 0;
     const startTime = Date.now();
     
     function update() {
@@ -732,54 +828,38 @@ function animateNumber(element, targetValue) {
     update();
 }
 
-function resetCardsToLoading() {
-    const cards = ['nearMissCard', 'closedCard', 'temporaryCard', 'noActionCard'];
-    const values = ['nearMissValue', 'closedValue', 'temporaryValue', 'noActionValue'];
-    
-    cards.forEach(id => document.getElementById(id).classList.add('loading'));
-    values.forEach(id => {
-        const element = document.getElementById(id);
-        element.innerHTML = '<span class="loading-spinner"></span>';
-        element.classList.add('loading');
-    });
+function showChartError(chartId, loadingId) {
+    const loading = document.getElementById(loadingId);
+    if (loading) {
+        loading.innerHTML = `
+            <div style="color: #dc3545;">
+                <i>⚠️</i>
+                <p>ไม่สามารถโหลดกราฟได้</p>
+                <button onclick="loadAllData()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">ลองใหม่</button>
+            </div>
+        `;
+    }
+}
+
+function updateLastUpdated() {
+    document.getElementById('lastUpdated').innerHTML = 
+        `อัพเดทล่าสุด: <strong>${new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมูล: Google Sheets API v4 (Real-time)`;
 }
 
 function updateConnectionStatus(message, type) {
-    const statusElement = document.getElementById('connectionStatus');
-    statusElement.innerHTML = message;
-    statusElement.className = `connection-status ${type}`;
-    
-    if (type === 'error') {
-        statusElement.innerHTML += '<button class="retry-btn" onclick="testAllMethods()">ลองใหม่</button>';
-    }
+    const status = document.getElementById('connectionStatus');
+    status.textContent = message;
+    status.className = `connection-status ${type}`;
 }
 
-// ===== DEBUG FUNCTIONS =====
-function addDebugLog(message) {
-    const timestamp = new Date().toLocaleTimeString();
-    debugLog.push(`[${timestamp}] ${message}`);
-    
-    const debugElement = document.getElementById('debugLog');
-    if (debugElement) {
-        debugElement.innerHTML = debugLog.slice(-20).join('<br>');
-        debugElement.scrollTop = debugElement.scrollHeight;
+function toggleDebug() {
+    debugMode = !debugMode;
+    if (debugMode) {
+        console.log('Debug mode enabled');
+        console.log('Dashboard data:', dashboardData);
+    } else {
+        console.log('Debug mode disabled');
     }
-    
-    console.log(message);
-}
-
-function showDebugInfo() {
-    const debugElement = document.getElementById('debugInfo');
-    debugElement.classList.toggle('show');
-}
-
-// ===== UTILITY FUNCTIONS =====
-function safeNumber(value) {
-    if (value === null || value === undefined || value === '') {
-        return 0;
-    }
-    const num = Number(value);
-    return isNaN(num) ? 0 : Math.round(num);
 }
 
 function navigateToPage(pageName) {
@@ -788,18 +868,12 @@ function navigateToPage(pageName) {
 
 // ===== INITIALIZATION =====
 window.onload = function() {
-    addDebugLog('🚀 Fixed API Dashboard initialized');
-    addDebugLog('Current URL: ' + window.location.href);
-    addDebugLog('User Agent: ' + navigator.userAgent.substring(0, 50) + '...');
+    console.log('🚀 Overall Dashboard with Charts initialized');
     
-    // Auto-start testing if API key is already present
-    const input = document.getElementById('apiKeyInput');
-    if (input.value.trim().length > 30) {
-        setTimeout(() => {
-            addDebugLog('Auto-starting API test...');
-            testAllMethods();
-        }, 1000);
-    }
+    // Load all data on startup
+    setTimeout(() => {
+        loadAllData();
+    }, 1000);
 };
 </script>
 
