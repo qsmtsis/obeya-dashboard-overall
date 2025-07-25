@@ -583,64 +583,39 @@ async function loadStatusData() {
 
 async function loadChartData() {
     try {
-        // Load data for both charts
         const ranges = [
-            'dashboard!AY85:AY99',   // Outstanding labels (เดิม)
-            'dashboard!BF85:BF99',   // Outstanding Temporary (เดิม)
-            'dashboard!BG85:BG99',   // Outstanding No Action (เดิม)
-            'dashboard!BA2:BL2',     // Monthly months (แกน X)
-            'dashboard!BA78:BL78',   // Monthly Open (แก้จาก BA78:BL78)
-            'dashboard!BA80:BL80',   // Monthly Temporary (แก้จาก BA80:BL80)
-            'dashboard!BA81:BL81',   // Monthly No Action (แก้จาก BA81:BL81)
-            'dashboard!BA82:BL82'    // Monthly %Closed (แก้จาก BA82:BL82)
+            'dashboard!BA2:BL2',     // ชื่อเดือน (แกน X)
+            'dashboard!BA78:BL78',   // Open
+            'dashboard!BA80:BL80',   // Temporary Action
+            'dashboard!BA81:BL81',   // No Action
+            'dashboard!BA82:BL82'    // %Closed
         ];
         
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?ranges=${ranges.join('&ranges=')}&key=${API_KEY}`;
         
-        const response = await fetch(url, {
-            method: 'GET',
-            referrerPolicy: 'strict-origin-when-cross-origin'
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Chart API Error: ${response.status}`);
-        }
-        
+        const response = await fetch(url);
         const data = await response.json();
+
+        // ตรวจสอบข้อมูลที่ได้จาก API
+        console.log("Raw Data from Sheets:", data);
+
+        const monthlyData = {
+            months: extractArray(data.valueRanges[0]),
+            openData: extractNumbers(data.valueRanges[1]),
+            temporaryData: extractNumbers(data.valueRanges[2]),
+            noActionData: extractNumbers(data.valueRanges[3]),
+            closedPercentage: extractPercentages(data.valueRanges[4])
+        };
+
+        // Debug: ตรวจสอบข้อมูลก่อนสร้างกราฟ
+        console.log("Processed Monthly Data:", monthlyData);
         
-        if (data.valueRanges && data.valueRanges.length >= 8) {
-            // Process Outstanding chart data
-            const outstandingData = {
-                labels: extractArray(data.valueRanges[0]),
-                temporaryData: extractNumbers(data.valueRanges[1]),
-                noActionData: extractNumbers(data.valueRanges[2])
-            };
-            
-            // Process Monthly chart data
-            const monthlyData = {
-                months: extractArray(data.valueRanges[3]),
-                openData: extractNumbers(data.valueRanges[4]),
-                temporaryData: extractNumbers(data.valueRanges[5]),
-                noActionData: extractNumbers(data.valueRanges[6]),
-                closedPercentage: extractPercentages(data.valueRanges[7])
-            };
-            
-            // Create charts
-            createOutstandingChart(outstandingData);
-            createMonthlyChart(monthlyData);
-            
-            console.log('✅ Chart data loaded and rendered');
-        } else {
-            throw new Error('Insufficient chart data received');
-        }
+        createMonthlyChart(monthlyData);
         
     } catch (error) {
-        console.error('❌ Chart loading failed:', error);
-        showChartError('outstandingChart', 'outstandingLoading');
-        showChartError('monthlyChart', 'monthlyLoading');
+        console.error('❌ Failed to load chart data:', error);
     }
 }
-
 // ===== CHART CREATION =====
 function createOutstandingChart(data) {
     const ctx = document.getElementById('outstandingChart');
@@ -759,69 +734,59 @@ function createOutstandingChart(data) {
 function createMonthlyChart(monthlyData) {
     const ctx = document.getElementById('monthlyChart');
     if (!ctx) return;
-    
-    if (monthlyChart) {
-        monthlyChart.destroy();
-    }
 
-    // Debug: ตรวจสอบข้อมูลก่อนสร้างกราฟ
-    console.log('Monthly Data:', {
-        months: monthlyData.months,
-        open: monthlyData.openData,
-        temp: monthlyData.temporaryData,
-        noAction: monthlyData.noActionData,
-        closedPct: monthlyData.closedPercentage
-    });
+    // ลบกราฟเก่าถ้ามี
+    if (monthlyChart) monthlyChart.destroy();
 
     monthlyChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: monthlyData.months,
             datasets: [
+                // Dataset Open (สีน้ำเงิน)
                 {
                     label: 'Open',
                     data: monthlyData.openData,
-                    backgroundColor: 'rgba(52, 152, 219, 0.85)',
-                    borderColor: 'rgba(41, 128, 185, 1)',
-                    borderWidth: 2,
+                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                    borderColor: 'rgba(52, 152, 219, 1)',
+                    borderWidth: 1,
                     borderRadius: 4,
-                    yAxisID: 'y',
                     stack: 'stack1'
                 },
+                // Dataset Temporary (สีส้ม)
                 {
                     label: 'Temporary Action',
                     data: monthlyData.temporaryData,
-                    backgroundColor: 'rgba(243, 156, 18, 0.85)',
-                    borderColor: 'rgba(241, 196, 15, 1)',
-                    borderWidth: 2,
+                    backgroundColor: 'rgba(243, 156, 18, 0.7)',
+                    borderColor: 'rgba(243, 156, 18, 1)',
+                    borderWidth: 1,
                     borderRadius: 4,
-                    yAxisID: 'y',
                     stack: 'stack2'
                 },
+                // Dataset No Action (สีแดง)
                 {
                     label: 'No Action',
                     data: monthlyData.noActionData,
-                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
-                    borderColor: 'rgba(192, 57, 43, 1)',
-                    borderWidth: 2,
+                    backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                    borderColor: 'rgba(231, 76, 60, 1)',
+                    borderWidth: 1,
                     borderRadius: 4,
-                    yAxisID: 'y',
                     stack: 'stack2'
                 },
+                // Dataset %Closed (เส้นสีเขียว)
                 {
                     label: '%Closed',
                     data: monthlyData.closedPercentage,
                     type: 'line',
-                    borderColor: '#2ecc71',
+                    borderColor: 'rgba(46, 204, 113, 1)',
                     backgroundColor: 'rgba(46, 204, 113, 0.1)',
                     borderWidth: 3,
-                    pointBackgroundColor: '#2ecc71',
+                    pointBackgroundColor: 'rgba(46, 204, 113, 1)',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
                     pointRadius: 5,
-                    tension: 0.4,
-                    yAxisID: 'y1',
-                    order: 0
+                    tension: 0.3,
+                    yAxisID: 'y-axis-2'
                 }
             ]
         },
@@ -833,6 +798,7 @@ function createMonthlyChart(monthlyData) {
                     display: true,
                     position: 'top',
                     labels: {
+                        color: '#333',
                         font: {
                             size: 12,
                             weight: 'bold'
@@ -854,24 +820,36 @@ function createMonthlyChart(monthlyData) {
                 }
             },
             scales: {
-                y: {
+                'y-axis-1': {
                     type: 'linear',
-                    display: false,
+                    display: true,
                     position: 'left',
                     beginAtZero: true,
-                    stacked: true
+                    stacked: true,
+                    grid: {
+                        drawOnChartArea: false
+                    }
                 },
-                y1: {
+                'y-axis-2': {
                     type: 'linear',
-                    display: false,
+                    display: true,
                     position: 'right',
                     beginAtZero: true,
                     max: 100,
-                    grid: { display: false }
+                    grid: {
+                        drawOnChartArea: false
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
                 },
                 x: {
                     stacked: true,
-                    grid: { display: false }
+                    grid: {
+                        display: false
+                    }
                 }
             }
         }
