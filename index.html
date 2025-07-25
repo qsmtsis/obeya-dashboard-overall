@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>TSIS - Overall Dashboard (Complete)</title>
+    <title>TSIS - Overall Dashboard (Fixed)</title>
     
     <!-- Chart.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -113,6 +113,12 @@
             text-align: center;
             font-size: 14px;
             color: #155724;
+        }
+
+        .connection-status.error {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+            color: #721c24;
         }
 
         /* Status Cards */
@@ -224,6 +230,18 @@
             margin-bottom: 20px;
         }
 
+        .chart-error {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 400px;
+            flex-direction: column;
+            color: #dc3545;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
         /* Action Buttons */
         .action-buttons {
             display: flex;
@@ -278,6 +296,12 @@
             gap: 8px;
             font-size: 14px;
             font-weight: 600;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
         }
 
         /* Dropdown Styles */
@@ -347,6 +371,26 @@
             background-color: #f8f9fa;
             color: #667eea;
         }
+
+        /* Loading page state */
+        .page-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50vh;
+            flex-direction: column;
+            color: #666;
+        }
+
+        .page-loading .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -364,148 +408,165 @@
         <div class="main-content">
             <h1 class="page-title">Overall Dashboard</h1>
 
-            <!-- API Info -->
-            <div class="api-info">
-                <h4>🚀 Real-time Dashboard</h4>
-                <p>เชื่อมต่อ Google Sheets โดยตรง</p>
+            <!-- Page Loading State -->
+            <div id="pageLoading" class="page-loading">
+                <div class="spinner"></div>
+                <p>กำลังโหลดข้อมูล Overall Dashboard...</p>
             </div>
 
-            <!-- Connection Status -->
-            <div id="connectionStatus" class="connection-status">
-                ✅ เชื่อมต่อสำเร็จ - Real-time
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <!-- Near miss Button -->
-                <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
-                   target="_blank" class="action-btn">📋 ตาราง Near miss</a>
-
-                <!-- แก้ไข Dropdown -->
-                <div class="dropdown-container">
-                    <button class="dropdown-btn" onclick="toggleDropdown('editDropdown')">
-                        🔧 แก้ไข
-                    </button>
-                    <div id="editDropdown" class="dropdown-menu">
-                        <a href="https://script.google.com/macros/s/AKfycbwif8TTLnCN84_d0xoxvCZmEYb1mu9EO6_DlNkYt8Cc0hmr2dLGS_dnXKhSjKVENSYSEg/exec" 
-                           target="_blank" class="dropdown-item">
-                            🔄 แก้ไขชั่วคราว
-                        </a>
-                        <a href="https://script.google.com/macros/s/AKfycbwYBMxA_ymzl1uIS66ZgkAXgHXeCsJvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
-                           target="_blank" class="dropdown-item">
-                            ✅ แก้ไขถาวร
-                        </a>
-                    </div>
+            <!-- Main Content -->
+            <div id="mainContent" style="display: none;">
+                <!-- API Info -->
+                <div class="api-info">
+                    <h4>🚀 Real-time Dashboard</h4>
+                    <p>เชื่อมต่อ Google Sheets ผ่าน Apps Script API</p>
                 </div>
 
-                <!-- อนุมัติ Dropdown -->
-                <div class="dropdown-container">
-                    <button class="dropdown-btn" onclick="toggleDropdown('approvalDropdown')">
-                        ✅ อนุมัติ
-                    </button>
-                    <div id="approvalDropdown" class="dropdown-menu">
-                        <a href="https://script.google.com/macros/s/AKfycbzzrYpo7XErNPvokQO_uQX8uUJAJqGQdAIm6v3E8AL61bNedxJu3pVxuv9PoXk0X6kilA/exec" 
-                           target="_blank" class="dropdown-item">
-                            🔄 Q&S อนุมัติชั่วคราว
-                        </a>
-                        <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKKG8ECEQvwkYaCB_6FwleUmMpN9l3DxhWJhLzxOXr/exec" 
-                           target="_blank" class="dropdown-item">
-                            ✅ Q&S อนุมัติถาวร
-                        </a>
-                        <a href="https://script.google.com/macros/s/AKfycbwsbkICpwuCzLgIbXJlgWdF7PCUP6vYUsM3la5iqZdOLqXl1nG3qUkiY-4_bkQs8c1NEA/exec" 
-                           target="_blank" class="dropdown-item">
-                            👨‍💼 Manager Approval
-                        </a>
-                        <a href="https://script.google.com/macros/s/AKfycbwxtj0YS_MfR1BezMLGCw7hx25FkAha1cN-RKkeuYPukd2jc1AYfXu07i9CC4LHwG88MQ/exec" 
-                           target="_blank" class="dropdown-item">
-                            🏢 GM Approval
-                        </a>
-                    </div>
+                <!-- Connection Status -->
+                <div id="connectionStatus" class="connection-status">
+                    ✅ เชื่อมต่อสำเร็จ - Real-time
                 </div>
 
-                <!-- Other Buttons -->
-                <button class="action-btn" onclick="loadAllData()">🔄 รีเฟรชข้อมูล</button>
-            </div>
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <!-- Near miss Button -->
+                    <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
+                       target="_blank" class="action-btn">📋 ตาราง Near miss</a>
 
-            <!-- Status Cards -->
-            <div class="status-grid">
-                <div class="status-card near-miss" id="nearMissCard">
-                    <div class="status-label">Near miss</div>
-                    <div class="status-number" id="nearMissValue">113</div>
-                </div>
-                <div class="status-card closed" id="closedCard">
-                    <div class="status-label">Closed</div>
-                    <div class="status-number" id="closedValue">82</div>
-                </div>
-                <div class="status-card temporary" id="temporaryCard">
-                    <div class="status-label">Temporary Action</div>
-                    <div class="status-number" id="temporaryValue">5</div>
-                </div>
-                <div class="status-card no-action" id="noActionCard">
-                    <div class="status-label">No Action</div>
-                    <div class="status-number" id="noActionValue">21</div>
-                </div>
-            </div>
-
-            <!-- Charts Section -->
-            <div class="charts-section">
-                <div class="charts-grid">
-                    <!-- Chart 1: Outstanding Issues -->
-                    <div class="chart-container">
-                        <h3 class="chart-title">Outstanding Issues (Overall)</h3>
-                        <div class="chart-wrapper">
-                            <div id="outstandingLoading" class="chart-loading">
-                                <div class="spinner"></div>
-                                <p>กำลังโหลดข้อมูลกราห Outstanding Issues...</p>
-                            </div>
-                            <canvas id="outstandingChart" style="display: none;"></canvas>
-                        </div>
-                        <div class="chart-legend">
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: rgba(243, 156, 18, 0.85);"></div>
-                                <span>Temporary Action</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></div>
-                                <span>No Action</span>
-                            </div>
+                    <!-- แก้ไข Dropdown -->
+                    <div class="dropdown-container">
+                        <button class="dropdown-btn" onclick="toggleDropdown('editDropdown')">
+                            🔧 แก้ไข
+                        </button>
+                        <div id="editDropdown" class="dropdown-menu">
+                            <a href="https://script.google.com/macros/s/AKfycbwif8TTLnCN84_d0xoxvCZmEYb1mu9EO6_DlNkYt8Cc0hmr2dLGS_dnXKhSjKVENSYSEg/exec" 
+                               target="_blank" class="dropdown-item">
+                                🔄 แก้ไขชั่วคราว
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwYBMxA_ymzl1uIS66ZgkAXgHXeCsJvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
+                               target="_blank" class="dropdown-item">
+                                ✅ แก้ไขถาวร
+                            </a>
                         </div>
                     </div>
 
-                    <!-- Chart 2: Monthly Trend -->
-                    <div class="chart-container">
-                        <h3 class="chart-title">Monthly Trend</h3>
-                        <div class="chart-wrapper">
-                            <div id="monthlyLoading" class="chart-loading">
-                                <div class="spinner"></div>
-                                <p>กำลังโหลดข้อมูลกราฟ Monthly Trend...</p>
-                            </div>
-                            <canvas id="monthlyChart" style="display: none;"></canvas>
+                    <!-- อนุมัติ Dropdown -->
+                    <div class="dropdown-container">
+                        <button class="dropdown-btn" onclick="toggleDropdown('approvalDropdown')">
+                            ✅ อนุมัติ
+                        </button>
+                        <div id="approvalDropdown" class="dropdown-menu">
+                            <a href="https://script.google.com/macros/s/AKfycbzzrYpo7XErNPvokQO_uQX8uUJAJqGQdAIm6v3E8AL61bNedxJu3pVxuv9PoXk0X6kilA/exec" 
+                               target="_blank" class="dropdown-item">
+                                🔄 Q&S อนุมัติชั่วคราว
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKAG8ECEQvwkYaCB_6FwleUmMpN9l3DxhWJhLzxOXr/exec" 
+                               target="_blank" class="dropdown-item">
+                                ✅ Q&S อนุมัติถาวร
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwsbkICpwuCzLgIbXJlgWdF7PCUP6vYUsM3la5iqZdOLqXl1nG3qUkiY-4_bkQs8c1NEA/exec" 
+                               target="_blank" class="dropdown-item">
+                                👨‍💼 Manager Approval
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwxtj0YS_MfR1BezMLGCw7hx25FkAha1cN-RKkeuYPukd2jc1AYfXu07i9CC4LHwG88MQ/exec" 
+                               target="_blank" class="dropdown-item">
+                                🏢 GM Approval
+                            </a>
                         </div>
-                        <div class="chart-legend">
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #3498db;"></div>
-                                <span>Open</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #f39c12;"></div>
-                                <span>Temporary Action</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #e74c3c;"></div>
-                                <span>No Action</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #2ecc71; height: 3px; border-radius: 1px;"></div>
-                                <span>%Closed</span>
-                            </div>
-                        </div>
+                    </div>
+
+                    <!-- Other Buttons -->
+                    <button class="action-btn" onclick="loadAllData()">🔄 รีเฟรชข้อมูล</button>
+                </div>
+
+                <!-- Status Cards -->
+                <div class="status-grid">
+                    <div class="status-card near-miss" id="nearMissCard">
+                        <div class="status-label">Near miss</div>
+                        <div class="status-number" id="nearMissValue">-</div>
+                    </div>
+                    <div class="status-card closed" id="closedCard">
+                        <div class="status-label">Closed</div>
+                        <div class="status-number" id="closedValue">-</div>
+                    </div>
+                    <div class="status-card temporary" id="temporaryCard">
+                        <div class="status-label">Temporary Action</div>
+                        <div class="status-number" id="temporaryValue">-</div>
+                    </div>
+                    <div class="status-card no-action" id="noActionCard">
+                        <div class="status-label">No Action</div>
+                        <div class="status-number" id="noActionValue">-</div>
                     </div>
                 </div>
 
-                <div class="last-updated" id="lastUpdated">
-                    อัพเดทล่าสุด: <strong>25/07/2568 15:33:43</strong><br>
-                    แหล่งข้อมูล: Google Sheets API v4 (Real-time)
+                <!-- Charts Section -->
+                <div class="charts-section">
+                    <div class="charts-grid">
+                        <!-- Chart 1: Outstanding Issues -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">Outstanding Issues (Overall)</h3>
+                            <div class="chart-wrapper">
+                                <div id="outstandingLoading" class="chart-loading">
+                                    <div class="spinner"></div>
+                                    <p>กำลังโหลดข้อมูลกราฟ Outstanding Issues...</p>
+                                </div>
+                                <div id="outstandingError" class="chart-error" style="display: none;">
+                                    <p>⚠️ ไม่สามารถโหลดกราฟได้</p>
+                                    <button onclick="loadAllData()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">ลองใหม่</button>
+                                </div>
+                                <canvas id="outstandingChart" style="display: none;"></canvas>
+                            </div>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: rgba(243, 156, 18, 0.85);"></div>
+                                    <span>Temporary Action</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: rgba(231, 76, 60, 0.85);"></div>
+                                    <span>No Action</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart 2: Monthly Trend -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">Monthly Trend</h3>
+                            <div class="chart-wrapper">
+                                <div id="monthlyLoading" class="chart-loading">
+                                    <div class="spinner"></div>
+                                    <p>กำลังโหลดข้อมูลกราฟ Monthly Trend...</p>
+                                </div>
+                                <div id="monthlyError" class="chart-error" style="display: none;">
+                                    <p>⚠️ ไม่สามารถโหลดกราฟได้</p>
+                                    <button onclick="loadAllData()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">ลองใหม่</button>
+                                </div>
+                                <canvas id="monthlyChart" style="display: none;"></canvas>
+                            </div>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #3498db;"></div>
+                                    <span>Open</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #f39c12;"></div>
+                                    <span>Temporary Action</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #e74c3c;"></div>
+                                    <span>No Action</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #2ecc71; height: 3px; border-radius: 1px;"></div>
+                                    <span>%Closed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="last-updated" id="lastUpdated">
+                        อัพเดทล่าสุด: <strong>-</strong><br>
+                        แหล่งข้อมูล: Google Sheets API ผ่าน Apps Script
+                    </div>
                 </div>
             </div>
         </div>
@@ -513,8 +574,8 @@
 
 <script>
 // ===== CONFIGURATION =====
-const SHEET_ID = '1pbtQ82zIg0rI26accNHtWFnjFA-_U_tA9wjavOWHC2s';
-const API_KEY = 'AIzaSyC9L6Y5vJ9NR--Y9k8efjIEBjRSKjl7FWc';
+// ใช้ Apps Script API เหมือนกับหน้า Safety และ Quality
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwC12o0ncg81GC6lsp1RGzi_EfBRA6G36EQRktUEa4ItzCJOOnJCLqslRJvfgnFvD310g/exec';
 
 // ===== GLOBAL VARIABLES =====
 let outstandingChart;
@@ -524,108 +585,84 @@ let debugMode = false;
 
 // ===== MAIN FUNCTIONS =====
 async function loadAllData() {
-    console.log('🚀 Loading all Overall data...');
+    console.log('🚀 Loading all Overall data from Apps Script API...');
     
     try {
-        // Load status data (already working)
-        await loadStatusData();
+        // Show page loading
+        document.getElementById('pageLoading').style.display = 'flex';
+        document.getElementById('mainContent').style.display = 'none';
         
-        // Load chart data
-        await loadChartData();
-        
-        updateLastUpdated();
-        
-    } catch (error) {
-        console.error('❌ Error loading data:', error);
-        updateConnectionStatus('❌ เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
-    }
-}
-
-async function loadStatusData() {
-    // Use the working method from previous version
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/dashboard!B72:H72?key=${API_KEY}`;
-    
-    const response = await fetch(url, {
-        method: 'GET',
-        referrerPolicy: 'strict-origin-when-cross-origin'
-    });
-    
-    if (!response.ok) {
-        throw new Error(`Status API Error: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    if (data.values && data.values[0]) {
-        const statusValues = data.values[0];
-        
-        // Update status cards with animation
-        animateStatusCard('nearMissValue', safeNumber(statusValues[0]));
-        animateStatusCard('closedValue', safeNumber(statusValues[1]));
-        animateStatusCard('temporaryValue', safeNumber(statusValues[5]));
-        animateStatusCard('noActionValue', safeNumber(statusValues[6]));
-        
-        console.log('✅ Status data updated');
-    }
-}
-
-async function loadChartData() {
-    try {
-        // Load data for both charts
-        const ranges = [
-            'dashboard!AY85:AY99',   // Outstanding labels
-            'dashboard!BF85:BF99',   // Outstanding Temporary
-            'dashboard!BG85:BG99',   // Outstanding No Action
-            'dashboard!BA2:BL2',     // Monthly months
-            'dashboard!BA78:BL78',   // Monthly Open
-            'dashboard!BA80:BL80',   // Monthly Temporary
-            'dashboard!BA81:BL81',   // Monthly No Action
-            'dashboard!BA82:BL82'    // Monthly %Closed
-        ];
-        
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?ranges=${ranges.join('&ranges=')}&key=${API_KEY}`;
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            referrerPolicy: 'strict-origin-when-cross-origin'
-        });
+        // Load data from Apps Script API
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=overall&t=${Date.now()}`);
         
         if (!response.ok) {
-            throw new Error(`Chart API Error: ${response.status}`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
         
-        if (data.valueRanges && data.valueRanges.length >= 8) {
-            // Process Outstanding chart data
-            const outstandingData = {
-                labels: extractArray(data.valueRanges[0]),
-                temporaryData: extractNumbers(data.valueRanges[1]),
-                noActionData: extractNumbers(data.valueRanges[2])
-            };
-            
-            // Process Monthly chart data
-            const monthlyData = {
-                months: extractArray(data.valueRanges[3]),
-                openData: extractNumbers(data.valueRanges[4]),
-                temporaryData: extractNumbers(data.valueRanges[5]),
-                noActionData: extractNumbers(data.valueRanges[6]),
-                closedPercentage: extractPercentages(data.valueRanges[7])
-            };
-            
-            // Create charts
-            createOutstandingChart(outstandingData);
-            createMonthlyChart(monthlyData);
-            
-            console.log('✅ Chart data loaded and rendered');
-        } else {
-            throw new Error('Insufficient chart data received');
+        if (!data.success) {
+            throw new Error(data.error || 'API returned error');
         }
+        
+        dashboardData = data;
+        
+        // Hide page loading, show content
+        document.getElementById('pageLoading').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        
+        // Update status cards
+        updateStatusCards(data.data.status);
+        
+        // Load charts
+        await loadChartData(data.data);
+        
+        updateLastUpdated(data.lastUpdated, data.source);
+        updateConnectionStatus('✅ เชื่อมต่อสำเร็จ - Real-time', 'success');
+        
+    } catch (error) {
+        console.error('❌ Error loading data:', error);
+        document.getElementById('pageLoading').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        updateConnectionStatus('❌ เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message, 'error');
+        showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
+        showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
+    }
+}
+
+function updateStatusCards(statusData) {
+    if (!statusData) return;
+    
+    console.log('Updating status cards:', statusData);
+    
+    // Update status cards with animation
+    animateStatusCard('nearMissValue', statusData.nearMiss?.value || 0);
+    animateStatusCard('closedValue', statusData.closed?.value || 0);
+    animateStatusCard('temporaryValue', statusData.temporaryAction?.value || 0);
+    animateStatusCard('noActionValue', statusData.noAction?.value || 0);
+}
+
+async function loadChartData(data) {
+    try {
+        // Create charts with real data from API
+        if (data.outstanding) {
+            createOutstandingChart(data.outstanding);
+        } else {
+            showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
+        }
+        
+        if (data.monthly) {
+            createMonthlyChart(data.monthly);
+        } else {
+            showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
+        }
+        
+        console.log('✅ Chart data loaded and rendered');
         
     } catch (error) {
         console.error('❌ Chart loading failed:', error);
-        showChartError('outstandingChart', 'outstandingLoading');
-        showChartError('monthlyChart', 'monthlyLoading');
+        showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
+        showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
     }
 }
 
@@ -636,26 +673,34 @@ function createOutstandingChart(data) {
     
     // Hide loading, show chart
     document.getElementById('outstandingLoading').style.display = 'none';
+    document.getElementById('outstandingError').style.display = 'none';
     ctx.style.display = 'block';
     
     if (outstandingChart) {
         outstandingChart.destroy();
     }
 
+    // Use real data from API
+    const labels = data.labels || [];
+    const temporaryData = data.temporaryData || [];
+    const noActionData = data.noActionData || [];
+
     // Calculate totals for display on bars
-    const totalData = data.temporaryData.map((temp, index) => {
-        const noAct = data.noActionData[index] || 0;
+    const totalData = temporaryData.map((temp, index) => {
+        const noAct = noActionData[index] || 0;
         return temp + noAct;
     });
+
+    console.log('Outstanding Chart Data:', { labels, temporaryData, noActionData, totalData });
 
     outstandingChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: data.labels,
+            labels: labels,
             datasets: [
                 {
                     label: 'Temporary Action',
-                    data: data.temporaryData,
+                    data: temporaryData,
                     backgroundColor: 'rgba(243, 156, 18, 0.85)',
                     borderColor: 'rgba(241, 196, 15, 1)',
                     borderWidth: 2,
@@ -664,7 +709,7 @@ function createOutstandingChart(data) {
                 },
                 {
                     label: 'No Action',
-                    data: data.noActionData,
+                    data: noActionData,
                     backgroundColor: 'rgba(231, 76, 60, 0.85)',
                     borderColor: 'rgba(192, 57, 43, 1)',
                     borderWidth: 2,
@@ -750,20 +795,30 @@ function createMonthlyChart(data) {
     
     // Hide loading, show chart
     document.getElementById('monthlyLoading').style.display = 'none';
+    document.getElementById('monthlyError').style.display = 'none';
     ctx.style.display = 'block';
     
     if (monthlyChart) {
         monthlyChart.destroy();
     }
 
+    // Use real data from API
+    const months = data.months || [];
+    const openData = data.openData || [];
+    const temporaryData = data.temporaryData || [];
+    const noActionData = data.noActionData || [];
+    const closedPercentage = data.closedPercentage || [];
+
+    console.log('Monthly Chart Data:', { months, openData, temporaryData, noActionData, closedPercentage });
+
     monthlyChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: data.months,
+            labels: months,
             datasets: [
                 {
                     label: 'Open',
-                    data: data.openData,
+                    data: openData,
                     backgroundColor: 'rgba(52, 152, 219, 0.85)',
                     borderColor: 'rgba(41, 128, 185, 1)',
                     borderWidth: 2,
@@ -774,7 +829,7 @@ function createMonthlyChart(data) {
                 },
                 {
                     label: 'Temporary Action',
-                    data: data.temporaryData,
+                    data: temporaryData,
                     backgroundColor: 'rgba(243, 156, 18, 0.85)',
                     borderColor: 'rgba(241, 196, 15, 1)',
                     borderWidth: 2,
@@ -785,7 +840,7 @@ function createMonthlyChart(data) {
                 },
                 {
                     label: 'No Action',
-                    data: data.noActionData,
+                    data: noActionData,
                     backgroundColor: 'rgba(231, 76, 60, 0.85)',
                     borderColor: 'rgba(192, 57, 43, 1)',
                     borderWidth: 2,
@@ -796,7 +851,7 @@ function createMonthlyChart(data) {
                 },
                 {
                     label: '%Closed',
-                    data: data.closedPercentage,
+                    data: closedPercentage,
                     type: 'line',
                     borderColor: '#2ecc71',
                     backgroundColor: 'rgba(46, 204, 113, 0.1)',
@@ -823,7 +878,7 @@ function createMonthlyChart(data) {
                     display: false, 
                     position: 'left', 
                     beginAtZero: true, 
-                    max: Math.max(...data.openData, ...(data.temporaryData.map((temp, index) => temp + (data.noActionData[index] || 0)))) + 5,
+                    max: Math.max(...openData, ...(temporaryData.map((temp, index) => temp + (noActionData[index] || 0)))) + 5,
                     grid: { display: false } 
                 },
                 y1: { 
@@ -855,7 +910,7 @@ function createMonthlyChart(data) {
                 // แสดงค่าบนแท่ง Open
                 const openMeta = chart.getDatasetMeta(0);
                 openMeta.data.forEach(function(bar, index) {
-                    const value = data.openData[index];
+                    const value = openData[index];
                     if (value > 0) {
                         ctx.fillStyle = "rgba(41, 128, 185, 1)";
                         ctx.fillText(value, bar.x, bar.y - 5);
@@ -868,7 +923,7 @@ function createMonthlyChart(data) {
                 // Temporary Action values
                 const tempMeta = chart.getDatasetMeta(1);
                 tempMeta.data.forEach(function(bar, index) {
-                    const value = data.temporaryData[index];
+                    const value = temporaryData[index];
                     if (value > 0) {
                         ctx.fillStyle = "rgba(183, 149, 11, 1)";
                         ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
@@ -878,7 +933,7 @@ function createMonthlyChart(data) {
                 // No Action values
                 const noActMeta = chart.getDatasetMeta(2);
                 noActMeta.data.forEach(function(bar, index) {
-                    const value = data.noActionData[index];
+                    const value = noActionData[index];
                     if (value > 0) {
                         ctx.fillStyle = "white";
                         ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
@@ -890,7 +945,7 @@ function createMonthlyChart(data) {
                 ctx.fillStyle = "#333";
                 
                 tempMeta.data.forEach(function(bar, index) {
-                    const total = (data.temporaryData[index] || 0) + (data.noActionData[index] || 0);
+                    const total = (temporaryData[index] || 0) + (noActionData[index] || 0);
                     if (total > 0) {
                         const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
                         ctx.fillText(total, bar.x, topY - 5);
@@ -920,30 +975,6 @@ function createMonthlyChart(data) {
 }
 
 // ===== UTILITY FUNCTIONS =====
-function extractArray(valueRange) {
-    if (!valueRange || !valueRange.values) return [];
-    return valueRange.values.flat().filter(val => val !== "" && val != null);
-}
-
-function extractNumbers(valueRange) {
-    if (!valueRange || !valueRange.values) return [];
-    return valueRange.values.flat().map(val => {
-        if (val === "" || val == null) return 0;
-        const num = Number(val);
-        return isNaN(num) ? 0 : num;
-    });
-}
-
-function extractPercentages(valueRange) {
-    if (!valueRange || !valueRange.values) return [];
-    return valueRange.values.flat().map(val => {
-        if (val === "" || val == null) return 0;
-        const num = Number(val);
-        if (isNaN(num)) return 0;
-        return num <= 1 ? num * 100 : num;
-    });
-}
-
 function safeNumber(value) {
     if (value === null || value === undefined || value === '') {
         return 0;
@@ -976,28 +1007,30 @@ function animateStatusCard(elementId, targetValue) {
     update();
 }
 
-function showChartError(chartId, loadingId) {
+function showChartError(chartId, loadingId, errorId) {
     const loading = document.getElementById(loadingId);
-    if (loading) {
-        loading.innerHTML = `
-            <div style="color: #dc3545;">
-                <i>⚠️</i>
-                <p>ไม่สามารถโหลดกราฟได้</p>
-                <button onclick="loadAllData()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">ลองใหม่</button>
-            </div>
-        `;
-    }
+    const error = document.getElementById(errorId);
+    const chart = document.getElementById(chartId);
+    
+    if (loading) loading.style.display = 'none';
+    if (error) error.style.display = 'flex';
+    if (chart) chart.style.display = 'none';
 }
 
-function updateLastUpdated() {
-    document.getElementById('lastUpdated').innerHTML = 
-        `อัพเดทล่าสุด: <strong>${new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมูล: Google Sheets API v4`;
+function updateLastUpdated(timestamp, source) {
+    const element = document.getElementById('lastUpdated');
+    if (element) {
+        element.innerHTML = 
+            `อัพเดทล่าสุด: <strong>${timestamp || new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมูล: ${source || 'Google Sheets API ผ่าน Apps Script'}`;
+    }
 }
 
 function updateConnectionStatus(message, type) {
     const status = document.getElementById('connectionStatus');
-    status.textContent = message;
-    status.className = `connection-status ${type}`;
+    if (status) {
+        status.textContent = message;
+        status.className = `connection-status ${type}`;
+    }
 }
 
 function toggleDebug() {
@@ -1037,7 +1070,7 @@ function closeAllDropdowns() {
 
 // ===== INITIALIZATION =====
 window.onload = function() {
-    console.log('🚀 Overall Dashboard with Charts initialized');
+    console.log('🚀 Overall Dashboard initialized - Using Apps Script API');
     
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(event) {
@@ -1049,7 +1082,7 @@ window.onload = function() {
     // Load all data on startup
     setTimeout(() => {
         loadAllData();
-    }, 1000);
+    }, 500);
 };
 </script>
 
