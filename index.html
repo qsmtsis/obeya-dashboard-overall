@@ -574,7 +574,7 @@
 
 <script>
 // ===== CONFIGURATION =====
-// ใช้ Apps Script API เหมือนกับหน้า Safety และ Quality
+// ใช้ Apps Script API ตาม Code.gs ที่คุณให้มา
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwC12o0ncg81GC6lsp1RGzi_EfBRA6G36EQRktUEa4ItzCJOOnJCLqslRJvfgnFvD310g/exec';
 
 // ===== GLOBAL VARIABLES =====
@@ -585,21 +585,27 @@ let debugMode = false;
 
 // ===== MAIN FUNCTIONS =====
 async function loadAllData() {
-    console.log('🚀 Loading all Overall data from Apps Script API...');
+    console.log('🚀 Loading Overall data from optimized Apps Script API...');
     
     try {
         // Show page loading
         document.getElementById('pageLoading').style.display = 'flex';
         document.getElementById('mainContent').style.display = 'none';
         
-        // Load data from Apps Script API
+        // เรียก API ตาม Code.gs ที่ optimize แล้ว
+        console.log('🔄 Calling Apps Script API:', APPS_SCRIPT_URL);
+        
         const response = await fetch(`${APPS_SCRIPT_URL}?action=overall&t=${Date.now()}`);
+        
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response ok:', response.ok);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
+        console.log('📦 API Response:', data);
         
         if (!data.success) {
             throw new Error(data.error || 'API returned error');
@@ -611,13 +617,13 @@ async function loadAllData() {
         document.getElementById('pageLoading').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         
-        // Update status cards
+        // Update status cards ตาม structure ใหม่
         updateStatusCards(data.data.status);
         
         // Debug: ดูข้อมูลที่ได้จาก API
         console.log('Overall Dashboard API Response:', data.data);
         
-        // Load charts
+        // Load charts ตาม structure ใหม่
         await loadChartData(data.data);
         
         updateLastUpdated(data.lastUpdated, data.source);
@@ -647,15 +653,15 @@ function updateStatusCards(statusData) {
 
 async function loadChartData(data) {
     try {
-        // Create charts with real data from API
-        if (data.outstanding) {
-            createOutstandingChart(data.outstanding);
+        // สร้างกราฟตาม structure ใหม่จาก Code.gs
+        if (data.charts) {
+            createOutstandingChart(data.charts);
         } else {
             showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
         }
         
-        if (data.monthly) {
-            createMonthlyChart(data.monthly);
+        if (data.monthlyTrend) {
+            createMonthlyChart(data.monthlyTrend);
         } else {
             showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
         }
@@ -670,7 +676,7 @@ async function loadChartData(data) {
 }
 
 // ===== CHART CREATION =====
-function createOutstandingChart(data) {
+function createOutstandingChart(chartsData) {
     const ctx = document.getElementById('outstandingChart');
     if (!ctx) return;
     
@@ -683,10 +689,10 @@ function createOutstandingChart(data) {
         outstandingChart.destroy();
     }
 
-    // Use real data from API
-    const labels = data.labels || [];
-    const temporaryData = data.temporaryData || [];
-    const noActionData = data.noActionData || [];
+    // ใช้ข้อมูลจาก Code.gs structure
+    const labels = chartsData.labels || [];
+    const temporaryData = chartsData.temporaryAction?.data || [];
+    const noActionData = chartsData.noAction?.data || [];
 
     // Calculate totals for display on bars
     const totalData = temporaryData.map((temp, index) => {
@@ -694,7 +700,7 @@ function createOutstandingChart(data) {
         return temp + noAct;
     });
 
-    console.log('Outstanding Chart Data:', { labels, temporaryData, noActionData, totalData });
+    console.log('Outstanding Chart Data from optimized API:', { labels, temporaryData, noActionData, totalData });
 
     outstandingChart = new Chart(ctx, {
         type: 'bar',
