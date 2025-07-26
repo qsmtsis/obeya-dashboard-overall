@@ -633,8 +633,8 @@
 
 <script>
 // ===== CONFIGURATION =====
-// ใช้ Apps Script API ตาม SafetyData.gs ที่คุณให้มา
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwC12o0ncg81GC6lsp1RGzi_EfBRA6G36EQRktUEa4ItzCJOOnJCLqslRJvfgnFvD310g/exec';
+// แทนที่ด้วย URL ที่ Deploy ใหม่หลังจากเพิ่มฟังก์ชัน Safety
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
 
 // ===== GLOBAL VARIABLES =====
 let outstandingChart;
@@ -655,7 +655,11 @@ async function loadAllData() {
         // เรียก API ตาม SafetyData.gs ที่ optimize แล้ว
         console.log('🔄 Calling Apps Script API:', APPS_SCRIPT_URL);
         
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=safety&divisions=true&t=${Date.now()}`);
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=safety&divisions=true&t=${Date.now()}`, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache'
+        });
         
         console.log('📡 Response status:', response.status);
         console.log('📡 Response ok:', response.ok);
