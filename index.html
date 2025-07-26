@@ -815,11 +815,22 @@ function createMonthlyChart(data) {
     // Debug: แสดงข้อมูลดิบก่อนประมวลผล
     console.log('Monthly Chart Raw Data:', { months, openData, temporaryData, noActionData, closedPercentage });
     
-    // แปลง %Closed ให้ถูกต้อง (กรณีที่ได้เป็นทศนิยม 0-1)
-    closedPercentage = closedPercentage.map(value => {
+    // แปลง %Closed ให้ถูกต้อง
+    closedPercentage = closedPercentage.map((value, index) => {
+        console.log(`%Closed[${index}] raw value:`, value, typeof value);
+        
         if (value === null || value === undefined || value === '') return 0;
-        const num = Number(value);
+        
+        // ถ้าเป็น string ที่มี % ให้ลบออก
+        let numValue = value;
+        if (typeof value === 'string') {
+            numValue = value.replace('%', '').trim();
+        }
+        
+        const num = Number(numValue);
         if (isNaN(num)) return 0;
+        
+        console.log(`%Closed[${index}] converted to:`, num);
         
         // ถ้าค่าอยู่ระหว่าง 0-1 ให้คูณ 100 (เช่น 0.85 -> 85%)
         if (num >= 0 && num <= 1) {
