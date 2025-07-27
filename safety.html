@@ -121,6 +121,12 @@
             color: #721c24;
         }
 
+        .connection-status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+
         /* Loading page state */
         .page-loading {
             display: flex;
@@ -292,26 +298,6 @@
             height: 240px;
         }
 
-        .division-chart-loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 240px;
-            flex-direction: column;
-            color: #666;
-            font-size: 12px;
-        }
-
-        .division-chart-loading .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 10px;
-        }
-
         /* Action Buttons */
         .action-buttons {
             display: flex;
@@ -418,24 +404,6 @@
             border-radius: 8px;
         }
 
-        /* Debug Panel */
-        .debug-panel {
-            background: #212529;
-            color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .debug-panel.show {
-            display: block;
-        }
-
         /* Responsive */
         @media (max-width: 1400px) {
             .division-grid {
@@ -525,16 +493,8 @@
                     ✅ เชื่อมต่อสำเร็จ - Real-time
                 </div>
 
-                <!-- Debug Panel -->
-                <div id="debugPanel" class="debug-panel">
-                    <div id="debugContent">Debug information will appear here...</div>
-                </div>
-
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <!-- Debug Toggle -->
-                    <button class="action-btn" onclick="toggleDebug()">🔍 Debug</button>
-                    
                     <!-- Near miss Button -->
                     <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
                        target="_blank" class="action-btn">📋 ตาราง Near miss</a>
@@ -667,43 +627,23 @@ let outstandingChart;
 let monthlyChart;
 let divisionCharts = {};
 let dashboardData = null;
-let debugMode = false;
-
-// ===== DEBUG FUNCTIONS =====
-function toggleDebug() {
-    debugMode = !debugMode;
-    const debugPanel = document.getElementById('debugPanel');
-    debugPanel.classList.toggle('show', debugMode);
-    
-    if (debugMode) {
-        updateDebugPanel('Debug mode enabled. Latest data will be shown here.');
-    }
-}
-
-function updateDebugPanel(message) {
-    if (!debugMode) return;
-    
-    const debugContent = document.getElementById('debugContent');
-    const timestamp = new Date().toLocaleTimeString();
-    debugContent.innerHTML += `<div>[${timestamp}] ${message}</div>`;
-    debugContent.scrollTop = debugContent.scrollHeight;
-}
-
-function logDebug(message, data = null) {
-    console.log(message, data);
-    if (debugMode) {
-        let debugText = message;
-        if (data) {
-            debugText += `: ${JSON.stringify(data, null, 2)}`;
-        }
-        updateDebugPanel(debugText);
-    }
-}
+let loadingTimeout;
 
 // ===== MAIN FUNCTIONS =====
 async function loadAllData() {
     console.log('🚀 Loading Safety data with divisions from Apps Script API...');
-    logDebug('🚀 Starting Safety data load');
+    
+    // Set timeout to prevent infinite loading
+    if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+    }
+    
+    loadingTimeout = setTimeout(() => {
+        console.log('⏰ Loading timeout - forcing show content');
+        document.getElementById('pageLoading').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        updateConnectionStatus('⚠️ โหลดข้อมูลใช้เวลานานเกินไป - แสดงหน้าเว็บแทน', 'warning');
+    }, 10000); // 10 seconds timeout
     
     try {
         // Show page loading
@@ -713,25 +653,29 @@ async function loadAllData() {
         // Display API URL
         document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
         
-        logDebug('📡 Calling Apps Script API', { url: APPS_SCRIPT_URL });
+        console.log('📡 Calling Apps Script API...');
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout for fetch
         
         const response = await fetch(`${APPS_SCRIPT_URL}?action=safety&divisions=true&t=${Date.now()}`, {
             method: 'GET',
             mode: 'cors',
-            cache: 'no-cache'
+            cache: 'no-cache',
+            signal: controller.signal
         });
         
-        logDebug('📡 Response received', { 
-            status: response.status, 
-            ok: response.ok 
-        });
+        clearTimeout(timeoutId);
+        clearTimeout(loadingTimeout);
+        
+        console.log('📡 Response received:', response.status, response.ok);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
-        logDebug('📦 API Response received', data);
+        console.log('📦 API Response received:', data.success);
         
         if (!data.success) {
             throw new Error(data.error || 'API returned error');
@@ -743,30 +687,37 @@ async function loadAllData() {
         document.getElementById('pageLoading').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         
-        // Update status cards ตาม structure ใหม่
-        logDebug('📊 Updating status cards');
+        // Update status cards
+        console.log('📊 Updating status cards...');
         updateStatusCards(data.safety.status);
         
-        // Load charts ตาม structure ใหม่
-        logDebug('📈 Loading main charts');
+        // Load charts
+        console.log('📈 Loading charts...');
         await loadChartData(data.safety);
         
-        // Load division charts (15 charts)
-        logDebug('🏢 Loading division charts');
+        // Load division charts
+        console.log('🏢 Loading division charts...');
         await loadDivisionCharts(data.safety.divisionCharts);
         
         updateLastUpdated(data.lastUpdated, data.source);
         updateConnectionStatus('✅ เชื่อมต่อสำเร็จ - Real-time พร้อม Division Analysis', 'success');
         
-        logDebug('✅ All data loaded successfully');
+        console.log('✅ All data loaded successfully');
         
     } catch (error) {
         console.error('❌ Error loading data:', error);
-        logDebug('❌ Error loading data', { error: error.message, stack: error.stack });
+        
+        clearTimeout(loadingTimeout);
         
         document.getElementById('pageLoading').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
-        updateConnectionStatus('❌ เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message, 'error');
+        
+        if (error.name === 'AbortError') {
+            updateConnectionStatus('⏰ การโหลดข้อมูลใช้เวลานานเกินไป - ลองรีเฟรชใหม่', 'warning');
+        } else {
+            updateConnectionStatus('❌ เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message, 'error');
+        }
+        
         showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
         showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
     }
@@ -774,45 +725,49 @@ async function loadAllData() {
 
 function updateStatusCards(statusData) {
     if (!statusData) {
-        logDebug('⚠️ No status data received');
+        console.log('⚠️ No status data received');
         return;
     }
     
-    logDebug('📊 Updating Safety status cards', statusData);
+    console.log('📊 Updating Safety status cards:', statusData);
     
-    // Update status cards with animation
-    animateStatusCard('nearMissValue', statusData.nearMiss?.value || 0);
-    animateStatusCard('closedValue', statusData.closed?.value || 0);
-    animateStatusCard('temporaryValue', statusData.temporaryAction?.value || 0);
-    animateStatusCard('noActionValue', statusData.noAction?.value || 0);
+    // Update status cards with simple assignment (no animation to prevent issues)
+    try {
+        document.getElementById('nearMissValue').textContent = statusData.nearMiss?.value || 0;
+        document.getElementById('closedValue').textContent = statusData.closed?.value || 0;
+        document.getElementById('temporaryValue').textContent = statusData.temporaryAction?.value || 0;
+        document.getElementById('noActionValue').textContent = statusData.noAction?.value || 0;
+        console.log('✅ Status cards updated');
+    } catch (error) {
+        console.error('❌ Error updating status cards:', error);
+    }
 }
 
 async function loadChartData(safetyData) {
     try {
-        logDebug('📈 Loading chart data', safetyData);
+        console.log('📈 Loading chart data...');
         
-        // สร้างกราฟตาม structure ใหม่จาก SafetyData.gs
+        // Create charts with error handling
         if (safetyData.outstanding) {
-            logDebug('📊 Creating Outstanding chart');
+            console.log('📊 Creating Outstanding chart');
             createOutstandingChart(safetyData.outstanding);
         } else {
-            logDebug('⚠️ No outstanding data');
+            console.log('⚠️ No outstanding data');
             showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
         }
         
         if (safetyData.monthly) {
-            logDebug('📈 Creating Monthly chart');
+            console.log('📈 Creating Monthly chart');
             createMonthlyChart(safetyData.monthly);
         } else {
-            logDebug('⚠️ No monthly data');
+            console.log('⚠️ No monthly data');
             showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
         }
         
-        logDebug('✅ Main chart data loaded and rendered');
+        console.log('✅ Main chart data loaded');
         
     } catch (error) {
         console.error('❌ Chart loading failed:', error);
-        logDebug('❌ Chart loading failed', { error: error.message });
         showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
         showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
     }
@@ -821,611 +776,375 @@ async function loadChartData(safetyData) {
 async function loadDivisionCharts(divisionChartsData) {
     try {
         if (!divisionChartsData) {
-            logDebug('⚠️ No division charts data available');
+            console.log('⚠️ No division charts data available');
             return;
         }
         
-        logDebug('🏢 Loading Division Charts', { 
-            count: Object.keys(divisionChartsData).length,
-            divisions: Object.keys(divisionChartsData)
-        });
+        console.log('🏢 Loading Division Charts:', Object.keys(divisionChartsData).length, 'divisions');
         
-        // สร้าง HTML containers สำหรับ Division Charts
+        // Create HTML containers
         createDivisionChartContainers(divisionChartsData);
         
-        // สร้างกราฟแต่ละ Division
-        Object.keys(divisionChartsData).forEach(divisionKey => {
+        // Create charts with delay to prevent blocking
+        const divisionKeys = Object.keys(divisionChartsData);
+        for (let i = 0; i < divisionKeys.length; i++) {
+            const divisionKey = divisionKeys[i];
             const divisionData = divisionChartsData[divisionKey];
-            logDebug(`🏢 Creating chart for ${divisionKey}`, divisionData.divisionName);
-            createSingleDivisionChart(divisionKey, divisionData);
-        });
+            
+            try {
+                createSingleDivisionChart(divisionKey, divisionData);
+                
+                // Small delay between chart creation to prevent blocking
+                if (i < divisionKeys.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+            } catch (error) {
+                console.error(`❌ Failed to create chart for ${divisionKey}:`, error);
+            }
+        }
         
-        logDebug('✅ All Division Charts created successfully');
+        console.log('✅ All Division Charts created');
         
     } catch (error) {
         console.error('❌ Division Charts loading failed:', error);
-        logDebug('❌ Division Charts loading failed', { error: error.message });
     }
 }
 
-// ===== CHART CREATION =====
+// ===== CHART CREATION FUNCTIONS =====
 function createOutstandingChart(outstandingData) {
-    const ctx = document.getElementById('outstandingChart');
-    if (!ctx) return;
-    
-    // Hide loading, show chart
-    document.getElementById('outstandingLoading').style.display = 'none';
-    document.getElementById('outstandingError').style.display = 'none';
-    ctx.style.display = 'block';
-    
-    if (outstandingChart) {
-        outstandingChart.destroy();
-    }
+    try {
+        const ctx = document.getElementById('outstandingChart');
+        if (!ctx) return;
+        
+        // Hide loading, show chart
+        document.getElementById('outstandingLoading').style.display = 'none';
+        document.getElementById('outstandingError').style.display = 'none';
+        ctx.style.display = 'block';
+        
+        if (outstandingChart) {
+            outstandingChart.destroy();
+        }
 
-    const labels = outstandingData.labels || [];
-    const temporaryData = outstandingData.temporaryData || [];
-    const noActionData = outstandingData.noActionData || [];
+        const labels = outstandingData.labels || [];
+        const temporaryData = outstandingData.temporaryData || [];
+        const noActionData = outstandingData.noActionData || [];
 
-    const totalData = temporaryData.map((temp, index) => {
-        const noAct = noActionData[index] || 0;
-        return temp + noAct;
-    });
+        console.log('📊 Creating Outstanding Chart with', labels.length, 'items');
 
-    logDebug('📊 Outstanding Chart Data', { 
-        labels, 
-        temporaryData, 
-        noActionData, 
-        totalData 
-    });
-
-    outstandingChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Temporary Action',
-                    data: temporaryData,
-                    backgroundColor: 'rgba(243, 156, 18, 0.85)',
-                    borderColor: 'rgba(241, 196, 15, 1)',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
-                },
-                {
-                    label: 'No Action',
-                    data: noActionData,
-                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
-                    borderColor: 'rgba(192, 57, 43, 1)',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: { top: 40, bottom: 5, left: 5, right: 5 }
-            },
-            scales: {
-                y: { 
-                    beginAtZero: true, 
-                    display: false, 
-                    stacked: true,
-                    grid: { display: false } 
-                },
-                x: { 
-                    grid: { display: false }, 
-                    stacked: true,
-                    ticks: { 
-                        maxRotation: 45, 
-                        minRotation: 45,
-                        font: { size: 11 }
-                    } 
-                }
-            },
-            plugins: { 
-                legend: { display: false }
-            }
-        },
-        plugins: [{
-            afterDatasetsDraw: function(chart) {
-                const ctx = chart.ctx;
-                
-                // Show values in bars
-                ctx.font = "bold 11px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                
-                chart.data.datasets.forEach(function(dataset, datasetIndex) {
-                    const meta = chart.getDatasetMeta(datasetIndex);
-                    
-                    meta.data.forEach(function(bar, index) {
-                        const value = dataset.data[index];
-                        if (value > 0) {
-                            ctx.fillStyle = datasetIndex === 0 ? 
-                                "rgba(183, 149, 11, 1)" :  
-                                "white";                    
-                            
-                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                        }
-                    });
-                });
-
-                // Show totals above bars
-                ctx.font = "bold 13px Arial";
-                ctx.textBaseline = "bottom";
-                ctx.fillStyle = "#2c3e50";
-                
-                const tempMeta = chart.getDatasetMeta(0);
-                const noActMeta = chart.getDatasetMeta(1);
-                
-                tempMeta.data.forEach(function(bar, index) {
-                    const total = totalData[index];
-                    if (total > 0) {
-                        const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
-                        ctx.fillText(total, bar.x, topY - 10);
+        outstandingChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Temporary Action',
+                        data: temporaryData,
+                        backgroundColor: 'rgba(243, 156, 18, 0.85)',
+                        borderColor: 'rgba(241, 196, 15, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'No Action',
+                        data: noActionData,
+                        backgroundColor: 'rgba(231, 76, 60, 0.85)',
+                        borderColor: 'rgba(192, 57, 43, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6
                     }
-                });
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        display: false, 
+                        stacked: true
+                    },
+                    x: { 
+                        stacked: true,
+                        ticks: { 
+                            maxRotation: 45, 
+                            font: { size: 11 }
+                        } 
+                    }
+                },
+                plugins: { 
+                    legend: { display: false }
+                }
             }
-        }]
-    });
+        });
+    } catch (error) {
+        console.error('❌ Error creating Outstanding chart:', error);
+        showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
+    }
 }
 
 function createMonthlyChart(monthlyData) {
-    const ctx = document.getElementById('monthlyChart');
-    if (!ctx) return;
-    
-    // Hide loading, show chart
-    document.getElementById('monthlyLoading').style.display = 'none';
-    document.getElementById('monthlyError').style.display = 'none';
-    ctx.style.display = 'block';
-    
-    if (monthlyChart) {
-        monthlyChart.destroy();
-    }
+    try {
+        const ctx = document.getElementById('monthlyChart');
+        if (!ctx) return;
+        
+        // Hide loading, show chart
+        document.getElementById('monthlyLoading').style.display = 'none';
+        document.getElementById('monthlyError').style.display = 'none';
+        ctx.style.display = 'block';
+        
+        if (monthlyChart) {
+            monthlyChart.destroy();
+        }
 
-    const months = monthlyData.months || [];
-    const openData = monthlyData.openData || [];
-    const temporaryData = monthlyData.temporaryData || [];
-    const noActionData = monthlyData.noActionData || [];
-    const closedPercentage = monthlyData.closedPercentage || [];
+        const months = monthlyData.months || [];
+        const openData = monthlyData.openData || [];
+        const temporaryData = monthlyData.temporaryData || [];
+        const noActionData = monthlyData.noActionData || [];
+        const closedPercentage = monthlyData.closedPercentage || [];
 
-    logDebug('📈 Monthly Chart Data', { 
-        months, 
-        openData, 
-        temporaryData, 
-        noActionData, 
-        closedPercentage 
-    });
+        console.log('📈 Creating Monthly Chart with', months.length, 'months');
 
-    monthlyChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: months,
-            datasets: [
-                {
-                    label: 'Open',
-                    data: openData,
-                    backgroundColor: 'rgba(52, 152, 219, 0.85)',
-                    borderColor: 'rgba(41, 128, 185, 1)',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
-                    yAxisID: 'y',
-                    stack: 'stack1'
-                },
-                {
-                    label: 'Temporary Action',
-                    data: temporaryData,
-                    backgroundColor: 'rgba(243, 156, 18, 0.85)',
-                    borderColor: 'rgba(241, 196, 15, 1)',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
-                    yAxisID: 'y',
-                    stack: 'stack2'
-                },
-                {
-                    label: 'No Action',
-                    data: noActionData,
-                    backgroundColor: 'rgba(231, 76, 60, 0.85)',
-                    borderColor: 'rgba(192, 57, 43, 1)',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
-                    yAxisID: 'y',
-                    stack: 'stack2'
-                },
-                {
-                    label: '%Closed',
-                    data: closedPercentage,
-                    type: 'line',
-                    borderColor: '#2ecc71',
-                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                    borderWidth: 4,
-                    pointBackgroundColor: '#2ecc71',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 3,
-                    pointRadius: 8,
-                    tension: 0.4,
-                    yAxisID: 'y1',
-                    fill: false
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: { top: 30, bottom: 5, left: 5, right: 5 }
+        monthlyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'Open',
+                        data: openData,
+                        backgroundColor: 'rgba(52, 152, 219, 0.85)',
+                        borderColor: 'rgba(41, 128, 185, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Temporary Action',
+                        data: temporaryData,
+                        backgroundColor: 'rgba(243, 156, 18, 0.85)',
+                        borderColor: 'rgba(241, 196, 15, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'No Action',
+                        data: noActionData,
+                        backgroundColor: 'rgba(231, 76, 60, 0.85)',
+                        borderColor: 'rgba(192, 57, 43, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: '%Closed',
+                        data: closedPercentage,
+                        type: 'line',
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#2ecc71',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointRadius: 8,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }
+                ]
             },
-            scales: {
-                y: { 
-                    type: 'linear', 
-                    display: false, 
-                    position: 'left', 
-                    beginAtZero: true, 
-                    max: Math.max(...openData, ...(temporaryData.map((temp, index) => temp + (noActionData[index] || 0)))) + 5,
-                    grid: { display: false } 
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        type: 'linear', 
+                        display: false, 
+                        position: 'left', 
+                        beginAtZero: true
+                    },
+                    y1: { 
+                        type: 'linear', 
+                        display: false, 
+                        position: 'right', 
+                        beginAtZero: true, 
+                        max: 100
+                    },
+                    x: { 
+                        ticks: { 
+                            maxRotation: 0,
+                            font: { size: 11 }
+                        } 
+                    }
                 },
-                y1: { 
-                    type: 'linear', 
-                    display: false, 
-                    position: 'right', 
-                    beginAtZero: true, 
-                    max: 100, 
-                    grid: { display: false } 
-                },
-                x: { 
-                    grid: { display: false }, 
-                    ticks: { 
-                        maxRotation: 0,
-                        minRotation: 0,
-                        font: { size: 11 }
-                    } 
-                }
-            },
-            plugins: { legend: { display: false } }
-        },
-        plugins: [{
-            afterDatasetsDraw: function(chart) {
-                const ctx = chart.ctx;
-                ctx.font = "bold 11px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "bottom";
-                
-                // แสดงค่าบนแท่ง Open
-                const openMeta = chart.getDatasetMeta(0);
-                openMeta.data.forEach(function(bar, index) {
-                    const value = openData[index];
-                    if (value > 0) {
-                        ctx.fillStyle = "rgba(41, 128, 185, 1)";
-                        ctx.fillText(value, bar.x, bar.y - 5);
-                    }
-                });
-
-                // แสดงค่าใน stacked bars (Temporary + No Action)
-                ctx.textBaseline = "middle";
-                
-                // Temporary Action values
-                const tempMeta = chart.getDatasetMeta(1);
-                tempMeta.data.forEach(function(bar, index) {
-                    const value = temporaryData[index];
-                    if (value > 0) {
-                        ctx.fillStyle = "rgba(183, 149, 11, 1)";
-                        ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                    }
-                });
-
-                // No Action values
-                const noActMeta = chart.getDatasetMeta(2);
-                noActMeta.data.forEach(function(bar, index) {
-                    const value = noActionData[index];
-                    if (value > 0) {
-                        ctx.fillStyle = "white";
-                        ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                    }
-                });
-
-                // แสดงผลรวม stacked bar ด้านบน
-                ctx.textBaseline = "bottom";
-                ctx.fillStyle = "#333";
-                
-                tempMeta.data.forEach(function(bar, index) {
-                    const total = (temporaryData[index] || 0) + (noActionData[index] || 0);
-                    if (total > 0) {
-                        const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
-                        ctx.fillText(total, bar.x, topY - 5);
-                    }
-                });
-
-                // Line chart percentage labels
-                const lineDataset = chart.data.datasets[3];
-                if (lineDataset && lineDataset.type === 'line') {
-                    const lineMeta = chart.getDatasetMeta(3);
-                    if (lineMeta && lineMeta.data) {
-                        ctx.font = "bold 12px Arial";
-                        ctx.fillStyle = "#27ae60";
-                        ctx.textBaseline = "bottom";
-                        
-                        lineMeta.data.forEach(function(point, index) {
-                            const value = lineDataset.data[index];
-                            if (value > 0) {
-                                ctx.fillText(value.toFixed(1) + '%', point.x, point.y - 12);
-                            }
-                        });
-                    }
-                }
+                plugins: { legend: { display: false } }
             }
-        }]
-    });
+        });
+    } catch (error) {
+        console.error('❌ Error creating Monthly chart:', error);
+        showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
+    }
 }
 
-// ===== DIVISION CHARTS FUNCTIONS =====
 function createDivisionChartContainers(divisionChartsData) {
-    const container = document.getElementById('divisionChartsContainer');
-    if (!container) return;
-    
-    // ล้าง container
-    container.innerHTML = '';
-    
-    // สร้าง container สำหรับ Division แต่ละอัน
-    Object.keys(divisionChartsData).forEach(divisionKey => {
-        const divisionData = divisionChartsData[divisionKey];
+    try {
+        const container = document.getElementById('divisionChartsContainer');
+        if (!container) return;
         
-        const chartContainer = document.createElement('div');
-        chartContainer.className = 'division-chart-container';
-        chartContainer.innerHTML = `
-            <div class="division-chart-title">${divisionData.divisionName || divisionKey}</div>
-            <div class="division-chart-wrapper">
-                <div id="divisionLoading_${divisionKey}" class="division-chart-loading">
-                    <div class="spinner"></div>
-                    <p>กำลังโหลด...</p>
+        // Clear container
+        container.innerHTML = '';
+        
+        // Create containers for each division
+        Object.keys(divisionChartsData).forEach(divisionKey => {
+            const divisionData = divisionChartsData[divisionKey];
+            
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'division-chart-container';
+            chartContainer.innerHTML = `
+                <div class="division-chart-title">${divisionData.divisionName || divisionKey}</div>
+                <div class="division-chart-wrapper">
+                    <canvas id="divisionChart_${divisionKey}"></canvas>
                 </div>
-                <canvas id="divisionChart_${divisionKey}" style="display: none;"></canvas>
-            </div>
-        `;
+            `;
+            
+            container.appendChild(chartContainer);
+        });
         
-        container.appendChild(chartContainer);
-    });
+        console.log('✅ Division containers created');
+    } catch (error) {
+        console.error('❌ Error creating division containers:', error);
+    }
 }
 
 function createSingleDivisionChart(divisionKey, divisionData) {
-    const ctx = document.getElementById(`divisionChart_${divisionKey}`);
-    if (!ctx) return;
-    
-    // Hide loading
-    const loadingElement = document.getElementById(`divisionLoading_${divisionKey}`);
-    if (loadingElement) loadingElement.style.display = 'none';
-    ctx.style.display = 'block';
-    
-    // Destroy existing chart
-    if (divisionCharts[divisionKey]) {
-        divisionCharts[divisionKey].destroy();
+    try {
+        const ctx = document.getElementById(`divisionChart_${divisionKey}`);
+        if (!ctx) return;
+        
+        // Destroy existing chart
+        if (divisionCharts[divisionKey]) {
+            divisionCharts[divisionKey].destroy();
+        }
+        
+        const months = divisionData.months || [];
+        const openData = divisionData.openData || [];
+        const temporaryData = divisionData.temporaryData || [];
+        const noActionData = divisionData.noActionData || [];
+        const closedPercentage = divisionData.closedPercentage || [];
+        
+        divisionCharts[divisionKey] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'Open',
+                        data: openData,
+                        backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                        borderWidth: 1,
+                        borderRadius: 3
+                    },
+                    {
+                        label: 'Temporary',
+                        data: temporaryData,
+                        backgroundColor: 'rgba(243, 156, 18, 0.8)',
+                        borderWidth: 1,
+                        borderRadius: 3
+                    },
+                    {
+                        label: 'No Action',
+                        data: noActionData,
+                        backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                        borderWidth: 1,
+                        borderRadius: 3
+                    },
+                    {
+                        label: '%Closed',
+                        data: closedPercentage,
+                        type: 'line',
+                        borderColor: 'rgba(46, 204, 113, 1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        display: false, 
+                        beginAtZero: true
+                    },
+                    y1: { 
+                        display: false, 
+                        position: 'right', 
+                        beginAtZero: true, 
+                        max: 100
+                    },
+                    x: { 
+                        ticks: { 
+                            maxRotation: 45, 
+                            font: { size: 8 } 
+                        } 
+                    }
+                },
+                plugins: { 
+                    legend: { 
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: { size: 8 },
+                            boxWidth: 8,
+                            padding: 4
+                        }
+                    }
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error(`❌ Error creating division chart ${divisionKey}:`, error);
     }
-    
-    const months = divisionData.months || [];
-    const openData = divisionData.openData || [];
-    const temporaryData = divisionData.temporaryData || [];
-    const noActionData = divisionData.noActionData || [];
-    const closedPercentage = divisionData.closedPercentage || [];
-    
-    console.log(`Creating Division Chart ${divisionKey}:`, divisionData.divisionName);
-    
-    divisionCharts[divisionKey] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: months,
-            datasets: [
-                {
-                    label: 'Open',
-                    data: openData,
-                    backgroundColor: 'rgba(52, 152, 219, 0.8)',
-                    borderColor: 'rgba(41, 128, 185, 1)',
-                    borderWidth: 1,
-                    borderRadius: 3,
-                    yAxisID: 'y',
-                    stack: 'stack1'
-                },
-                {
-                    label: 'Temporary',
-                    data: temporaryData,
-                    backgroundColor: 'rgba(243, 156, 18, 0.8)',
-                    borderColor: 'rgba(241, 196, 15, 1)',
-                    borderWidth: 1,
-                    borderRadius: 3,
-                    yAxisID: 'y',
-                    stack: 'stack2'
-                },
-                {
-                    label: 'No Action',
-                    data: noActionData,
-                    backgroundColor: 'rgba(231, 76, 60, 0.8)',
-                    borderColor: 'rgba(192, 57, 43, 1)',
-                    borderWidth: 1,
-                    borderRadius: 3,
-                    yAxisID: 'y',
-                    stack: 'stack2'
-                },
-                {
-                    label: '%Closed',
-                    data: closedPercentage,
-                    type: 'line',
-                    borderColor: 'rgba(46, 204, 113, 1)',
-                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 1,
-                    pointRadius: 3,
-                    tension: 0.4,
-                    yAxisID: 'y1',
-                    order: 0
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: { 
-                padding: { top: 30, bottom: 5, left: 5, right: 5 } 
-            },
-            scales: {
-                y: { 
-                    type: 'linear', 
-                    display: false, 
-                    beginAtZero: true, 
-                    grid: { display: false } 
-                },
-                y1: { 
-                    type: 'linear', 
-                    display: false, 
-                    position: 'right', 
-                    beginAtZero: true, 
-                    max: 100, 
-                    grid: { display: false } 
-                },
-                x: { 
-                    grid: { display: false }, 
-                    ticks: { 
-                        maxRotation: 45, 
-                        minRotation: 45, 
-                        font: { size: 8 } 
-                    } 
-                }
-            },
-            plugins: { 
-                legend: { 
-                    display: true,
-                    position: 'top',
-                    align: 'center',
-                    labels: {
-                        font: { size: 8, weight: 'bold' },
-                        usePointStyle: true,
-                        padding: 4,
-                        boxWidth: 8,
-                        boxHeight: 8
-                    }
-                }
-            }
-        },
-        plugins: [{
-            afterDatasetsDraw: function(chart) {
-                const ctx = chart.ctx;
-                ctx.font = "bold 8px Arial";
-                ctx.textAlign = "center";
-                
-                // Show values on bars
-                chart.data.datasets.forEach(function(dataset, datasetIndex) {
-                    if (dataset.type === 'line') return;
-                    
-                    const meta = chart.getDatasetMeta(datasetIndex);
-                    meta.data.forEach(function(bar, index) {
-                        const value = dataset.data[index];
-                        if (value > 0) {
-                            ctx.fillStyle = datasetIndex === 0 ? "rgba(41, 128, 185, 1)" : 
-                                           datasetIndex === 1 ? "rgba(183, 149, 11, 1)" : "white";
-                            
-                            if (datasetIndex === 0) {
-                                ctx.textBaseline = "bottom";
-                                ctx.fillText(value, bar.x, bar.y - 3);
-                            } else {
-                                ctx.textBaseline = "middle";
-                                ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                            }
-                        }
-                    });
-                });
-                
-                // Show stacked totals
-                ctx.fillStyle = "#333";
-                ctx.textBaseline = "bottom";
-                const tempMeta = chart.getDatasetMeta(1);
-                const noActMeta = chart.getDatasetMeta(2);
-                
-                if (tempMeta && noActMeta) {
-                    tempMeta.data.forEach(function(bar, index) {
-                        const total = (temporaryData[index] || 0) + (noActionData[index] || 0);
-                        if (total > 0) {
-                            const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
-                            ctx.fillText(total, bar.x, topY - 3);
-                        }
-                    });
-                }
-                
-                // Show %Closed values
-                const lineDataset = chart.data.datasets[3];
-                if (lineDataset && lineDataset.type === 'line') {
-                    const lineMeta = chart.getDatasetMeta(3);
-                    if (lineMeta && lineMeta.data) {
-                        ctx.font = "bold 7px Arial";
-                        ctx.fillStyle = "rgba(0, 120, 0, 1)";
-                        
-                        lineMeta.data.forEach(function(point, index) {
-                            const value = lineDataset.data[index];
-                            if (value > 0) {
-                                const adjustedY = point.y < 50 ? point.y - 8 : point.y + 12;
-                                ctx.fillText(value.toFixed(0) + '%', point.x, adjustedY);
-                            }
-                        });
-                    }
-                }
-            }
-        }]
-    });
 }
 
 // ===== UTILITY FUNCTIONS =====
-function animateStatusCard(elementId, targetValue) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-    
-    const duration = 1000;
-    const startValue = parseInt(element.textContent) || 0;
-    const startTime = Date.now();
-    
-    function update() {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentValue = Math.round(startValue + (targetValue - startValue) * easeOut);
-        
-        element.textContent = currentValue;
-        
-        if (progress < 1) {
-            requestAnimationFrame(update);
-        }
-    }
-    
-    update();
-}
-
 function showChartError(chartId, loadingId, errorId) {
-    const loading = document.getElementById(loadingId);
-    const error = document.getElementById(errorId);
-    const chart = document.getElementById(chartId);
-    
-    if (loading) loading.style.display = 'none';
-    if (error) error.style.display = 'flex';
-    if (chart) chart.style.display = 'none';
+    try {
+        const loading = document.getElementById(loadingId);
+        const error = document.getElementById(errorId);
+        const chart = document.getElementById(chartId);
+        
+        if (loading) loading.style.display = 'none';
+        if (error) error.style.display = 'flex';
+        if (chart) chart.style.display = 'none';
+    } catch (e) {
+        console.error('Error showing chart error:', e);
+    }
 }
 
 function updateLastUpdated(timestamp, source) {
-    const element = document.getElementById('lastUpdated');
-    if (element) {
-        element.innerHTML = 
-            `อัพเดทล่าสุด: <strong>${timestamp || new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมูล: ${source || 'Google Sheets API ผ่าน Apps Script'}`;
+    try {
+        const element = document.getElementById('lastUpdated');
+        if (element) {
+            element.innerHTML = 
+                `อัพเดทล่าสุด: <strong>${timestamp || new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมูล: ${source || 'Google Sheets API ผ่าน Apps Script'}`;
+        }
+    } catch (error) {
+        console.error('Error updating last updated:', error);
     }
 }
 
 function updateConnectionStatus(message, type) {
-    const status = document.getElementById('connectionStatus');
-    if (status) {
-        status.textContent = message;
-        status.className = `connection-status ${type}`;
+    try {
+        const status = document.getElementById('connectionStatus');
+        if (status) {
+            status.textContent = message;
+            status.className = `connection-status ${type}`;
+        }
+    } catch (error) {
+        console.error('Error updating connection status:', error);
     }
 }
 
@@ -1435,44 +1154,60 @@ function navigateToPage(pageName) {
 
 // ===== DROPDOWN FUNCTIONS =====
 function toggleDropdown(dropdownId) {
-    const dropdown = document.getElementById(dropdownId);
-    const isShowing = dropdown.classList.contains('show');
-    
-    // Close all dropdowns first
-    closeAllDropdowns();
-    
-    // Toggle the clicked dropdown
-    if (!isShowing) {
-        dropdown.classList.add('show');
+    try {
+        const dropdown = document.getElementById(dropdownId);
+        const isShowing = dropdown.classList.contains('show');
+        
+        // Close all dropdowns first
+        closeAllDropdowns();
+        
+        // Toggle the clicked dropdown
+        if (!isShowing) {
+            dropdown.classList.add('show');
+        }
+    } catch (error) {
+        console.error('Error toggling dropdown:', error);
     }
 }
 
 function closeAllDropdowns() {
-    const dropdowns = document.querySelectorAll('.dropdown-menu');
-    dropdowns.forEach(dropdown => {
-        dropdown.classList.remove('show');
-    });
+    try {
+        const dropdowns = document.querySelectorAll('.dropdown-menu');
+        dropdowns.forEach(dropdown => {
+            dropdown.classList.remove('show');
+        });
+    } catch (error) {
+        console.error('Error closing dropdowns:', error);
+    }
 }
 
 // ===== INITIALIZATION =====
 window.onload = function() {
-    console.log('🛡️ Safety Dashboard with Division Charts initialized - GitHub Pages with Apps Script API');
-    logDebug('🛡️ Safety Dashboard initialized');
+    console.log('🛡️ Safety Dashboard initialized');
     
-    // Display current API URL
-    document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
-    
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(event) {
-        if (!event.target.matches('.dropdown-btn')) {
-            closeAllDropdowns();
-        }
-    });
-    
-    // Load all data on startup
-    setTimeout(() => {
-        loadAllData();
-    }, 500);
+    try {
+        // Display current API URL
+        document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.matches('.dropdown-btn')) {
+                closeAllDropdowns();
+            }
+        });
+        
+        // Load all data on startup with delay
+        setTimeout(() => {
+            loadAllData();
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        // Force show content if initialization fails
+        document.getElementById('pageLoading').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        updateConnectionStatus('❌ เกิดข้อผิดพลาดในการเริ่มต้น', 'error');
+    }
 };
 </script>
 
