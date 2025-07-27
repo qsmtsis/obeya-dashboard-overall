@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>TSIS - Safety Dashboard</title>
+    <title>TSIS - Quality Dashboard</title>
     
     <!-- Chart.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -72,7 +72,7 @@
         .page-title {
             font-size: 32px;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -83,23 +83,23 @@
         }
 
         .api-info {
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            border: 1px solid #2196f3;
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border: 1px solid #4caf50;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 30px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
         }
 
         .api-info h4 {
-            color: #1976d2;
+            color: #2e7d32;
             margin-bottom: 8px;
             font-size: 18px;
         }
 
         .api-info p {
-            color: #1976d2;
+            color: #2e7d32;
             font-size: 14px;
             margin-bottom: 10px;
         }
@@ -141,7 +141,7 @@
             width: 50px;
             height: 50px;
             border: 5px solid #f3f3f3;
-            border-top: 5px solid #667eea;
+            border-top: 5px solid #4caf50;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
@@ -171,9 +171,9 @@
         }
 
         .status-card.near-miss { --card-color: #e74c3c; }
-        .status-card.closed { --card-color: #27ae60; }
-        .status-card.temporary { --card-color: #f39c12; }
-        .status-card.no-action { --card-color: #95a5a6; }
+        .status-card.closed { --card-color: #4caf50; }
+        .status-card.temporary { --card-color: #ff9800; }
+        .status-card.no-action { --card-color: #9e9e9e; }
 
         .status-label {
             font-size: 16px;
@@ -207,7 +207,7 @@
         }
 
         .chart-section h3 {
-            color: #667eea;
+            color: #4caf50;
             margin-bottom: 20px;
             text-align: center;
             font-size: 18px;
@@ -232,7 +232,7 @@
             width: 40px;
             height: 40px;
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border-top: 4px solid #4caf50;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
@@ -260,7 +260,7 @@
         }
 
         .division-charts h2 {
-            color: #667eea;
+            color: #4caf50;
             margin-bottom: 30px;
             text-align: center;
             font-size: 24px;
@@ -288,7 +288,7 @@
             text-align: center;
             margin-bottom: 15px;
             padding: 8px;
-            background: #667eea;
+            background: #4caf50;
             border-radius: 6px;
         }
 
@@ -308,7 +308,7 @@
         }
 
         .action-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -319,79 +319,12 @@
             text-decoration: none;
             display: inline-block;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
         }
 
         .action-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .dropdown-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .dropdown-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .dropdown-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .dropdown-btn::after {
-            content: '▼';
-            font-size: 10px;
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            z-index: 1000;
-            min-width: 200px;
-            display: none;
-        }
-
-        .dropdown-menu.show {
-            display: block;
-        }
-
-        .dropdown-item {
-            padding: 12px 16px;
-            text-decoration: none;
-            color: #333;
-            display: block;
-            font-size: 13px;
-            transition: background-color 0.2s ease;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        .dropdown-item:hover {
-            background-color: #f8f9fa;
-            color: #667eea;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
 
         .last-updated {
@@ -425,19 +358,6 @@
             }
         }
 
-        @media (max-width: 768px) {
-            .action-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .action-btn,
-            .dropdown-btn {
-                width: 200px;
-                text-align: center;
-            }
-        }
-
         @media (max-width: 600px) {
             .status-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -466,24 +386,24 @@
                 <p>Dashboard</p>
             </div>
             <div class="nav-item" onclick="navigateToPage('index.html')">📊 Overall</div>
-            <div class="nav-item active">🛡️ Safety</div>
-            <div class="nav-item" onclick="navigateToPage('quality.html')">⭐ Quality</div>
+            <div class="nav-item" onclick="navigateToPage('safety.html')">🛡️ Safety</div>
+            <div class="nav-item active">⭐ Quality</div>
         </div>
 
         <div class="main-content">
-            <h1 class="page-title">Safety Dashboard</h1>
+            <h1 class="page-title">Quality Dashboard</h1>
 
             <!-- Page Loading State -->
             <div id="pageLoading" class="page-loading">
                 <div class="spinner"></div>
-                <p>กำลังโหลดข้อมูล Safety Dashboard...</p>
+                <p>กำลังโหลดข้อมูล Quality Dashboard...</p>
             </div>
 
             <!-- Main Content -->
             <div id="mainContent" style="display: none;">
                 <!-- API Info -->
                 <div class="api-info">
-                    <h4>🛡️ Safety Real-time Dashboard</h4>
+                    <h4>⭐ Quality Real-time Dashboard</h4>
                     <p>เชื่อมต่อ Google Sheets ผ่าน Apps Script API พร้อม Division Analysis</p>
                     <p id="apiUrlDisplay">API URL: กำลังโหลด...</p>
                 </div>
@@ -495,54 +415,9 @@
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <!-- Near miss Button -->
-                    <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
-                       target="_blank" class="action-btn">📋 ตาราง Near miss</a>
-
-                    <!-- แก้ไข Dropdown -->
-                    <div class="dropdown-container">
-                        <button class="dropdown-btn" onclick="toggleDropdown('editDropdown')">
-                            🔧 แก้ไข
-                        </button>
-                        <div id="editDropdown" class="dropdown-menu">
-                            <a href="https://script.google.com/macros/s/AKfycbwif8TTLnCN84_d0xoxvCZmEYb1mu9EO6_DlNkYt8Cc0hmr2dLGS_dnXKhSjKVENSYSEg/exec" 
-                               target="_blank" class="dropdown-item">
-                                🔄 แก้ไขชั่วคราว
-                            </a>
-                            <a href="https://script.google.com/macros/s/AKfycbwYBMxA_ymzl1uIS66ZgkAXgHXeCsJvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
-                               target="_blank" class="dropdown-item">
-                                ✅ แก้ไขถาวร
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- อนุมัติ Dropdown -->
-                    <div class="dropdown-container">
-                        <button class="dropdown-btn" onclick="toggleDropdown('approvalDropdown')">
-                            ✅ อนุมัติ
-                        </button>
-                        <div id="approvalDropdown" class="dropdown-menu">
-                            <a href="https://script.google.com/macros/s/AKfycbzzrYpo7XErNPvokQO_uQX8uUJAJqGQdAIm6v3E8AL61bNedxJu3pVxuv9PoXk0X6kilA/exec" 
-                               target="_blank" class="dropdown-item">
-                                🔄 Q&S อนุมัติชั่วคราว
-                            </a>
-                            <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
-                               target="_blank" class="dropdown-item">
-                                ✅ Q&S อนุมัติถาวร
-                            </a>
-                            <a href="https://script.google.com/macros/s/AKfycbwsbkICpwuCzLgIbXJlgWdF7PCUP6vYUsM3la5iqZdOLqXl1nG3qUkiY-4_bkQs8c1NEA/exec" 
-                               target="_blank" class="dropdown-item">
-                                👨‍💼 Manager Approval
-                            </a>
-                            <a href="https://script.google.com/macros/s/AKfycbwxtj0YS_MfR1BezMLGCw7hx25FkAha1cN-RKkeuYPukd2jc1AYfXu07i9CC4LHwG88MQ/exec" 
-                               target="_blank" class="dropdown-item">
-                                🏢 GM Approval
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Other Buttons -->
                     <button class="action-btn" onclick="loadAllData()">🔄 รีเฟรชข้อมูล</button>
+                    <a href="index.html" class="action-btn">📊 ไปที่ Overall</a>
+                    <a href="safety.html" class="action-btn">🛡️ ไปที่ Safety</a>
                 </div>
 
                 <!-- Status Cards -->
@@ -578,7 +453,7 @@
                                 </div>
                                 <div id="outstandingError" class="chart-error" style="display: none;">
                                     <p>⚠️ ไม่สามารถโหลดกราฟได้</p>
-                                    <button onclick="loadAllData()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">ลองใหม่</button>
+                                    <button onclick="loadAllData()" style="margin-top: 10px; padding: 8px 16px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">ลองใหม่</button>
                                 </div>
                                 <canvas id="outstandingChart" style="display: none;"></canvas>
                             </div>
@@ -594,7 +469,7 @@
                                 </div>
                                 <div id="monthlyError" class="chart-error" style="display: none;">
                                     <p>⚠️ ไม่สามารถโหลดกราฟได้</p>
-                                    <button onclick="loadAllData()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">ลองใหม่</button>
+                                    <button onclick="loadAllData()" style="margin-top: 10px; padding: 8px 16px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">ลองใหม่</button>
                                 </div>
                                 <canvas id="monthlyChart" style="display: none;"></canvas>
                             </div>
@@ -631,7 +506,7 @@ let loadingTimeout;
 
 // ===== MAIN FUNCTIONS =====
 async function loadAllData() {
-    console.log('🚀 Loading Safety data with divisions from Apps Script API...');
+    console.log('🚀 Loading Quality data with divisions from Apps Script API...');
     
     // Set timeout to prevent infinite loading
     if (loadingTimeout) {
@@ -653,12 +528,12 @@ async function loadAllData() {
         // Display API URL
         document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
         
-        console.log('📡 Calling Apps Script API...');
+        console.log('📡 Calling Apps Script API for Quality...');
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout for fetch
         
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=safety&divisions=true&t=${Date.now()}`, {
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=quality&divisions=true&t=${Date.now()}`, {
             method: 'GET',
             mode: 'cors',
             cache: 'no-cache',
@@ -668,14 +543,14 @@ async function loadAllData() {
         clearTimeout(timeoutId);
         clearTimeout(loadingTimeout);
         
-        console.log('📡 Response received:', response.status, response.ok);
+        console.log('📡 Quality Response received:', response.status, response.ok);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
-        console.log('📦 API Response received:', data.success);
+        console.log('📦 Quality API Response received:', data.success);
         
         if (!data.success) {
             throw new Error(data.error || 'API returned error');
@@ -688,24 +563,24 @@ async function loadAllData() {
         document.getElementById('mainContent').style.display = 'block';
         
         // Update status cards
-        console.log('📊 Updating status cards...');
-        updateStatusCards(data.safety.status);
+        console.log('📊 Updating quality status cards...');
+        updateStatusCards(data.quality.status);
         
         // Load charts
-        console.log('📈 Loading charts...');
-        await loadChartData(data.safety);
+        console.log('📈 Loading quality charts...');
+        await loadChartData(data.quality);
         
         // Load division charts
-        console.log('🏢 Loading division charts...');
-        await loadDivisionCharts(data.safety.divisionCharts);
+        console.log('🏢 Loading quality division charts...');
+        await loadDivisionCharts(data.quality.divisionCharts);
         
         updateLastUpdated(data.lastUpdated, data.source);
-        updateConnectionStatus('✅ เชื่อมต่อสำเร็จ - Real-time พร้อม Division Analysis', 'success');
+        updateConnectionStatus('✅ เชื่อมต่อสำเร็จ - Real-time Quality Data พร้อม Division Analysis', 'success');
         
-        console.log('✅ All data loaded successfully');
+        console.log('✅ All quality data loaded successfully');
         
     } catch (error) {
-        console.error('❌ Error loading data:', error);
+        console.error('❌ Error loading quality data:', error);
         
         clearTimeout(loadingTimeout);
         
@@ -715,7 +590,7 @@ async function loadAllData() {
         if (error.name === 'AbortError') {
             updateConnectionStatus('⏰ การโหลดข้อมูลใช้เวลานานเกินไป - ลองรีเฟรชใหม่', 'warning');
         } else {
-            updateConnectionStatus('❌ เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message, 'error');
+            updateConnectionStatus('❌ เกิดข้อผิดพลาดในการโหลดข้อมูล Quality: ' + error.message, 'error');
         }
         
         showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
@@ -725,49 +600,49 @@ async function loadAllData() {
 
 function updateStatusCards(statusData) {
     if (!statusData) {
-        console.log('⚠️ No status data received');
+        console.log('⚠️ No quality status data received');
         return;
     }
     
-    console.log('📊 Updating Safety status cards:', statusData);
+    console.log('📊 Updating Quality status cards:', statusData);
     
-    // Update status cards with simple assignment (no animation to prevent issues)
+    // Update status cards with simple assignment
     try {
         document.getElementById('nearMissValue').textContent = statusData.nearMiss?.value || 0;
         document.getElementById('closedValue').textContent = statusData.closed?.value || 0;
         document.getElementById('temporaryValue').textContent = statusData.temporaryAction?.value || 0;
         document.getElementById('noActionValue').textContent = statusData.noAction?.value || 0;
-        console.log('✅ Status cards updated');
+        console.log('✅ Quality status cards updated');
     } catch (error) {
-        console.error('❌ Error updating status cards:', error);
+        console.error('❌ Error updating quality status cards:', error);
     }
 }
 
-async function loadChartData(safetyData) {
+async function loadChartData(qualityData) {
     try {
-        console.log('📈 Loading chart data...');
+        console.log('📈 Loading quality chart data...');
         
         // Create charts with error handling
-        if (safetyData.outstanding) {
-            console.log('📊 Creating Outstanding chart');
-            createOutstandingChart(safetyData.outstanding);
+        if (qualityData.outstanding) {
+            console.log('📊 Creating Quality Outstanding chart');
+            createOutstandingChart(qualityData.outstanding);
         } else {
-            console.log('⚠️ No outstanding data');
+            console.log('⚠️ No quality outstanding data');
             showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
         }
         
-        if (safetyData.monthly) {
-            console.log('📈 Creating Monthly chart');
-            createMonthlyChart(safetyData.monthly);
+        if (qualityData.monthly) {
+            console.log('📈 Creating Quality Monthly chart');
+            createMonthlyChart(qualityData.monthly);
         } else {
-            console.log('⚠️ No monthly data');
+            console.log('⚠️ No quality monthly data');
             showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
         }
         
-        console.log('✅ Main chart data loaded');
+        console.log('✅ Quality main chart data loaded');
         
     } catch (error) {
-        console.error('❌ Chart loading failed:', error);
+        console.error('❌ Quality chart loading failed:', error);
         showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
         showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
     }
@@ -776,11 +651,11 @@ async function loadChartData(safetyData) {
 async function loadDivisionCharts(divisionChartsData) {
     try {
         if (!divisionChartsData) {
-            console.log('⚠️ No division charts data available');
+            console.log('⚠️ No quality division charts data available');
             return;
         }
         
-        console.log('🏢 Loading Division Charts:', Object.keys(divisionChartsData).length, 'divisions');
+        console.log('🏢 Loading Quality Division Charts:', Object.keys(divisionChartsData).length, 'divisions');
         
         // Create HTML containers
         createDivisionChartContainers(divisionChartsData);
@@ -799,14 +674,14 @@ async function loadDivisionCharts(divisionChartsData) {
                     await new Promise(resolve => setTimeout(resolve, 50));
                 }
             } catch (error) {
-                console.error(`❌ Failed to create chart for ${divisionKey}:`, error);
+                console.error(`❌ Failed to create quality chart for ${divisionKey}:`, error);
             }
         }
         
-        console.log('✅ All Division Charts created');
+        console.log('✅ All Quality Division Charts created');
         
     } catch (error) {
-        console.error('❌ Division Charts loading failed:', error);
+        console.error('❌ Quality Division Charts loading failed:', error);
     }
 }
 
@@ -829,7 +704,7 @@ function createOutstandingChart(outstandingData) {
         const temporaryData = outstandingData.temporaryData || [];
         const noActionData = outstandingData.noActionData || [];
 
-        console.log('📊 Creating Outstanding Chart with', labels.length, 'items');
+        console.log('📊 Creating Quality Outstanding Chart with', labels.length, 'items');
 
         outstandingChart = new Chart(ctx, {
             type: 'bar',
@@ -839,16 +714,16 @@ function createOutstandingChart(outstandingData) {
                     {
                         label: 'Temporary Action',
                         data: temporaryData,
-                        backgroundColor: 'rgba(243, 156, 18, 0.85)',
-                        borderColor: 'rgba(241, 196, 15, 1)',
+                        backgroundColor: 'rgba(76, 175, 80, 0.85)',
+                        borderColor: 'rgba(56, 142, 60, 1)',
                         borderWidth: 2,
                         borderRadius: 6
                     },
                     {
                         label: 'No Action',
                         data: noActionData,
-                        backgroundColor: 'rgba(231, 76, 60, 0.85)',
-                        borderColor: 'rgba(192, 57, 43, 1)',
+                        backgroundColor: 'rgba(255, 152, 0, 0.85)',
+                        borderColor: 'rgba(245, 124, 0, 1)',
                         borderWidth: 2,
                         borderRadius: 6
                     }
@@ -877,7 +752,7 @@ function createOutstandingChart(outstandingData) {
             }
         });
     } catch (error) {
-        console.error('❌ Error creating Outstanding chart:', error);
+        console.error('❌ Error creating Quality Outstanding chart:', error);
         showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
     }
 }
@@ -902,7 +777,7 @@ function createMonthlyChart(monthlyData) {
         const noActionData = monthlyData.noActionData || [];
         const closedPercentage = monthlyData.closedPercentage || [];
 
-        console.log('📈 Creating Monthly Chart with', months.length, 'months');
+        console.log('📈 Creating Quality Monthly Chart with', months.length, 'months');
 
         monthlyChart = new Chart(ctx, {
             type: 'bar',
@@ -912,8 +787,8 @@ function createMonthlyChart(monthlyData) {
                     {
                         label: 'Open',
                         data: openData,
-                        backgroundColor: 'rgba(52, 152, 219, 0.85)',
-                        borderColor: 'rgba(41, 128, 185, 1)',
+                        backgroundColor: 'rgba(33, 150, 243, 0.85)',
+                        borderColor: 'rgba(25, 118, 210, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
                         yAxisID: 'y'
@@ -921,8 +796,8 @@ function createMonthlyChart(monthlyData) {
                     {
                         label: 'Temporary Action',
                         data: temporaryData,
-                        backgroundColor: 'rgba(243, 156, 18, 0.85)',
-                        borderColor: 'rgba(241, 196, 15, 1)',
+                        backgroundColor: 'rgba(76, 175, 80, 0.85)',
+                        borderColor: 'rgba(56, 142, 60, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
                         yAxisID: 'y'
@@ -930,8 +805,8 @@ function createMonthlyChart(monthlyData) {
                     {
                         label: 'No Action',
                         data: noActionData,
-                        backgroundColor: 'rgba(231, 76, 60, 0.85)',
-                        borderColor: 'rgba(192, 57, 43, 1)',
+                        backgroundColor: 'rgba(255, 152, 0, 0.85)',
+                        borderColor: 'rgba(245, 124, 0, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
                         yAxisID: 'y'
@@ -940,10 +815,10 @@ function createMonthlyChart(monthlyData) {
                         label: '%Closed',
                         data: closedPercentage,
                         type: 'line',
-                        borderColor: '#2ecc71',
-                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderColor: '#4caf50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
                         borderWidth: 4,
-                        pointBackgroundColor: '#2ecc71',
+                        pointBackgroundColor: '#4caf50',
                         pointBorderColor: '#ffffff',
                         pointBorderWidth: 3,
                         pointRadius: 8,
@@ -980,7 +855,7 @@ function createMonthlyChart(monthlyData) {
             }
         });
     } catch (error) {
-        console.error('❌ Error creating Monthly chart:', error);
+        console.error('❌ Error creating Quality Monthly chart:', error);
         showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
     }
 }
@@ -1009,9 +884,9 @@ function createDivisionChartContainers(divisionChartsData) {
             container.appendChild(chartContainer);
         });
         
-        console.log('✅ Division containers created');
+        console.log('✅ Quality division containers created');
     } catch (error) {
-        console.error('❌ Error creating division containers:', error);
+        console.error('❌ Error creating quality division containers:', error);
     }
 }
 
@@ -1039,21 +914,21 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                     {
                         label: 'Open',
                         data: openData,
-                        backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                        backgroundColor: 'rgba(33, 150, 243, 0.8)',
                         borderWidth: 1,
                         borderRadius: 3
                     },
                     {
                         label: 'Temporary',
                         data: temporaryData,
-                        backgroundColor: 'rgba(243, 156, 18, 0.8)',
+                        backgroundColor: 'rgba(76, 175, 80, 0.8)',
                         borderWidth: 1,
                         borderRadius: 3
                     },
                     {
                         label: 'No Action',
                         data: noActionData,
-                        backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                        backgroundColor: 'rgba(255, 152, 0, 0.8)',
                         borderWidth: 1,
                         borderRadius: 3
                     },
@@ -1061,7 +936,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                         label: '%Closed',
                         data: closedPercentage,
                         type: 'line',
-                        borderColor: 'rgba(46, 204, 113, 1)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
                         borderWidth: 2,
                         pointRadius: 3,
                         tension: 0.4,
@@ -1105,7 +980,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
         });
         
     } catch (error) {
-        console.error(`❌ Error creating division chart ${divisionKey}:`, error);
+        console.error(`❌ Error creating quality division chart ${divisionKey}:`, error);
     }
 }
 
@@ -1152,49 +1027,13 @@ function navigateToPage(pageName) {
     window.location.href = pageName;
 }
 
-// ===== DROPDOWN FUNCTIONS =====
-function toggleDropdown(dropdownId) {
-    try {
-        const dropdown = document.getElementById(dropdownId);
-        const isShowing = dropdown.classList.contains('show');
-        
-        // Close all dropdowns first
-        closeAllDropdowns();
-        
-        // Toggle the clicked dropdown
-        if (!isShowing) {
-            dropdown.classList.add('show');
-        }
-    } catch (error) {
-        console.error('Error toggling dropdown:', error);
-    }
-}
-
-function closeAllDropdowns() {
-    try {
-        const dropdowns = document.querySelectorAll('.dropdown-menu');
-        dropdowns.forEach(dropdown => {
-            dropdown.classList.remove('show');
-        });
-    } catch (error) {
-        console.error('Error closing dropdowns:', error);
-    }
-}
-
 // ===== INITIALIZATION =====
 window.onload = function() {
-    console.log('🛡️ Safety Dashboard initialized');
+    console.log('⭐ Quality Dashboard initialized');
     
     try {
         // Display current API URL
         document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
-        
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.matches('.dropdown-btn')) {
-                closeAllDropdowns();
-            }
-        });
         
         // Load all data on startup with delay
         setTimeout(() => {
