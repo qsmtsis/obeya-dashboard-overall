@@ -390,6 +390,7 @@
                 <div class="data-source-info">
                     <h4>🔗 ข้อมูลจาก Google Sheets ผ่าน Apps Script API</h4>
                     <p>ข้อมูลอัพเดทแบบ Real-time จาก Google Sheets + UI จาก GitHub Pages</p>
+                    <p id="apiUrlDisplay">API URL: กำลังโหลด...</p>
                 </div>
 
                 <!-- Action Buttons -->
@@ -427,7 +428,7 @@
                                target="_blank" class="dropdown-item">
                                 🔄 Q&S อนุมัติชั่วคราว
                             </a>
-                            <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
+                            <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKAG8ECEQvwkYaCB_6FwleUmMpN9l3DxhWJhLzxOXr/exec" 
                                target="_blank" class="dropdown-item">
                                 ✅ Q&S อนุมัติถาวร
                             </a>
@@ -441,6 +442,8 @@
                             </a>
                         </div>
                     </div>
+
+                    <button class="action-btn" onclick="loadQualityData()">🔄 รีเฟรชข้อมูล</button>
                 </div>
 
                 <!-- Status Cards -->
@@ -490,7 +493,7 @@
     </div>
 
 <script>
-// Configuration - ใส่ URL ของ Google Apps Script ที่ Deploy แล้ว
+// Configuration
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwC12o0ncg81GC6lsp1RGzi_EfBRA6G36EQRktUEa4ItzCJOOnJCLqslRJvfgnFvD310g/exec';
 
 let outstandingChart;
@@ -504,21 +507,28 @@ function navigateToPage(pageName) {
 
 // Load data from Google Apps Script API
 async function loadQualityData() {
-    console.log('Loading quality data from Apps Script API...');
+    console.log('🚀 Loading Quality data from Apps Script API...');
     
     document.getElementById('loadingQuality').style.display = 'block';
     document.getElementById('errorQuality').style.display = 'none';
     document.getElementById('qualityContent').style.display = 'none';
     
+    // Display API URL
+    document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
+    
     try {
-        // เรียก API จาก Google Apps Script
+        // เรียก API สำหรับ Quality data
+        console.log('📡 Calling Quality API...');
         const response = await fetch(`${APPS_SCRIPT_URL}?action=quality&t=${Date.now()}`);
+        
+        console.log('📡 Response status:', response.status, response.ok);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
+        console.log('📦 Quality API Response:', data);
         
         if (!data.success) {
             throw new Error(data.error || 'API returned error');
@@ -527,13 +537,13 @@ async function loadQualityData() {
         onQualityDataLoaded(data);
         
     } catch (error) {
-        console.error('Error loading quality data from API:', error);
+        console.error('❌ Error loading quality data from API:', error);
         onQualityDataError(error);
     }
 }
 
 function onQualityDataLoaded(apiResponse) {
-    console.log('Quality data loaded from Apps Script API:', apiResponse);
+    console.log('✅ Quality data loaded successfully:', apiResponse);
     
     document.getElementById('loadingQuality').style.display = 'none';
     
@@ -544,28 +554,33 @@ function onQualityDataLoaded(apiResponse) {
     
     qualityData = apiResponse.data;
     
-    // อัพเดท Status Cards (ข้อมูลจริงจาก B48, C48, G48, H48)
+    // อัพเดท Status Cards (ข้อมูลจาก B48, C48, G48, H48)
     if (qualityData.status) {
-        console.log('Updating Quality status cards with real data from API:', qualityData.status);
+        console.log('📊 Updating Quality status cards:', qualityData.status);
         document.getElementById('nearMissValue').textContent = qualityData.status.nearMiss?.value || 0;
         document.getElementById('closedValue').textContent = qualityData.status.closed?.value || 0;
         document.getElementById('temporaryValue').textContent = qualityData.status.temporaryAction?.value || 0;
         document.getElementById('noActionValue').textContent = qualityData.status.noAction?.value || 0;
+    } else {
+        console.log('⚠️ No Quality status data received');
     }
     
+    // Update last updated time
     if (apiResponse.lastUpdated) {
         document.getElementById('lastUpdatedQuality').textContent = `อัพเดทล่าสุด: ${apiResponse.lastUpdated} (จาก ${apiResponse.source})`;
     }
     
     // สร้างกราฟ
+    console.log('📈 Creating Quality charts...');
     createOutstandingChart();
     createMonthlyChart();
     
     document.getElementById('qualityContent').style.display = 'block';
+    console.log('✅ Quality dashboard loaded successfully');
 }
 
 function onQualityDataError(error) {
-    console.error('Error loading quality data from API:', error);
+    console.error('❌ Quality data error:', error);
     showQualityError(error.toString());
 }
 
@@ -579,7 +594,10 @@ function showQualityError(message) {
 // Chart 1: Outstanding Issues - Stacked Bar Chart
 function createOutstandingChart() {
     const ctx = document.getElementById('outstandingChart');
-    if (!ctx) return;
+    if (!ctx) {
+        console.error('❌ Outstanding chart canvas not found');
+        return;
+    }
     
     if (outstandingChart) {
         outstandingChart.destroy();
@@ -594,23 +612,19 @@ function createOutstandingChart() {
         labels = qualityData.outstanding.labels || [];
         temporaryData = qualityData.outstanding.temporaryData || [];
         noActionData = qualityData.outstanding.noActionData || [];
-    }
-    
-    if (labels.length === 0) {
-        console.error('No Quality outstanding chart data available from API');
-        return;
+        console.log('📊 Outstanding chart data from API:', { labels, temporaryData, noActionData });
+    } else {
+        console.error('❌ No Quality outstanding chart data available from API');
+        // ใช้ข้อมูลตัวอย่างแทน
+        labels = ['Dept A', 'Dept B', 'Dept C'];
+        temporaryData = [0, 0, 0];
+        noActionData = [0, 0, 0];
     }
 
     const totalData = temporaryData.map((temp, index) => {
         const noAct = noActionData[index] || 0;
         return temp + noAct;
     });
-
-    console.log('Quality Outstanding Chart Data from API:');
-    console.log('Labels:', labels);
-    console.log('Temporary:', temporaryData);
-    console.log('No Action:', noActionData);
-    console.log('Totals:', totalData);
 
     outstandingChart = new Chart(ctx, {
         type: 'bar',
@@ -692,12 +706,17 @@ function createOutstandingChart() {
             }
         }]
     });
+    
+    console.log('✅ Quality Outstanding chart created');
 }
 
 // Chart 2: Monthly Trend - Mixed Chart
 function createMonthlyChart() {
     const ctx = document.getElementById('monthlyChart');
-    if (!ctx) return;
+    if (!ctx) {
+        console.error('❌ Monthly chart canvas not found');
+        return;
+    }
     
     if (monthlyChart) {
         monthlyChart.destroy();
@@ -716,19 +735,16 @@ function createMonthlyChart() {
         temporaryData = qualityData.monthly.temporaryData || [];
         noActionData = qualityData.monthly.noActionData || [];
         closedPercentage = qualityData.monthly.closedPercentage || [];
+        console.log('📈 Monthly chart data from API:', { months, openData, temporaryData, noActionData, closedPercentage });
+    } else {
+        console.error('❌ No Quality monthly trend data available from API');
+        // ใช้ข้อมูลตัวอย่างแทน
+        months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        openData = [0, 0, 0, 0, 0, 0];
+        temporaryData = [0, 0, 0, 0, 0, 0];
+        noActionData = [0, 0, 0, 0, 0, 0];
+        closedPercentage = [0, 0, 0, 0, 0, 0];
     }
-    
-    if (months.length === 0) {
-        console.error('No Quality monthly trend data available from API');
-        return;
-    }
-
-    console.log('Quality Monthly Chart Data from API:');
-    console.log('Months:', months);
-    console.log('Open:', openData);
-    console.log('Temporary:', temporaryData);
-    console.log('No Action:', noActionData);
-    console.log('%Closed:', closedPercentage);
 
     monthlyChart = new Chart(ctx, {
         type: 'bar',
@@ -802,12 +818,21 @@ function createMonthlyChart() {
             }
         }
     });
+    
+    console.log('✅ Quality Monthly chart created');
 }
 
 // Initialize when page loads
 window.onload = function() {
-    console.log('Quality dashboard loaded - GitHub Pages with Apps Script API');
-    loadQualityData(); // โหลดข้อมูลจริงจาก Google Sheets ผ่าน API
+    console.log('⭐ Quality dashboard initializing...');
+    
+    // Display API URL immediately
+    document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
+    
+    // Load quality data
+    setTimeout(() => {
+        loadQualityData();
+    }, 500);
     
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(event) {
