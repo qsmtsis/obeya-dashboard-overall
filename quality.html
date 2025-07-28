@@ -191,7 +191,35 @@
         .chart-wrapper {
             position: relative;
             width: 100%;
-            height: 280px;
+            height: 350px;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+        }
+
+        .legend-line {
+            width: 20px;
+            height: 3px;
+            border-radius: 1px;
         }
 
         .chart-loading {
@@ -426,7 +454,7 @@
         .division-chart-wrapper {
             position: relative;
             width: 100%;
-            height: 240px;
+            height: 220px;
             flex: 1;
         }
 
@@ -606,6 +634,16 @@
                         <!-- Chart 1: Outstanding Issues -->
                         <div class="chart-section">
                             <h3>Outstanding Issues</h3>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: rgba(76, 175, 80, 0.85);"></div>
+                                    <span>Temporary Action</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: rgba(255, 152, 0, 0.85);"></div>
+                                    <span>No Action</span>
+                                </div>
+                            </div>
                             <div class="chart-wrapper">
                                 <div id="outstandingLoading" class="chart-loading">
                                     <div class="spinner"></div>
@@ -622,6 +660,24 @@
                         <!-- Chart 2: Monthly Trend -->
                         <div class="chart-section">
                             <h3>Monthly Trend</h3>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: rgba(33, 150, 243, 0.85);"></div>
+                                    <span>Open</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: rgba(76, 175, 80, 0.85);"></div>
+                                    <span>Temporary Action</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: rgba(255, 152, 0, 0.85);"></div>
+                                    <span>No Action</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-line" style="background-color: #4caf50;"></div>
+                                    <span>%Closed</span>
+                                </div>
+                            </div>
                             <div class="chart-wrapper">
                                 <div id="monthlyLoading" class="chart-loading">
                                     <div class="spinner"></div>
@@ -875,7 +931,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: { top: 25, bottom: 5, left: 5, right: 5 }
+                    padding: { top: 35, bottom: 5, left: 5, right: 5 }
                 },
                 scales: {
                     y: { 
@@ -967,8 +1023,8 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                                     } else {
                                         return; // Don't show negative values
                                     }
-                                    // แสดงตัวเลข % ด้านบนจุด โดยไม่ทับกับ legend
-                                    ctx.fillText(displayValue, point.x, point.y - 12);
+                                    // แสดงตัวเลข % ด้านบนจุด โดยมีพื้นที่เพียงพอ
+                                    ctx.fillText(displayValue, point.x, point.y - 18);
                                 }
                             });
                         }
