@@ -389,7 +389,7 @@
         .division-chart-wrapper {
             position: relative;
             width: 100%;
-            height: 280px;
+            height: 300px;
         }
 
         .last-updated {
@@ -819,7 +819,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: { top: 35, bottom: 5, left: 5, right: 5 }
+                    padding: { top: 50, bottom: 5, left: 5, right: 5 }
                 },
                 scales: {
                     y: { 
@@ -847,10 +847,12 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                     legend: { 
                         display: true,
                         position: 'top',
+                        align: 'center',
                         labels: {
                             font: { size: 8 },
                             boxWidth: 8,
-                            padding: 4
+                            padding: 6,
+                            usePointStyle: true
                         }
                     }
                 }
@@ -917,7 +919,8 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                                     } else {
                                         return; // Don't show negative values
                                     }
-                                    ctx.fillText(displayValue, point.x, point.y - 10);
+                                    // เพิ่มระยะห่างจากจุดให้มากขึ้น
+                                    ctx.fillText(displayValue, point.x, point.y - 15);
                                 }
                             });
                         }
