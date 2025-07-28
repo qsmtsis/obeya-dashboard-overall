@@ -829,13 +829,7 @@ function createOutstandingChart(outstandingData) {
         const temporaryData = outstandingData.temporaryData || [];
         const noActionData = outstandingData.noActionData || [];
 
-        // Calculate totals for display on bars
-        const totalData = temporaryData.map((temp, index) => {
-            const noAct = noActionData[index] || 0;
-            return temp + noAct;
-        });
-
-        console.log('Safety Outstanding Chart Data:', { labels, temporaryData, noActionData, totalData });
+        console.log('📊 Creating Outstanding Chart with', labels.length, 'items');
 
         outstandingChart = new Chart(ctx, {
             type: 'bar',
@@ -848,8 +842,7 @@ function createOutstandingChart(outstandingData) {
                         backgroundColor: 'rgba(243, 156, 18, 0.85)',
                         borderColor: 'rgba(241, 196, 15, 1)',
                         borderWidth: 2,
-                        borderRadius: 6,
-                        borderSkipped: false,
+                        borderRadius: 6
                     },
                     {
                         label: 'No Action',
@@ -857,30 +850,23 @@ function createOutstandingChart(outstandingData) {
                         backgroundColor: 'rgba(231, 76, 60, 0.85)',
                         borderColor: 'rgba(192, 57, 43, 1)',
                         borderWidth: 2,
-                        borderRadius: 6,
-                        borderSkipped: false,
+                        borderRadius: 6
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                layout: {
-                    padding: { top: 40, bottom: 5, left: 5, right: 5 }
-                },
                 scales: {
                     y: { 
                         beginAtZero: true, 
                         display: false, 
-                        stacked: true,
-                        grid: { display: false } 
+                        stacked: true
                     },
                     x: { 
-                        grid: { display: false }, 
                         stacked: true,
                         ticks: { 
                             maxRotation: 45, 
-                            minRotation: 45,
                             font: { size: 11 }
                         } 
                     }
@@ -888,51 +874,10 @@ function createOutstandingChart(outstandingData) {
                 plugins: { 
                     legend: { display: false }
                 }
-            },
-            plugins: [{
-                afterDatasetsDraw: function(chart) {
-                    const ctx = chart.ctx;
-                    
-                    // Show values in bars
-                    ctx.font = "bold 11px Arial";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    
-                    chart.data.datasets.forEach(function(dataset, datasetIndex) {
-                        const meta = chart.getDatasetMeta(datasetIndex);
-                        
-                        meta.data.forEach(function(bar, index) {
-                            const value = dataset.data[index];
-                            if (value > 0) {
-                                ctx.fillStyle = datasetIndex === 0 ? 
-                                    "rgba(183, 149, 11, 1)" :  // Temporary Action - darker yellow
-                                    "white";                    // No Action - white
-                                
-                                ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                            }
-                        });
-                    });
-
-                    // Show totals above bars
-                    ctx.font = "bold 13px Arial";
-                    ctx.textBaseline = "bottom";
-                    ctx.fillStyle = "#2c3e50";
-                    
-                    const tempMeta = chart.getDatasetMeta(0);
-                    const noActMeta = chart.getDatasetMeta(1);
-                    
-                    tempMeta.data.forEach(function(bar, index) {
-                        const total = totalData[index];
-                        if (total > 0) {
-                            const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
-                            ctx.fillText(total, bar.x, topY - 10);
-                        }
-                    });
-                }
-            }]
+            }
         });
     } catch (error) {
-        console.error('❌ Error creating Safety Outstanding chart:', error);
+        console.error('❌ Error creating Outstanding chart:', error);
         showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
     }
 }
@@ -955,28 +900,9 @@ function createMonthlyChart(monthlyData) {
         const openData = monthlyData.openData || [];
         const temporaryData = monthlyData.temporaryData || [];
         const noActionData = monthlyData.noActionData || [];
-        let closedPercentage = monthlyData.closedPercentage || [];
+        const closedPercentage = monthlyData.closedPercentage || [];
 
-        // Process %Closed data
-        closedPercentage = closedPercentage.map((value, index) => {
-            if (value === null || value === undefined || value === '') return 0;
-            
-            let numValue = value;
-            if (typeof value === 'string') {
-                numValue = value.replace('%', '').trim();
-            }
-            
-            const num = Number(numValue);
-            if (isNaN(num)) return 0;
-            
-            // If value is between 0-1, multiply by 100 (e.g., 0.85 -> 85%)
-            if (num >= 0 && num <= 1) {
-                return num * 100;
-            }
-            return num;
-        });
-
-        console.log('Safety Monthly Chart Data:', { months, openData, temporaryData, noActionData, closedPercentage });
+        console.log('📈 Creating Monthly Chart with', months.length, 'months');
 
         monthlyChart = new Chart(ctx, {
             type: 'bar',
@@ -990,9 +916,7 @@ function createMonthlyChart(monthlyData) {
                         borderColor: 'rgba(41, 128, 185, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
-                        borderSkipped: false,
-                        yAxisID: 'y',
-                        stack: 'stack1'
+                        yAxisID: 'y'
                     },
                     {
                         label: 'Temporary Action',
@@ -1001,9 +925,7 @@ function createMonthlyChart(monthlyData) {
                         borderColor: 'rgba(241, 196, 15, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
-                        borderSkipped: false,
-                        yAxisID: 'y',
-                        stack: 'stack2'
+                        yAxisID: 'y'
                     },
                     {
                         label: 'No Action',
@@ -1012,9 +934,7 @@ function createMonthlyChart(monthlyData) {
                         borderColor: 'rgba(192, 57, 43, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
-                        borderSkipped: false,
-                        yAxisID: 'y',
-                        stack: 'stack2'
+                        yAxisID: 'y'
                     },
                     {
                         label: '%Closed',
@@ -1028,124 +948,42 @@ function createMonthlyChart(monthlyData) {
                         pointBorderWidth: 3,
                         pointRadius: 8,
                         tension: 0.4,
-                        yAxisID: 'y1',
-                        fill: false
+                        yAxisID: 'y1'
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                layout: {
-                    padding: { top: 30, bottom: 5, left: 5, right: 5 }
-                },
                 scales: {
                     y: { 
                         type: 'linear', 
                         display: false, 
                         position: 'left', 
-                        beginAtZero: true, 
-                        max: Math.max(...openData, ...(temporaryData.map((temp, index) => temp + (noActionData[index] || 0)))) + 5,
-                        grid: { display: false } 
+                        beginAtZero: true
                     },
                     y1: { 
                         type: 'linear', 
                         display: false, 
                         position: 'right', 
                         beginAtZero: true, 
-                        max: 100, 
-                        grid: { display: false } 
+                        max: 100
                     },
                     x: { 
-                        grid: { display: false }, 
                         ticks: { 
                             maxRotation: 0,
-                            minRotation: 0,
                             font: { size: 11 }
                         } 
                     }
                 },
                 plugins: { legend: { display: false } }
-            },
-            plugins: [{
-                afterDatasetsDraw: function(chart) {
-                    const ctx = chart.ctx;
-                    ctx.font = "bold 11px Arial";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "bottom";
-                    
-                    // Show values on Open bars
-                    const openMeta = chart.getDatasetMeta(0);
-                    openMeta.data.forEach(function(bar, index) {
-                        const value = openData[index];
-                        if (value > 0) {
-                            ctx.fillStyle = "rgba(41, 128, 185, 1)";
-                            ctx.fillText(value, bar.x, bar.y - 5);
-                        }
-                    });
-
-                    // Show values in stacked bars (Temporary + No Action)
-                    ctx.textBaseline = "middle";
-                    
-                    // Temporary Action values
-                    const tempMeta = chart.getDatasetMeta(1);
-                    tempMeta.data.forEach(function(bar, index) {
-                        const value = temporaryData[index];
-                        if (value > 0) {
-                            ctx.fillStyle = "rgba(183, 149, 11, 1)";
-                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                        }
-                    });
-
-                    // No Action values
-                    const noActMeta = chart.getDatasetMeta(2);
-                    noActMeta.data.forEach(function(bar, index) {
-                        const value = noActionData[index];
-                        if (value > 0) {
-                            ctx.fillStyle = "white";
-                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                        }
-                    });
-
-                    // Show total of stacked bars at the top
-                    ctx.textBaseline = "bottom";
-                    ctx.fillStyle = "#333";
-                    
-                    tempMeta.data.forEach(function(bar, index) {
-                        const total = (temporaryData[index] || 0) + (noActionData[index] || 0);
-                        if (total > 0) {
-                            const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
-                            ctx.fillText(total, bar.x, topY - 5);
-                        }
-                    });
-
-                    // Line chart percentage labels
-                    const lineDataset = chart.data.datasets[3];
-                    if (lineDataset && lineDataset.type === 'line') {
-                        const lineMeta = chart.getDatasetMeta(3);
-                        if (lineMeta && lineMeta.data) {
-                            ctx.font = "bold 12px Arial";
-                            ctx.fillStyle = "#27ae60";
-                            ctx.textBaseline = "bottom";
-                            
-                            lineMeta.data.forEach(function(point, index) {
-                                const value = lineDataset.data[index];
-                                if (value !== null && value !== undefined && value > 0) {
-                                    const displayValue = value.toFixed(1) + '%';
-                                    ctx.fillText(displayValue, point.x, point.y - 12);
-                                }
-                            });
-                        }
-                    }
-                }
-            }]
+            }
         });
     } catch (error) {
-        console.error('❌ Error creating Safety Monthly chart:', error);
+        console.error('❌ Error creating Monthly chart:', error);
         showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
     }
 }
-
 
 function createDivisionChartContainers(divisionChartsData) {
     try {
@@ -1234,9 +1072,6 @@ function createSingleDivisionChart(divisionKey, divisionData) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                layout: {
-                    padding: { top: 20, bottom: 5, left: 5, right: 5 }
-                },
                 scales: {
                     y: { 
                         display: false, 
@@ -1266,59 +1101,11 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                         }
                     }
                 }
-            },
-            plugins: [{
-                afterDatasetsDraw: function(chart) {
-                    const ctx = chart.ctx;
-                    ctx.font = "bold 9px Arial";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    
-                    // Show values in bars
-                    chart.data.datasets.forEach(function(dataset, datasetIndex) {
-                        if (datasetIndex < 3) { // Only for bar datasets (not line)
-                            const meta = chart.getDatasetMeta(datasetIndex);
-                            
-                            meta.data.forEach(function(bar, index) {
-                                const value = dataset.data[index];
-                                if (value > 0) {
-                                    let textColor;
-                                    switch(datasetIndex) {
-                                        case 0: textColor = "rgba(41, 128, 185, 1)"; break; // Open - blue
-                                        case 1: textColor = "rgba(183, 149, 11, 1)"; break; // Temporary - dark yellow
-                                        case 2: textColor = "white"; break; // No Action - white
-                                    }
-                                    ctx.fillStyle = textColor;
-                                    ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                                }
-                            });
-                        }
-                    });
-
-                    // Show percentage labels for line chart
-                    const lineDataset = chart.data.datasets[3];
-                    if (lineDataset && lineDataset.type === 'line') {
-                        const lineMeta = chart.getDatasetMeta(3);
-                        if (lineMeta && lineMeta.data) {
-                            ctx.font = "bold 8px Arial";
-                            ctx.fillStyle = "#27ae60";
-                            ctx.textBaseline = "bottom";
-                            
-                            lineMeta.data.forEach(function(point, index) {
-                                const value = lineDataset.data[index];
-                                if (value !== null && value !== undefined && value > 0) {
-                                    const displayValue = value.toFixed(0) + '%';
-                                    ctx.fillText(displayValue, point.x, point.y - 8);
-                                }
-                            });
-                        }
-                    }
-                }
-            }]
+            }
         });
         
     } catch (error) {
-        console.error(`❌ Error creating safety division chart ${divisionKey}:`, error);
+        console.error(`❌ Error creating division chart ${divisionKey}:`, error);
     }
 }
 
