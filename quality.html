@@ -82,14 +82,26 @@
             text-align: center;
         }
 
-        .debug-info {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-family: monospace;
-            font-size: 12px;
+        .api-info {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border: 1px solid #4caf50;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+        }
+
+        .api-info h4 {
+            color: #2e7d32;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .api-info p {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-bottom: 10px;
         }
 
         .connection-status {
@@ -153,6 +165,66 @@
             transition: all 0.3s ease;
         }
 
+        /* Main Charts */
+        .main-charts {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .chart-section h3 {
+            color: #4caf50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 280px;
+        }
+
+        .chart-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 280px;
+            flex-direction: column;
+            color: #666;
+        }
+
+        .chart-loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4caf50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .chart-error {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 280px;
+            flex-direction: column;
+            color: #dc3545;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
         .action-buttons {
             display: flex;
             gap: 15px;
@@ -204,6 +276,33 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .last-updated {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .status-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -219,7 +318,7 @@
         </div>
 
         <div class="main-content">
-            <h1 class="page-title">Quality Dashboard (Debug Mode)</h1>
+            <h1 class="page-title">Quality Dashboard</h1>
 
             <!-- Page Loading State -->
             <div id="pageLoading" class="page-loading">
@@ -229,22 +328,23 @@
 
             <!-- Main Content -->
             <div id="mainContent" style="display: none;">
-                <!-- Debug Info -->
-                <div id="debugInfo" class="debug-info">
-                    <strong>Debug Information:</strong><br>
-                    <div id="debugText">Initializing...</div>
+                <!-- API Info -->
+                <div class="api-info">
+                    <h4>⭐ Quality Real-time Dashboard</h4>
+                    <p>เชื่อมต่อ Google Sheets ผ่าน Apps Script API</p>
+                    <p id="apiUrlDisplay">API URL: กำลังโหลด...</p>
                 </div>
 
                 <!-- Connection Status -->
                 <div id="connectionStatus" class="connection-status">
-                    🔄 กำลังเชื่อมต่อ...
+                    ✅ เชื่อมต่อสำเร็จ - Real-time
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <button class="action-btn" onclick="testAPI()">🔍 ทดสอบ API</button>
+                    <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
+                       target="_blank" class="action-btn">📋 ตาราง Near miss</a>
                     <button class="action-btn" onclick="loadAllData()">🔄 รีเฟรชข้อมูล</button>
-                    <button class="action-btn" onclick="toggleDebug()">🐛 Toggle Debug</button>
                 </div>
 
                 <!-- Status Cards -->
@@ -266,6 +366,48 @@
                         <div class="status-number" id="noActionValue">-</div>
                     </div>
                 </div>
+
+                <!-- Main Charts -->
+                <div class="main-charts">
+                    <div class="charts-grid">
+                        <!-- Chart 1: Outstanding Issues -->
+                        <div class="chart-section">
+                            <h3>Outstanding Issues</h3>
+                            <div class="chart-wrapper">
+                                <div id="outstandingLoading" class="chart-loading">
+                                    <div class="spinner"></div>
+                                    <p>กำลังโหลดกราฟ Outstanding Issues...</p>
+                                </div>
+                                <div id="outstandingError" class="chart-error" style="display: none;">
+                                    <p>⚠️ ไม่สามารถโหลดกราฟได้</p>
+                                    <button onclick="loadAllData()" style="margin-top: 10px; padding: 8px 16px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">ลองใหม่</button>
+                                </div>
+                                <canvas id="outstandingChart" style="display: none;"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 2: Monthly Trend -->
+                        <div class="chart-section">
+                            <h3>Monthly Trend</h3>
+                            <div class="chart-wrapper">
+                                <div id="monthlyLoading" class="chart-loading">
+                                    <div class="spinner"></div>
+                                    <p>กำลังโหลดกราฟ Monthly Trend...</p>
+                                </div>
+                                <div id="monthlyError" class="chart-error" style="display: none;">
+                                    <p>⚠️ ไม่สามารถโหลดกราฟได้</p>
+                                    <button onclick="loadAllData()" style="margin-top: 10px; padding: 8px 16px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">ลองใหม่</button>
+                                </div>
+                                <canvas id="monthlyChart" style="display: none;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="last-updated" id="lastUpdated">
+                    อัพเดทล่าสุด: <strong>-</strong><br>
+                    แหล่งข้อมูล: Google Sheets API ผ่าน Apps Script
+                </div>
             </div>
         </div>
     </div>
@@ -275,120 +417,60 @@
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwC12o0ncg81GC6lsp1RGzi_EfBRA6G36EQRktUEa4ItzCJOOnJCLqslRJvfgnFvD310g/exec';
 
 // ===== GLOBAL VARIABLES =====
-let debugMode = true;
+let outstandingChart;
+let monthlyChart;
 let dashboardData = null;
-
-// ===== DEBUG FUNCTIONS =====
-function debugLog(message, data = null) {
-    console.log(message, data);
-    
-    if (debugMode) {
-        const debugDiv = document.getElementById('debugText');
-        if (debugDiv) {
-            const timestamp = new Date().toLocaleTimeString();
-            const logLine = `[${timestamp}] ${message}`;
-            debugDiv.innerHTML += logLine + '<br>';
-            if (data) {
-                debugDiv.innerHTML += `Data: ${JSON.stringify(data, null, 2)}<br>`;
-            }
-            debugDiv.scrollTop = debugDiv.scrollHeight;
-        }
-    }
-}
-
-function toggleDebug() {
-    debugMode = !debugMode;
-    const debugDiv = document.getElementById('debugInfo');
-    if (debugDiv) {
-        debugDiv.style.display = debugMode ? 'block' : 'none';
-    }
-}
-
-// ===== API TESTING =====
-async function testAPI() {
-    debugLog('🔍 Testing API Connection...');
-    updateConnectionStatus('🔍 กำลังทดสอบ API...', 'warning');
-    
-    try {
-        // Test 1: Basic connectivity
-        debugLog('Test 1: Basic fetch without parameters');
-        const basicResponse = await fetch(APPS_SCRIPT_URL);
-        debugLog(`Basic response status: ${basicResponse.status}`);
-        
-        // Test 2: Quality action
-        debugLog('Test 2: Quality action request');
-        const qualityUrl = `${APPS_SCRIPT_URL}?action=quality&t=${Date.now()}`;
-        debugLog(`Quality URL: ${qualityUrl}`);
-        
-        const qualityResponse = await fetch(qualityUrl, {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-cache'
-        });
-        
-        debugLog(`Quality response status: ${qualityResponse.status}`);
-        debugLog(`Quality response ok: ${qualityResponse.ok}`);
-        
-        const responseText = await qualityResponse.text();
-        debugLog(`Response text length: ${responseText.length}`);
-        debugLog(`First 200 chars: ${responseText.substring(0, 200)}`);
-        
-        try {
-            const data = JSON.parse(responseText);
-            debugLog('✅ JSON parsed successfully', data);
-            
-            if (data.success) {
-                updateConnectionStatus('✅ API ทำงานปกติ', 'success');
-                debugLog('✅ API returned success', data);
-                return data;
-            } else {
-                updateConnectionStatus('❌ API Error: ' + (data.error || 'Unknown'), 'error');
-                debugLog('❌ API returned error', data);
-            }
-        } catch (jsonError) {
-            debugLog('❌ JSON Parse Error', jsonError);
-            updateConnectionStatus('❌ Invalid JSON Response', 'error');
-        }
-        
-    } catch (error) {
-        debugLog('❌ API Test Failed', error);
-        updateConnectionStatus('❌ API Test Failed: ' + error.message, 'error');
-    }
-}
 
 // ===== MAIN FUNCTIONS =====
 async function loadAllData() {
-    debugLog('🚀 Loading Quality data...');
+    console.log('🚀 Loading Quality data from Apps Script API...');
     
     try {
         // Show page loading
         document.getElementById('pageLoading').style.display = 'flex';
         document.getElementById('mainContent').style.display = 'none';
         
-        debugLog('📡 Making API request...');
-        updateConnectionStatus('📡 กำลังโหลดข้อมูล...', 'warning');
+        // Display API URL
+        document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
         
-        // Simple fetch without timeout first
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=quality&divisions=true&t=${Date.now()}`, {
+        console.log('📡 Calling Apps Script API for Quality...');
+        
+        // **FIX: ใช้ GET request with explicit parameters**
+        const apiUrl = `${APPS_SCRIPT_URL}?action=quality&divisions=false&refresh=false&t=${Date.now()}`;
+        console.log('Full API URL:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
             method: 'GET',
             mode: 'cors',
-            cache: 'no-cache'
+            cache: 'no-cache',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
         });
         
-        debugLog(`Response received: ${response.status} ${response.statusText}`);
+        console.log('📡 Quality Response received:', response.status, response.ok);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const responseText = await response.text();
-        debugLog(`Response text length: ${responseText.length}`);
+        console.log('📦 Raw response (first 500 chars):', responseText.substring(0, 500));
         
-        const data = JSON.parse(responseText);
-        debugLog('Data parsed successfully', data);
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('JSON Parse Error:', parseError);
+            console.log('Full response text:', responseText);
+            throw new Error('Invalid JSON response from API');
+        }
+        
+        console.log('📦 Parsed API Response:', data);
         
         if (!data.success) {
-            throw new Error(data.error || 'API returned error');
+            throw new Error(data.error || 'API returned success: false');
         }
         
         dashboardData = data;
@@ -397,40 +479,330 @@ async function loadAllData() {
         document.getElementById('pageLoading').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         
-        // Update status cards
-        debugLog('📊 Updating status cards...');
-        updateStatusCards(data.quality ? data.quality.status : data.data ? data.data.status : null);
+        // **FIX: Handle different response structures**
+        let qualityData = null;
         
-        updateConnectionStatus('✅ โหลดข้อมูลสำเร็จ', 'success');
-        debugLog('✅ All data loaded successfully', data);
+        if (data.data) {
+            // For quality action without divisions
+            qualityData = data.data;
+        } else if (data.quality) {
+            // For quality action with divisions
+            qualityData = data.quality;
+        } else {
+            console.warn('Unknown data structure:', data);
+            throw new Error('Unknown response structure');
+        }
+        
+        console.log('📊 Quality data extracted:', qualityData);
+        
+        // Update status cards
+        if (qualityData.status) {
+            updateStatusCards(qualityData.status);
+        } else {
+            console.warn('No status data found');
+        }
+        
+        // Load charts
+        await loadChartData(qualityData);
+        
+        updateLastUpdated(data.lastUpdated, data.source);
+        updateConnectionStatus('✅ เชื่อมต่อสำเร็จ - Real-time Quality Data', 'success');
+        
+        console.log('✅ All quality data loaded successfully');
         
     } catch (error) {
-        debugLog('❌ Error loading data', error);
+        console.error('❌ Error loading quality data:', error);
         
         document.getElementById('pageLoading').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         
         updateConnectionStatus('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
+        showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
+        showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
     }
 }
 
 function updateStatusCards(statusData) {
-    debugLog('📊 Updating status cards', statusData);
-    
     if (!statusData) {
-        debugLog('⚠️ No status data received');
+        console.log('⚠️ No quality status data received');
         return;
     }
     
+    console.log('📊 Updating Quality status cards:', statusData);
+    
     try {
-        document.getElementById('nearMissValue').textContent = statusData.nearMiss?.value || 0;
-        document.getElementById('closedValue').textContent = statusData.closed?.value || 0;
-        document.getElementById('temporaryValue').textContent = statusData.temporaryAction?.value || 0;
-        document.getElementById('noActionValue').textContent = statusData.noAction?.value || 0;
+        // **FIX: Handle different value formats**
+        const nearMissValue = getValueFromStatusData(statusData.nearMiss);
+        const closedValue = getValueFromStatusData(statusData.closed);
+        const temporaryValue = getValueFromStatusData(statusData.temporaryAction);
+        const noActionValue = getValueFromStatusData(statusData.noAction);
         
-        debugLog('✅ Status cards updated successfully');
+        document.getElementById('nearMissValue').textContent = nearMissValue;
+        document.getElementById('closedValue').textContent = closedValue;
+        document.getElementById('temporaryValue').textContent = temporaryValue;
+        document.getElementById('noActionValue').textContent = noActionValue;
+        
+        console.log('✅ Quality status cards updated successfully');
+        console.log('Values:', { nearMissValue, closedValue, temporaryValue, noActionValue });
     } catch (error) {
-        debugLog('❌ Error updating status cards', error);
+        console.error('❌ Error updating quality status cards:', error);
+    }
+}
+
+function getValueFromStatusData(statusItem) {
+    if (!statusItem) return 0;
+    
+    // Handle different formats
+    if (typeof statusItem === 'number') return statusItem;
+    if (typeof statusItem === 'object' && statusItem.value !== undefined) return statusItem.value || 0;
+    if (typeof statusItem === 'string') {
+        const num = parseInt(statusItem);
+        return isNaN(num) ? 0 : num;
+    }
+    
+    return 0;
+}
+
+async function loadChartData(qualityData) {
+    try {
+        console.log('📈 Loading quality chart data...');
+        
+        // Create charts with error handling
+        if (qualityData.outstanding) {
+            console.log('📊 Creating Quality Outstanding chart');
+            createOutstandingChart(qualityData.outstanding);
+        } else {
+            console.log('⚠️ No quality outstanding data');
+            showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
+        }
+        
+        if (qualityData.monthly) {
+            console.log('📈 Creating Quality Monthly chart');
+            createMonthlyChart(qualityData.monthly);
+        } else {
+            console.log('⚠️ No quality monthly data');
+            showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
+        }
+        
+        console.log('✅ Quality main chart data loaded');
+        
+    } catch (error) {
+        console.error('❌ Quality chart loading failed:', error);
+        showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
+        showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
+    }
+}
+
+// ===== CHART CREATION FUNCTIONS =====
+function createOutstandingChart(outstandingData) {
+    try {
+        const ctx = document.getElementById('outstandingChart');
+        if (!ctx) return;
+        
+        // Hide loading, show chart
+        document.getElementById('outstandingLoading').style.display = 'none';
+        document.getElementById('outstandingError').style.display = 'none';
+        ctx.style.display = 'block';
+        
+        if (outstandingChart) {
+            outstandingChart.destroy();
+        }
+
+        const labels = outstandingData.labels || [];
+        const temporaryData = outstandingData.temporaryData || [];
+        const noActionData = outstandingData.noActionData || [];
+
+        console.log('📊 Creating Quality Outstanding Chart with', labels.length, 'items');
+        console.log('Chart data:', { labels, temporaryData, noActionData });
+
+        outstandingChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Temporary Action',
+                        data: temporaryData,
+                        backgroundColor: 'rgba(76, 175, 80, 0.85)',
+                        borderColor: 'rgba(56, 142, 60, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'No Action',
+                        data: noActionData,
+                        backgroundColor: 'rgba(255, 152, 0, 0.85)',
+                        borderColor: 'rgba(245, 124, 0, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { top: 20, bottom: 5, left: 5, right: 5 }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        display: false, 
+                        stacked: true
+                    },
+                    x: { 
+                        stacked: true,
+                        ticks: { 
+                            maxRotation: 45, 
+                            font: { size: 11 }
+                        } 
+                    }
+                },
+                plugins: { 
+                    legend: { display: false }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error creating Quality Outstanding chart:', error);
+        showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
+    }
+}
+
+function createMonthlyChart(monthlyData) {
+    try {
+        const ctx = document.getElementById('monthlyChart');
+        if (!ctx) return;
+        
+        // Hide loading, show chart
+        document.getElementById('monthlyLoading').style.display = 'none';
+        document.getElementById('monthlyError').style.display = 'none';
+        ctx.style.display = 'block';
+        
+        if (monthlyChart) {
+            monthlyChart.destroy();
+        }
+
+        const months = monthlyData.months || [];
+        const openData = monthlyData.openData || [];
+        const temporaryData = monthlyData.temporaryData || [];
+        const noActionData = monthlyData.noActionData || [];
+        const closedPercentage = monthlyData.closedPercentage || [];
+
+        console.log('📈 Creating Quality Monthly Chart with', months.length, 'months');
+        console.log('Monthly data:', { months, openData, temporaryData, noActionData, closedPercentage });
+
+        monthlyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'Open',
+                        data: openData,
+                        backgroundColor: 'rgba(33, 150, 243, 0.85)',
+                        borderColor: 'rgba(25, 118, 210, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        yAxisID: 'y',
+                        stack: 'stack1'
+                    },
+                    {
+                        label: 'Temporary Action',
+                        data: temporaryData,
+                        backgroundColor: 'rgba(76, 175, 80, 0.85)',
+                        borderColor: 'rgba(56, 142, 60, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        yAxisID: 'y',
+                        stack: 'stack2'
+                    },
+                    {
+                        label: 'No Action',
+                        data: noActionData,
+                        backgroundColor: 'rgba(255, 152, 0, 0.85)',
+                        borderColor: 'rgba(245, 124, 0, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        yAxisID: 'y',
+                        stack: 'stack2'
+                    },
+                    {
+                        label: '%Closed',
+                        data: closedPercentage,
+                        type: 'line',
+                        borderColor: '#4caf50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#4caf50',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointRadius: 8,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { top: 20, bottom: 5, left: 5, right: 5 }
+                },
+                scales: {
+                    y: { 
+                        type: 'linear', 
+                        display: false, 
+                        position: 'left', 
+                        beginAtZero: true
+                    },
+                    y1: { 
+                        type: 'linear', 
+                        display: false, 
+                        position: 'right', 
+                        beginAtZero: true, 
+                        max: 100
+                    },
+                    x: { 
+                        ticks: { 
+                            maxRotation: 0,
+                            font: { size: 11 }
+                        } 
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error creating Quality Monthly chart:', error);
+        showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
+    }
+}
+
+// ===== UTILITY FUNCTIONS =====
+function showChartError(chartId, loadingId, errorId) {
+    try {
+        const loading = document.getElementById(loadingId);
+        const error = document.getElementById(errorId);
+        const chart = document.getElementById(chartId);
+        
+        if (loading) loading.style.display = 'none';
+        if (error) error.style.display = 'flex';
+        if (chart) chart.style.display = 'none';
+    } catch (e) {
+        console.error('Error showing chart error:', e);
+    }
+}
+
+function updateLastUpdated(timestamp, source) {
+    try {
+        const element = document.getElementById('lastUpdated');
+        if (element) {
+            element.innerHTML = 
+                `อัพเดทล่าสุด: <strong>${timestamp || new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมูล: ${source || 'Google Sheets API ผ่าน Apps Script'}`;
+        }
+    } catch (error) {
+        console.error('Error updating last updated:', error);
     }
 }
 
@@ -441,9 +813,8 @@ function updateConnectionStatus(message, type) {
             status.textContent = message;
             status.className = `connection-status ${type}`;
         }
-        debugLog(`Status: ${message} (${type})`);
     } catch (error) {
-        debugLog('Error updating connection status', error);
+        console.error('Error updating connection status:', error);
     }
 }
 
@@ -453,42 +824,25 @@ function navigateToPage(pageName) {
 
 // ===== INITIALIZATION =====
 window.onload = function() {
-    debugLog('⭐ Quality Dashboard initialized (Debug Mode)');
-    debugLog(`API URL: ${APPS_SCRIPT_URL}`);
+    console.log('⭐ Quality Dashboard initialized');
     
     try {
-        // Auto-test API after 1 second
-        setTimeout(() => {
-            testAPI();
-        }, 1000);
+        // Display current API URL
+        document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
         
-        // Auto-load data after 3 seconds
+        // Load all data on startup with delay
         setTimeout(() => {
             loadAllData();
-        }, 3000);
+        }, 1000);
         
     } catch (error) {
-        debugLog('Error during initialization', error);
+        console.error('Error during initialization:', error);
+        // Force show content if initialization fails
         document.getElementById('pageLoading').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         updateConnectionStatus('❌ เกิดข้อผิดพลาดในการเริ่มต้น', 'error');
     }
 };
-
-// Global error handler
-window.addEventListener('error', function(e) {
-    debugLog('Global Error', {
-        message: e.message,
-        filename: e.filename,
-        lineno: e.lineno,
-        colno: e.colno,
-        error: e.error
-    });
-});
-
-window.addEventListener('unhandledrejection', function(e) {
-    debugLog('Unhandled Promise Rejection', e.reason);
-});
 </script>
 
 </body>
