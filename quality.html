@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>TSIS - Quality Dashboard (Fixed)</title>
+    <title>TSIS - Quality Dashboard</title>
     
     <!-- Chart.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -253,6 +253,73 @@
             box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
 
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .dropdown-btn::after {
+            content: '▼';
+            font-size: 10px;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 200px;
+            display: none;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #333;
+            display: block;
+            font-size: 13px;
+            transition: background-color 0.2s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #4caf50;
+        }
+
         .page-loading {
             display: flex;
             justify-content: center;
@@ -332,7 +399,6 @@
                 <div class="api-info">
                     <h4>⭐ Quality Real-time Dashboard</h4>
                     <p>เชื่อมต่อ Google Sheets ผ่าน Apps Script API</p>
-                    <p id="apiUrlDisplay">API URL: กำลังโหลด...</p>
                 </div>
 
                 <!-- Connection Status -->
@@ -342,8 +408,53 @@
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
+                    <!-- Near miss Button -->
                     <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
                        target="_blank" class="action-btn">📋 ตาราง Near miss</a>
+
+                    <!-- แก้ไข Dropdown -->
+                    <div class="dropdown-container">
+                        <button class="dropdown-btn" onclick="toggleDropdown('editDropdown')">
+                            🔧 แก้ไข
+                        </button>
+                        <div id="editDropdown" class="dropdown-menu">
+                            <a href="https://script.google.com/macros/s/AKfycbwif8TTLnCN84_d0xoxvCZmEYb1mu9EO6_DlNkYt8Cc0hmr2dLGS_dnXKhSjKVENSYSEg/exec" 
+                               target="_blank" class="dropdown-item">
+                                🔄 แก้ไขชั่วคราว
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwYBMxA_ymzl1uIS66ZgkAXgHXeCsJvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
+                               target="_blank" class="dropdown-item">
+                                ✅ แก้ไขถาวร
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- อนุมัติ Dropdown -->
+                    <div class="dropdown-container">
+                        <button class="dropdown-btn" onclick="toggleDropdown('approvalDropdown')">
+                            ✅ อนุมัติ
+                        </button>
+                        <div id="approvalDropdown" class="dropdown-menu">
+                            <a href="https://script.google.com/macros/s/AKfycbzzrYpo7XErNPvokQO_uQX8uUJAJqGQdAIm6v3E8AL61bNedxJu3pVxuv9PoXk0X6kilA/exec" 
+                               target="_blank" class="dropdown-item">
+                                🔄 Q&S อนุมัติชั่วคราว
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKAG8ECEQvwkYaCB_6FwleUmMpN9l3DxhWJhLzxOXr/exec" 
+                               target="_blank" class="dropdown-item">
+                                ✅ Q&S อนุมัติถาวร
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwsbkICpwuCzLgIbXJlgWdF7PCUP6vYUsM3la5iqZdOLqXl1nG3qUkiY-4_bkQs8c1NEA/exec" 
+                               target="_blank" class="dropdown-item">
+                                👨‍💼 Manager Approval
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwxtj0YS_MfR1BezMLGCw7hx25FkAha1cN-RKkeuYPukd2jc1AYfXu07i9CC4LHwG88MQ/exec" 
+                               target="_blank" class="dropdown-item">
+                                🏢 GM Approval
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Other Buttons -->
                     <button class="action-btn" onclick="loadAllData()">🔄 รีเฟรชข้อมูล</button>
                 </div>
 
@@ -430,23 +541,15 @@ async function loadAllData() {
         document.getElementById('pageLoading').style.display = 'flex';
         document.getElementById('mainContent').style.display = 'none';
         
-        // Display API URL
-        document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
-        
         console.log('📡 Calling Apps Script API for Quality...');
         
-        // **FIX: ใช้ GET request with explicit parameters**
         const apiUrl = `${APPS_SCRIPT_URL}?action=quality&divisions=false&refresh=false&t=${Date.now()}`;
         console.log('Full API URL:', apiUrl);
         
         const response = await fetch(apiUrl, {
             method: 'GET',
             mode: 'cors',
-            cache: 'no-cache',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
+            cache: 'no-cache'
         });
         
         console.log('📡 Quality Response received:', response.status, response.ok);
@@ -455,19 +558,8 @@ async function loadAllData() {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
-        const responseText = await response.text();
-        console.log('📦 Raw response (first 500 chars):', responseText.substring(0, 500));
-        
-        let data;
-        try {
-            data = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('JSON Parse Error:', parseError);
-            console.log('Full response text:', responseText);
-            throw new Error('Invalid JSON response from API');
-        }
-        
-        console.log('📦 Parsed API Response:', data);
+        const data = await response.json();
+        console.log('📦 Quality API Response:', data);
         
         if (!data.success) {
             throw new Error(data.error || 'API returned success: false');
@@ -479,18 +571,11 @@ async function loadAllData() {
         document.getElementById('pageLoading').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         
-        // **FIX: Handle different response structures**
-        let qualityData = null;
+        // Handle different response structures
+        let qualityData = data.data || data.quality;
         
-        if (data.data) {
-            // For quality action without divisions
-            qualityData = data.data;
-        } else if (data.quality) {
-            // For quality action with divisions
-            qualityData = data.quality;
-        } else {
-            console.warn('Unknown data structure:', data);
-            throw new Error('Unknown response structure');
+        if (!qualityData) {
+            throw new Error('No quality data found in response');
         }
         
         console.log('📊 Quality data extracted:', qualityData);
@@ -498,8 +583,6 @@ async function loadAllData() {
         // Update status cards
         if (qualityData.status) {
             updateStatusCards(qualityData.status);
-        } else {
-            console.warn('No status data found');
         }
         
         // Load charts
@@ -531,19 +614,18 @@ function updateStatusCards(statusData) {
     console.log('📊 Updating Quality status cards:', statusData);
     
     try {
-        // **FIX: Handle different value formats**
         const nearMissValue = getValueFromStatusData(statusData.nearMiss);
         const closedValue = getValueFromStatusData(statusData.closed);
         const temporaryValue = getValueFromStatusData(statusData.temporaryAction);
         const noActionValue = getValueFromStatusData(statusData.noAction);
         
-        document.getElementById('nearMissValue').textContent = nearMissValue;
-        document.getElementById('closedValue').textContent = closedValue;
-        document.getElementById('temporaryValue').textContent = temporaryValue;
-        document.getElementById('noActionValue').textContent = noActionValue;
+        // Animate number changes
+        animateStatusCard('nearMissValue', nearMissValue);
+        animateStatusCard('closedValue', closedValue);
+        animateStatusCard('temporaryValue', temporaryValue);
+        animateStatusCard('noActionValue', noActionValue);
         
         console.log('✅ Quality status cards updated successfully');
-        console.log('Values:', { nearMissValue, closedValue, temporaryValue, noActionValue });
     } catch (error) {
         console.error('❌ Error updating quality status cards:', error);
     }
@@ -552,7 +634,6 @@ function updateStatusCards(statusData) {
 function getValueFromStatusData(statusItem) {
     if (!statusItem) return 0;
     
-    // Handle different formats
     if (typeof statusItem === 'number') return statusItem;
     if (typeof statusItem === 'object' && statusItem.value !== undefined) return statusItem.value || 0;
     if (typeof statusItem === 'string') {
@@ -563,11 +644,34 @@ function getValueFromStatusData(statusItem) {
     return 0;
 }
 
+function animateStatusCard(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const duration = 1000;
+    const startValue = parseInt(element.textContent) || 0;
+    const startTime = Date.now();
+    
+    function update() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const currentValue = Math.round(startValue + (targetValue - startValue) * easeOut);
+        
+        element.textContent = currentValue;
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    
+    update();
+}
+
 async function loadChartData(qualityData) {
     try {
         console.log('📈 Loading quality chart data...');
         
-        // Create charts with error handling
         if (qualityData.outstanding) {
             console.log('📊 Creating Quality Outstanding chart');
             createOutstandingChart(qualityData.outstanding);
@@ -599,7 +703,6 @@ function createOutstandingChart(outstandingData) {
         const ctx = document.getElementById('outstandingChart');
         if (!ctx) return;
         
-        // Hide loading, show chart
         document.getElementById('outstandingLoading').style.display = 'none';
         document.getElementById('outstandingError').style.display = 'none';
         ctx.style.display = 'block';
@@ -612,9 +715,6 @@ function createOutstandingChart(outstandingData) {
         const temporaryData = outstandingData.temporaryData || [];
         const noActionData = outstandingData.noActionData || [];
 
-        console.log('📊 Creating Quality Outstanding Chart with', labels.length, 'items');
-        console.log('Chart data:', { labels, temporaryData, noActionData });
-
         outstandingChart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -626,7 +726,8 @@ function createOutstandingChart(outstandingData) {
                         backgroundColor: 'rgba(76, 175, 80, 0.85)',
                         borderColor: 'rgba(56, 142, 60, 1)',
                         borderWidth: 2,
-                        borderRadius: 6
+                        borderRadius: 6,
+                        borderSkipped: false
                     },
                     {
                         label: 'No Action',
@@ -634,7 +735,8 @@ function createOutstandingChart(outstandingData) {
                         backgroundColor: 'rgba(255, 152, 0, 0.85)',
                         borderColor: 'rgba(245, 124, 0, 1)',
                         borderWidth: 2,
-                        borderRadius: 6
+                        borderRadius: 6,
+                        borderSkipped: false
                     }
                 ]
             },
@@ -642,18 +744,21 @@ function createOutstandingChart(outstandingData) {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: { top: 20, bottom: 5, left: 5, right: 5 }
+                    padding: { top: 30, bottom: 5, left: 5, right: 5 }
                 },
                 scales: {
                     y: { 
                         beginAtZero: true, 
                         display: false, 
-                        stacked: true
+                        stacked: true,
+                        grid: { display: false }
                     },
                     x: { 
                         stacked: true,
+                        grid: { display: false },
                         ticks: { 
                             maxRotation: 45, 
+                            minRotation: 45,
                             font: { size: 11 }
                         } 
                     }
@@ -661,7 +766,47 @@ function createOutstandingChart(outstandingData) {
                 plugins: { 
                     legend: { display: false }
                 }
-            }
+            },
+            plugins: [{
+                afterDatasetsDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    
+                    ctx.font = "bold 11px Arial";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    
+                    chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                        const meta = chart.getDatasetMeta(datasetIndex);
+                        
+                        meta.data.forEach(function(bar, index) {
+                            const value = dataset.data[index];
+                            if (value > 0) {
+                                ctx.fillStyle = datasetIndex === 0 ? 
+                                    "rgba(27, 94, 32, 1)" :  
+                                    "white";                    
+                                
+                                ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
+                            }
+                        });
+                    });
+
+                    // Show totals above bars
+                    ctx.font = "bold 13px Arial";
+                    ctx.textBaseline = "bottom";
+                    ctx.fillStyle = "#2c3e50";
+                    
+                    const tempMeta = chart.getDatasetMeta(0);
+                    const noActMeta = chart.getDatasetMeta(1);
+                    
+                    tempMeta.data.forEach(function(bar, index) {
+                        const total = (temporaryData[index] || 0) + (noActionData[index] || 0);
+                        if (total > 0) {
+                            const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
+                            ctx.fillText(total, bar.x, topY - 10);
+                        }
+                    });
+                }
+            }]
         });
     } catch (error) {
         console.error('❌ Error creating Quality Outstanding chart:', error);
@@ -674,7 +819,6 @@ function createMonthlyChart(monthlyData) {
         const ctx = document.getElementById('monthlyChart');
         if (!ctx) return;
         
-        // Hide loading, show chart
         document.getElementById('monthlyLoading').style.display = 'none';
         document.getElementById('monthlyError').style.display = 'none';
         ctx.style.display = 'block';
@@ -687,10 +831,22 @@ function createMonthlyChart(monthlyData) {
         const openData = monthlyData.openData || [];
         const temporaryData = monthlyData.temporaryData || [];
         const noActionData = monthlyData.noActionData || [];
-        const closedPercentage = monthlyData.closedPercentage || [];
+        let closedPercentage = monthlyData.closedPercentage || [];
 
-        console.log('📈 Creating Quality Monthly Chart with', months.length, 'months');
-        console.log('Monthly data:', { months, openData, temporaryData, noActionData, closedPercentage });
+        // Process closed percentage
+        closedPercentage = closedPercentage.map(value => {
+            if (value === null || value === undefined || value === '') return 0;
+            
+            let numValue = value;
+            if (typeof value === 'string') {
+                numValue = value.replace('%', '').trim();
+            }
+            
+            const num = Number(numValue);
+            if (isNaN(num)) return 0;
+            
+            return num >= 0 && num <= 1 ? num * 100 : num;
+        });
 
         monthlyChart = new Chart(ctx, {
             type: 'bar',
@@ -704,6 +860,7 @@ function createMonthlyChart(monthlyData) {
                         borderColor: 'rgba(25, 118, 210, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
+                        borderSkipped: false,
                         yAxisID: 'y',
                         stack: 'stack1'
                     },
@@ -714,6 +871,7 @@ function createMonthlyChart(monthlyData) {
                         borderColor: 'rgba(56, 142, 60, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
+                        borderSkipped: false,
                         yAxisID: 'y',
                         stack: 'stack2'
                     },
@@ -724,6 +882,7 @@ function createMonthlyChart(monthlyData) {
                         borderColor: 'rgba(245, 124, 0, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
+                        borderSkipped: false,
                         yAxisID: 'y',
                         stack: 'stack2'
                     },
@@ -739,7 +898,8 @@ function createMonthlyChart(monthlyData) {
                         pointBorderWidth: 3,
                         pointRadius: 8,
                         tension: 0.4,
-                        yAxisID: 'y1'
+                        yAxisID: 'y1',
+                        fill: false
                     }
                 ]
             },
@@ -747,31 +907,106 @@ function createMonthlyChart(monthlyData) {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: { top: 20, bottom: 5, left: 5, right: 5 }
+                    padding: { top: 30, bottom: 5, left: 5, right: 5 }
                 },
                 scales: {
                     y: { 
                         type: 'linear', 
                         display: false, 
                         position: 'left', 
-                        beginAtZero: true
+                        beginAtZero: true, 
+                        max: Math.max(...openData, ...(temporaryData.map((temp, index) => temp + (noActionData[index] || 0)))) + 5,
+                        grid: { display: false }
                     },
                     y1: { 
                         type: 'linear', 
                         display: false, 
                         position: 'right', 
                         beginAtZero: true, 
-                        max: 100
+                        max: 100, 
+                        grid: { display: false }
                     },
                     x: { 
+                        grid: { display: false },
                         ticks: { 
                             maxRotation: 0,
+                            minRotation: 0,
                             font: { size: 11 }
                         } 
                     }
                 },
                 plugins: { legend: { display: false } }
-            }
+            },
+            plugins: [{
+                afterDatasetsDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    ctx.font = "bold 11px Arial";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "bottom";
+                    
+                    // Show values on Open bars
+                    const openMeta = chart.getDatasetMeta(0);
+                    openMeta.data.forEach(function(bar, index) {
+                        const value = openData[index];
+                        if (value > 0) {
+                            ctx.fillStyle = "rgba(25, 118, 210, 1)";
+                            ctx.fillText(value, bar.x, bar.y - 5);
+                        }
+                    });
+
+                    // Show values in stacked bars
+                    ctx.textBaseline = "middle";
+                    
+                    const tempMeta = chart.getDatasetMeta(1);
+                    tempMeta.data.forEach(function(bar, index) {
+                        const value = temporaryData[index];
+                        if (value > 0) {
+                            ctx.fillStyle = "rgba(27, 94, 32, 1)";
+                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
+                        }
+                    });
+
+                    const noActMeta = chart.getDatasetMeta(2);
+                    noActMeta.data.forEach(function(bar, index) {
+                        const value = noActionData[index];
+                        if (value > 0) {
+                            ctx.fillStyle = "white";
+                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
+                        }
+                    });
+
+                    // Show stacked totals
+                    ctx.textBaseline = "bottom";
+                    ctx.fillStyle = "#333";
+                    
+                    tempMeta.data.forEach(function(bar, index) {
+                        const total = (temporaryData[index] || 0) + (noActionData[index] || 0);
+                        if (total > 0) {
+                            const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
+                            ctx.fillText(total, bar.x, topY - 5);
+                        }
+                    });
+
+                    // Line chart percentage labels
+                    const lineDataset = chart.data.datasets[3];
+                    if (lineDataset && lineDataset.type === 'line') {
+                        const lineMeta = chart.getDatasetMeta(3);
+                        if (lineMeta && lineMeta.data) {
+                            ctx.font = "bold 12px Arial";
+                            ctx.fillStyle = "#2e7d32";
+                            ctx.textBaseline = "bottom";
+                            
+                            lineMeta.data.forEach(function(point, index) {
+                                const value = lineDataset.data[index];
+                                if (value !== null && value !== undefined) {
+                                    const displayValue = value > 0 ? value.toFixed(1) + '%' : '0%';
+                                    ctx.fillText(displayValue, point.x, point.y - 12);
+                                }
+                            });
+                        }
+                    }
+                }
+            }]
         });
     } catch (error) {
         console.error('❌ Error creating Quality Monthly chart:', error);
@@ -822,22 +1057,52 @@ function navigateToPage(pageName) {
     window.location.href = pageName;
 }
 
+// ===== DROPDOWN FUNCTIONS =====
+function toggleDropdown(dropdownId) {
+    try {
+        const dropdown = document.getElementById(dropdownId);
+        const isShowing = dropdown.classList.contains('show');
+        
+        closeAllDropdowns();
+        
+        if (!isShowing) {
+            dropdown.classList.add('show');
+        }
+    } catch (error) {
+        console.error('Error toggling dropdown:', error);
+    }
+}
+
+function closeAllDropdowns() {
+    try {
+        const dropdowns = document.querySelectorAll('.dropdown-menu');
+        dropdowns.forEach(dropdown => {
+            dropdown.classList.remove('show');
+        });
+    } catch (error) {
+        console.error('Error closing dropdowns:', error);
+    }
+}
+
 // ===== INITIALIZATION =====
 window.onload = function() {
     console.log('⭐ Quality Dashboard initialized');
     
     try {
-        // Display current API URL
-        document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.matches('.dropdown-btn')) {
+                closeAllDropdowns();
+            }
+        });
         
-        // Load all data on startup with delay
+        // Load all data on startup
         setTimeout(() => {
             loadAllData();
-        }, 1000);
+        }, 500);
         
     } catch (error) {
         console.error('Error during initialization:', error);
-        // Force show content if initialization fails
         document.getElementById('pageLoading').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         updateConnectionStatus('❌ เกิดข้อผิดพลาดในการเริ่มต้น', 'error');
