@@ -389,7 +389,7 @@
         .division-chart-wrapper {
             position: relative;
             width: 100%;
-            height: 260px;
+            height: 280px;
         }
 
         .last-updated {
@@ -749,7 +749,22 @@ function createSingleDivisionChart(divisionKey, divisionData) {
         const openData = divisionData.openData || [];
         const temporaryData = divisionData.temporaryData || [];
         const noActionData = divisionData.noActionData || [];
-        const closedPercentage = divisionData.closedPercentage || [];
+        let closedPercentage = divisionData.closedPercentage || [];
+        
+        // Process closed percentage
+        closedPercentage = closedPercentage.map(value => {
+            if (value === null || value === undefined || value === '') return 0;
+            
+            let numValue = value;
+            if (typeof value === 'string') {
+                numValue = value.replace('%', '').trim();
+            }
+            
+            const num = Number(numValue);
+            if (isNaN(num)) return 0;
+            
+            return num >= 0 && num <= 1 ? num * 100 : num;
+        });
         
         divisionCharts[divisionKey] = new Chart(ctx, {
             type: 'bar',
@@ -760,35 +775,43 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                         label: 'Open',
                         data: openData,
                         backgroundColor: 'rgba(33, 150, 243, 0.8)',
+                        borderColor: 'rgba(25, 118, 210, 1)',
                         borderWidth: 1,
-                        borderRadius: 3
+                        borderRadius: 3,
+                        borderSkipped: false
                     },
                     {
                         label: 'Temporary',
                         data: temporaryData,
                         backgroundColor: 'rgba(76, 175, 80, 0.8)',
+                        borderColor: 'rgba(56, 142, 60, 1)',
                         borderWidth: 1,
-                        borderRadius: 3
+                        borderRadius: 3,
+                        borderSkipped: false
                     },
                     {
                         label: 'No Action',
                         data: noActionData,
                         backgroundColor: 'rgba(255, 152, 0, 0.8)',
+                        borderColor: 'rgba(245, 124, 0, 1)',
                         borderWidth: 1,
-                        borderRadius: 3
+                        borderRadius: 3,
+                        borderSkipped: false
                     },
                     {
                         label: '%Closed',
                         data: closedPercentage,
                         type: 'line',
                         borderColor: 'rgba(76, 175, 80, 1)',
-                        borderWidth: 2,
-                        pointRadius: 4,
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
                         pointBackgroundColor: 'rgba(76, 175, 80, 1)',
                         pointBorderColor: '#ffffff',
                         pointBorderWidth: 2,
                         tension: 0.4,
-                        yAxisID: 'y1'
+                        yAxisID: 'y1',
+                        fill: false
                     }
                 ]
             },
@@ -796,12 +819,13 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: { top: 25, bottom: 5, left: 5, right: 5 }
+                    padding: { top: 35, bottom: 5, left: 5, right: 5 }
                 },
                 scales: {
                     y: { 
                         display: false, 
-                        beginAtZero: true
+                        beginAtZero: true,
+                        stacked: false
                     },
                     y1: { 
                         display: false, 
@@ -810,8 +834,11 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                         max: 100
                     },
                     x: { 
+                        display: true,
+                        grid: { display: false },
                         ticks: { 
-                            maxRotation: 45, 
+                            maxRotation: 45,
+                            minRotation: 45,
                             font: { size: 8 } 
                         } 
                     }
@@ -832,58 +859,65 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                 afterDatasetsDraw: function(chart) {
                     const ctx = chart.ctx;
                     
-                    // Set font for value labels
-                    ctx.font = "bold 9px Arial";
+                    // **Show values on Open bars (standalone bars)**
+                    ctx.font = "bold 10px Arial";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "bottom";
                     
-                    // Show values on Open bars (dataset index 0)
                     const openMeta = chart.getDatasetMeta(0);
                     openMeta.data.forEach(function(bar, index) {
                         const value = openData[index];
                         if (value > 0) {
                             ctx.fillStyle = "rgba(25, 118, 210, 1)";
-                            ctx.fillText(value, bar.x, bar.y - 3);
+                            ctx.fillText(value, bar.x, bar.y - 5);
                         }
                     });
 
-                    // Show values in bars - middle alignment for stacked effect
+                    // **Show values inside bars - middle alignment**
                     ctx.textBaseline = "middle";
+                    ctx.font = "bold 9px Arial";
                     
-                    // Temporary Action values (dataset index 1)
+                    // Temporary Action values (green bars)
                     const tempMeta = chart.getDatasetMeta(1);
                     tempMeta.data.forEach(function(bar, index) {
                         const value = temporaryData[index];
-                        if (value > 0) {
+                        if (value > 0 && bar.height > 15) { // Only show if bar is tall enough
                             ctx.fillStyle = "rgba(27, 94, 32, 1)";
                             ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
                         }
                     });
 
-                    // No Action values (dataset index 2)
+                    // No Action values (orange bars)
                     const noActMeta = chart.getDatasetMeta(2);
                     noActMeta.data.forEach(function(bar, index) {
                         const value = noActionData[index];
-                        if (value > 0) {
+                        if (value > 0 && bar.height > 15) { // Only show if bar is tall enough
                             ctx.fillStyle = "white";
                             ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
                         }
                     });
 
-                    // Line chart percentage labels (dataset index 3)
+                    // **Show percentage labels on line points**
                     const lineDataset = chart.data.datasets[3];
                     if (lineDataset && lineDataset.type === 'line') {
                         const lineMeta = chart.getDatasetMeta(3);
                         if (lineMeta && lineMeta.data) {
-                            ctx.font = "bold 8px Arial";
+                            ctx.font = "bold 9px Arial";
                             ctx.fillStyle = "#2e7d32";
                             ctx.textBaseline = "bottom";
                             
                             lineMeta.data.forEach(function(point, index) {
                                 const value = lineDataset.data[index];
-                                if (value !== null && value !== undefined && value >= 0) {
-                                    const displayValue = value > 0 ? value.toFixed(0) + '%' : '0%';
-                                    ctx.fillText(displayValue, point.x, point.y - 8);
+                                if (value !== null && value !== undefined) {
+                                    let displayValue;
+                                    if (value === 0) {
+                                        displayValue = '0%';
+                                    } else if (value > 0) {
+                                        displayValue = Math.round(value) + '%';
+                                    } else {
+                                        return; // Don't show negative values
+                                    }
+                                    ctx.fillText(displayValue, point.x, point.y - 10);
                                 }
                             });
                         }
