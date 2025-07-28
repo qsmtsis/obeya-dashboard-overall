@@ -344,6 +344,54 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Division Charts */
+        .division-charts {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .division-charts h2 {
+            color: #4caf50;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .division-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .division-chart-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+
+        .division-chart-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 8px;
+            background: #4caf50;
+            border-radius: 6px;
+        }
+
+        .division-chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 240px;
+        }
+
         .last-updated {
             text-align: center;
             color: #666;
@@ -354,9 +402,20 @@
             border-radius: 8px;
         }
 
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .division-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
         @media (max-width: 900px) {
             .charts-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .division-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
             
             .main-content {
@@ -364,10 +423,35 @@
             }
         }
 
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-btn,
+            .dropdown-btn {
+                width: 200px;
+                text-align: center;
+            }
+        }
+
         @media (max-width: 600px) {
             .status-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 15px;
+            }
+            
+            .division-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .division-chart-container {
+                padding: 15px;
+            }
+            
+            .division-chart-wrapper {
+                height: 180px;
             }
         }
     </style>
@@ -515,6 +599,14 @@
                     </div>
                 </div>
 
+                <!-- Division Charts (15 กราฟย่อย) -->
+                <div class="division-charts">
+                    <h2>📊 Division Analysis (15 Charts)</h2>
+                    <div class="division-grid" id="divisionChartsContainer">
+                        <!-- Division charts จะถูกสร้างด้วย JavaScript -->
+                    </div>
+                </div>
+
                 <div class="last-updated" id="lastUpdated">
                     อัพเดทล่าสุด: <strong>-</strong><br>
                     แหล่งข้อมูล: Google Sheets API ผ่าน Apps Script
@@ -530,6 +622,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwC12o0ncg81GC6
 // ===== GLOBAL VARIABLES =====
 let outstandingChart;
 let monthlyChart;
+let divisionCharts = {};
 let dashboardData = null;
 
 // ===== MAIN FUNCTIONS =====
@@ -543,7 +636,8 @@ async function loadAllData() {
         
         console.log('📡 Calling Apps Script API for Quality...');
         
-        const apiUrl = `${APPS_SCRIPT_URL}?action=quality&divisions=false&refresh=false&t=${Date.now()}`;
+        // **แก้ไข: เรียก API พร้อม divisions=true เพื่อได้ Division Charts**
+        const apiUrl = `${APPS_SCRIPT_URL}?action=quality&divisions=true&refresh=false&t=${Date.now()}`;
         console.log('Full API URL:', apiUrl);
         
         const response = await fetch(apiUrl, {
@@ -588,8 +682,14 @@ async function loadAllData() {
         // Load charts
         await loadChartData(qualityData);
         
+        // **เพิ่ม: Load division charts สำหรับ Quality**
+        if (qualityData.divisionCharts) {
+            console.log('🏢 Loading Quality Division Charts...');
+            await loadDivisionCharts(qualityData.divisionCharts);
+        }
+        
         updateLastUpdated(data.lastUpdated, data.source);
-        updateConnectionStatus('✅ เชื่อมต่อสำเร็จ - Real-time Quality Data', 'success');
+        updateConnectionStatus('✅ เชื่อมต่อสำเร็จ - Real-time Quality Data with Division Analysis', 'success');
         
         console.log('✅ All quality data loaded successfully');
         
@@ -602,6 +702,167 @@ async function loadAllData() {
         updateConnectionStatus('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
         showChartError('outstandingChart', 'outstandingLoading', 'outstandingError');
         showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
+    }
+}
+
+function createDivisionChartContainers(divisionChartsData) {
+    try {
+        const container = document.getElementById('divisionChartsContainer');
+        if (!container) return;
+        
+        // Clear container
+        container.innerHTML = '';
+        
+        // Create containers for each division
+        Object.keys(divisionChartsData).forEach(divisionKey => {
+            const divisionData = divisionChartsData[divisionKey];
+            
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'division-chart-container';
+            chartContainer.innerHTML = `
+                <div class="division-chart-title">${divisionData.divisionName || divisionKey}</div>
+                <div class="division-chart-wrapper">
+                    <canvas id="divisionChart_${divisionKey}"></canvas>
+                </div>
+            `;
+            
+            container.appendChild(chartContainer);
+        });
+        
+        console.log('✅ Quality division containers created');
+    } catch (error) {
+        console.error('❌ Error creating quality division containers:', error);
+    }
+}
+
+function createSingleDivisionChart(divisionKey, divisionData) {
+    try {
+        const ctx = document.getElementById(`divisionChart_${divisionKey}`);
+        if (!ctx) return;
+        
+        // Destroy existing chart
+        if (divisionCharts[divisionKey]) {
+            divisionCharts[divisionKey].destroy();
+        }
+        
+        const months = divisionData.months || [];
+        const openData = divisionData.openData || [];
+        const temporaryData = divisionData.temporaryData || [];
+        const noActionData = divisionData.noActionData || [];
+        const closedPercentage = divisionData.closedPercentage || [];
+        
+        divisionCharts[divisionKey] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'Open',
+                        data: openData,
+                        backgroundColor: 'rgba(33, 150, 243, 0.8)',
+                        borderWidth: 1,
+                        borderRadius: 3
+                    },
+                    {
+                        label: 'Temporary',
+                        data: temporaryData,
+                        backgroundColor: 'rgba(76, 175, 80, 0.8)',
+                        borderWidth: 1,
+                        borderRadius: 3
+                    },
+                    {
+                        label: 'No Action',
+                        data: noActionData,
+                        backgroundColor: 'rgba(255, 152, 0, 0.8)',
+                        borderWidth: 1,
+                        borderRadius: 3
+                    },
+                    {
+                        label: '%Closed',
+                        data: closedPercentage,
+                        type: 'line',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        display: false, 
+                        beginAtZero: true
+                    },
+                    y1: { 
+                        display: false, 
+                        position: 'right', 
+                        beginAtZero: true, 
+                        max: 100
+                    },
+                    x: { 
+                        ticks: { 
+                            maxRotation: 45, 
+                            font: { size: 8 } 
+                        } 
+                    }
+                },
+                plugins: { 
+                    legend: { 
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: { size: 8 },
+                            boxWidth: 8,
+                            padding: 4
+                        }
+                    }
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error(`❌ Error creating quality division chart ${divisionKey}:`, error);
+    }
+}
+
+async function loadDivisionCharts(divisionChartsData) {
+    try {
+        if (!divisionChartsData) {
+            console.log('⚠️ No quality division charts data available');
+            return;
+        }
+        
+        console.log('🏢 Loading Quality Division Charts:', Object.keys(divisionChartsData).length, 'divisions');
+        
+        // Create HTML containers
+        createDivisionChartContainers(divisionChartsData);
+        
+        // Create charts with delay to prevent blocking
+        const divisionKeys = Object.keys(divisionChartsData);
+        for (let i = 0; i < divisionKeys.length; i++) {
+            const divisionKey = divisionKeys[i];
+            const divisionData = divisionChartsData[divisionKey];
+            
+            try {
+                createSingleDivisionChart(divisionKey, divisionData);
+                
+                // Small delay between chart creation to prevent blocking
+                if (i < divisionKeys.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+            } catch (error) {
+                console.error(`❌ Failed to create quality chart for ${divisionKey}:`, error);
+            }
+        }
+        
+        console.log('✅ All Quality Division Charts created');
+        
+    } catch (error) {
+        console.error('❌ Quality Division Charts loading failed:', error);
     }
 }
 
