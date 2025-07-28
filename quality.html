@@ -398,20 +398,21 @@
         .division-chart-container {
             background: #f8f9fa;
             border-radius: 12px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             border: 1px solid #e9ecef;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         .division-chart-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
             color: white;
             text-align: center;
-            margin-bottom: 15px;
-            padding: 8px;
+            margin-bottom: 8px;
+            padding: 6px;
             background: #4caf50;
             border-radius: 6px;
         }
@@ -420,42 +421,44 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-            padding: 8px;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 6px;
             background: white;
-            border-radius: 6px;
+            border-radius: 4px;
             border: 1px solid #e0e0e0;
             flex-wrap: wrap;
+            font-size: 9px;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
             font-size: 8px;
             font-weight: 600;
             color: #333;
         }
 
         .legend-color {
-            width: 10px;
-            height: 10px;
-            border-radius: 2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 1px;
             border: 1px solid rgba(0,0,0,0.1);
         }
 
         .legend-line {
-            width: 12px;
-            height: 3px;
+            width: 10px;
+            height: 2px;
             border-radius: 1px;
         }
 
         .division-chart-wrapper {
             position: relative;
             width: 100%;
-            height: 220px;
+            height: 200px;
             flex: 1;
+            overflow: hidden;
         }
 
         .last-updated {
@@ -931,7 +934,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: { top: 35, bottom: 5, left: 5, right: 5 }
+                    padding: { top: 20, bottom: 2, left: 2, right: 2 }
                 },
                 scales: {
                     y: { 
@@ -951,13 +954,13 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                         ticks: { 
                             maxRotation: 45,
                             minRotation: 45,
-                            font: { size: 8 } 
+                            font: { size: 7 }
                         } 
                     }
                 },
                 plugins: { 
                     legend: { 
-                        display: false  // ปิด legend ของ Chart.js เพราะเราสร้าง custom legend แล้ว
+                        display: false
                     }
                 }
             },
@@ -966,7 +969,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                     const ctx = chart.ctx;
                     
                     // **Show values on Open bars (standalone bars)**
-                    ctx.font = "bold 10px Arial";
+                    ctx.font = "bold 8px Arial";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "bottom";
                     
@@ -975,19 +978,19 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                         const value = openData[index];
                         if (value > 0) {
                             ctx.fillStyle = "rgba(25, 118, 210, 1)";
-                            ctx.fillText(value, bar.x, bar.y - 5);
+                            ctx.fillText(value, bar.x, bar.y - 3);
                         }
                     });
 
                     // **Show values inside bars - middle alignment**
                     ctx.textBaseline = "middle";
-                    ctx.font = "bold 9px Arial";
+                    ctx.font = "bold 7px Arial";
                     
                     // Temporary Action values (green bars)
                     const tempMeta = chart.getDatasetMeta(1);
                     tempMeta.data.forEach(function(bar, index) {
                         const value = temporaryData[index];
-                        if (value > 0 && bar.height > 15) { // Only show if bar is tall enough
+                        if (value > 0 && bar.height > 12) { // Only show if bar is tall enough
                             ctx.fillStyle = "rgba(27, 94, 32, 1)";
                             ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
                         }
@@ -997,7 +1000,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                     const noActMeta = chart.getDatasetMeta(2);
                     noActMeta.data.forEach(function(bar, index) {
                         const value = noActionData[index];
-                        if (value > 0 && bar.height > 15) { // Only show if bar is tall enough
+                        if (value > 0 && bar.height > 12) { // Only show if bar is tall enough
                             ctx.fillStyle = "white";
                             ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
                         }
@@ -1008,7 +1011,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                     if (lineDataset && lineDataset.type === 'line') {
                         const lineMeta = chart.getDatasetMeta(3);
                         if (lineMeta && lineMeta.data) {
-                            ctx.font = "bold 9px Arial";
+                            ctx.font = "bold 7px Arial";
                             ctx.fillStyle = "#2e7d32";
                             ctx.textBaseline = "bottom";
                             
@@ -1024,7 +1027,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                                         return; // Don't show negative values
                                     }
                                     // แสดงตัวเลข % ด้านบนจุด โดยมีพื้นที่เพียงพอ
-                                    ctx.fillText(displayValue, point.x, point.y - 18);
+                                    ctx.fillText(displayValue, point.x, point.y - 10);
                                 }
                             });
                         }
