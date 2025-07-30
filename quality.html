@@ -471,14 +471,315 @@
             border-radius: 8px;
         }
 
-        /* Responsive */
-        @media (max-width: 1400px) {
+        /* ===== MOBILE RESPONSIVE DESIGN ===== */
+        
+        /* Bottom Navigation for Mobile */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0 12px 0;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .bottom-nav .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            min-width: 60px;
+            text-decoration: none;
+            color: #666;
+            border-left: none;
+        }
+
+        .bottom-nav .nav-item.active {
+            background: linear-gradient(135deg, #4caf5015 0%, #388e3c15 100%);
+            color: #4caf50;
+        }
+
+        .bottom-nav .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .bottom-nav .nav-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Mobile Header */
+        .mobile-header {
+            display: none;
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+            color: white;
+            padding: 20px 16px 16px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .mobile-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .mobile-header .subtitle {
+            font-size: 14px;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        /* FORCE HIDE SIDEBAR ON MOBILE - IMPORTANT */
+        @media screen and (max-width: 768px) {
+            /* Hide desktop sidebar completely */
+            .sidebar {
+                display: none !important;
+                width: 0 !important;
+                visibility: hidden !important;
+            }
+            
+            /* Show mobile navigation */
+            .bottom-nav {
+                display: flex !important;
+            }
+            
+            .mobile-header {
+                display: block !important;
+            }
+            
+            /* Adjust main container */
+            .container {
+                flex-direction: column !important;
+                height: auto !important;
+                min-height: 100vh;
+            }
+            
+            .main-content {
+                flex: 1;
+                padding: 16px !important;
+                padding-bottom: 100px !important; /* Space for bottom nav */
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+            
+            /* Page title smaller */
+            .page-title {
+                font-size: 24px !important;
+                margin-bottom: 20px;
+            }
+            
+            /* API Info mobile */
+            .api-info {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+            
+            .api-info h4 {
+                font-size: 16px;
+            }
+            
+            .api-info p {
+                font-size: 12px;
+            }
+            
+            /* Status cards - 2x2 grid */
+            .status-grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 16px !important;
+                margin-bottom: 30px;
+            }
+            
+            .status-card {
+                padding: 20px 16px !important;
+            }
+            
+            .status-label {
+                font-size: 12px !important;
+                margin-bottom: 10px;
+            }
+            
+            .status-number {
+                font-size: 32px !important;
+            }
+            
+            /* Action buttons mobile */
+            .action-buttons {
+                flex-direction: column !important;
+                gap: 12px;
+                margin: 20px 0;
+            }
+            
+            .action-btn,
+            .dropdown-btn {
+                width: 100% !important;
+                padding: 14px 20px;
+                font-size: 14px;
+            }
+            
+            /* Charts - stack vertically */
+            .charts-grid {
+                grid-template-columns: 1fr !important;
+                gap: 30px;
+            }
+            
+            .chart-wrapper {
+                height: 300px !important; /* Slightly smaller for mobile */
+            }
+            
+            .chart-legend {
+                gap: 16px;
+                margin-bottom: 12px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .legend-item {
+                font-size: 12px;
+            }
+            
+            /* Division charts - 1 per row */
+            .division-grid {
+                grid-template-columns: 1fr !important;
+                gap: 20px;
+            }
+            
+            .division-chart-container {
+                padding: 12px;
+            }
+            
+            .division-chart-title {
+                font-size: 12px;
+                padding: 8px;
+            }
+            
+            .division-chart-legend {
+                font-size: 8px;
+                gap: 6px;
+                padding: 8px;
+            }
+            
+            .division-chart-wrapper {
+                height: 250px !important; /* Taller for better visibility */
+            }
+            
+            /* Dropdown menus full width */
+            .dropdown-menu {
+                left: 0;
+                right: 0;
+                min-width: auto;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            /* Very small screens - extra small adjustments */
+            .main-content {
+                padding: 12px !important;
+            }
+            
+            .status-grid {
+                gap: 12px !important;
+            }
+            
+            .status-card {
+                padding: 16px 12px !important;
+            }
+            
+            .status-number {
+                font-size: 28px !important;
+            }
+            
+            .chart-wrapper {
+                height: 250px !important;
+            }
+            
+            .division-chart-wrapper {
+                height: 220px !important;
+            }
+            
+            /* Make text larger for readability */
+            body {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            
+            .page-title {
+                font-size: 20px !important;
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media screen and (max-width: 768px) and (orientation: landscape) {
+            .mobile-header {
+                padding: 12px 16px 8px 16px;
+            }
+            
+            .mobile-header h1 {
+                font-size: 20px;
+                margin-bottom: 2px;
+            }
+            
+            .mobile-header .subtitle {
+                font-size: 12px;
+            }
+            
+            .main-content {
+                padding-bottom: 80px !important; /* Less space for bottom nav in landscape */
+            }
+            
+            .status-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 12px !important;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 20px;
+            }
+            
+            .division-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        /* Desktop responsive (keep existing) */
+        @media screen and (min-width: 769px) {
+            .bottom-nav {
+                display: none !important;
+            }
+            
+            .mobile-header {
+                display: none !important;
+            }
+            
+            .sidebar {
+                display: block !important;
+            }
+        }
+
+        @media screen and (max-width: 1400px) and (min-width: 769px) {
             .division-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
 
-        @media (max-width: 900px) {
+        @media screen and (max-width: 900px) and (min-width: 769px) {
             .charts-grid {
                 grid-template-columns: 1fr;
             }
@@ -491,42 +792,16 @@
                 padding: 20px;
             }
         }
-
-        @media (max-width: 768px) {
-            .action-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .action-btn,
-            .dropdown-btn {
-                width: 200px;
-                text-align: center;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .status-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
-            }
-            
-            .division-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .division-chart-container {
-                padding: 15px;
-            }
-            
-            .division-chart-wrapper {
-                height: 180px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Mobile Header (Hidden on Desktop) -->
+        <div class="mobile-header">
+            <h1>TSIS</h1>
+            <div class="subtitle">Quality Dashboard</div>
+        </div>
+
         <div class="sidebar">
             <div class="logo">
                 <h1>TSIS</h1>
@@ -592,7 +867,7 @@
                                target="_blank" class="dropdown-item">
                                 🔄 Q&S อนุมัติชั่วคราว
                             </a>
-                            <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKAG8ECEQvwkYaCB_6FwleUmMpN9l3DxhWJhLzxOXr/exec" 
+                            <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
                                target="_blank" class="dropdown-item">
                                 ✅ Q&S อนุมัติถาวร
                             </a>
@@ -710,6 +985,24 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Bottom Navigation (Mobile Only) -->
+        <div class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <div class="nav-icon">📊</div>
+                <div class="nav-label">Overall</div>
+            </a>
+            
+            <a href="safety.html" class="nav-item">
+                <div class="nav-icon">🛡️</div>
+                <div class="nav-label">Safety</div>
+            </a>
+            
+            <div class="nav-item active">
+                <div class="nav-icon">⭐</div>
+                <div class="nav-label">Quality</div>
+            </div>
+        </div>
     </div>
 
 <script>
@@ -722,7 +1015,7 @@ let monthlyChart;
 let divisionCharts = {};
 let dashboardData = null;
 
-// ===== MAIN FUNCTIONS =====
+// ===== MAIN FUNCTIONS (copied from original Quality code) =====
 async function loadAllData() {
     console.log('🚀 Loading Quality data from Apps Script API...');
     
@@ -733,7 +1026,6 @@ async function loadAllData() {
         
         console.log('📡 Calling Apps Script API for Quality...');
         
-        // **แก้ไข: เรียก API พร้อม divisions=true เพื่อได้ Division Charts**
         const apiUrl = `${APPS_SCRIPT_URL}?action=quality&divisions=true&refresh=false&t=${Date.now()}`;
         console.log('Full API URL:', apiUrl);
         
@@ -779,7 +1071,7 @@ async function loadAllData() {
         // Load charts
         await loadChartData(qualityData);
         
-        // **เพิ่ม: Load division charts สำหรับ Quality**
+        // Load division charts สำหรับ Quality
         if (qualityData.divisionCharts) {
             console.log('🏢 Loading Quality Division Charts...');
             await loadDivisionCharts(qualityData.divisionCharts);
@@ -968,7 +1260,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                 afterDatasetsDraw: function(chart) {
                     const ctx = chart.ctx;
                     
-                    // **Show values on Open bars (standalone bars)**
+                    // Show values on Open bars (standalone bars)
                     ctx.font = "bold 8px Arial";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "bottom";
@@ -982,16 +1274,16 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                         }
                     });
 
-                    // **Show values inside bars - middle alignment**
+                    // Show values inside bars - middle alignment
                     ctx.textBaseline = "middle";
                     ctx.font = "bold 7px Arial";
                     
-                    // Temporary Action values (green bars)
+                    // Temporary Action values (green bars) - Quality colors
                     const tempMeta = chart.getDatasetMeta(1);
                     tempMeta.data.forEach(function(bar, index) {
                         const value = temporaryData[index];
                         if (value > 0 && bar.height > 12) { // Only show if bar is tall enough
-                            ctx.fillStyle = "rgba(27, 94, 32, 1)";
+                            ctx.fillStyle = "rgba(27, 94, 32, 1)"; // Dark green for Quality
                             ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
                         }
                     });
@@ -1006,13 +1298,13 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                         }
                     });
 
-                    // **Show percentage labels on line points**
+                    // Show percentage labels on line points
                     const lineDataset = chart.data.datasets[3];
                     if (lineDataset && lineDataset.type === 'line') {
                         const lineMeta = chart.getDatasetMeta(3);
                         if (lineMeta && lineMeta.data) {
                             ctx.font = "bold 7px Arial";
-                            ctx.fillStyle = "#2e7d32";
+                            ctx.fillStyle = "#2e7d32"; // Quality green
                             ctx.textBaseline = "bottom";
                             
                             lineMeta.data.forEach(function(point, index) {
@@ -1026,7 +1318,6 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                                     } else {
                                         return; // Don't show negative values
                                     }
-                                    // แสดงตัวเลข % ด้านบนจุด โดยมีพื้นที่เพียงพอ
                                     ctx.fillText(displayValue, point.x, point.y - 10);
                                 }
                             });
@@ -1170,7 +1461,7 @@ async function loadChartData(qualityData) {
     }
 }
 
-// ===== CHART CREATION FUNCTIONS =====
+// ===== CHART CREATION FUNCTIONS (Quality colors) =====
 function createOutstandingChart(outstandingData) {
     try {
         const ctx = document.getElementById('outstandingChart');
@@ -1196,7 +1487,7 @@ function createOutstandingChart(outstandingData) {
                     {
                         label: 'Temporary Action',
                         data: temporaryData,
-                        backgroundColor: 'rgba(76, 175, 80, 0.85)',
+                        backgroundColor: 'rgba(76, 175, 80, 0.85)', // Quality green
                         borderColor: 'rgba(56, 142, 60, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
@@ -1205,7 +1496,7 @@ function createOutstandingChart(outstandingData) {
                     {
                         label: 'No Action',
                         data: noActionData,
-                        backgroundColor: 'rgba(255, 152, 0, 0.85)',
+                        backgroundColor: 'rgba(255, 152, 0, 0.85)', // Quality orange
                         borderColor: 'rgba(245, 124, 0, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
@@ -1255,8 +1546,8 @@ function createOutstandingChart(outstandingData) {
                             const value = dataset.data[index];
                             if (value > 0) {
                                 ctx.fillStyle = datasetIndex === 0 ? 
-                                    "rgba(27, 94, 32, 1)" :  
-                                    "white";                    
+                                    "rgba(27, 94, 32, 1)" :  // Dark green for Temporary
+                                    "white";                    // White for No Action
                                 
                                 ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
                             }
@@ -1329,7 +1620,7 @@ function createMonthlyChart(monthlyData) {
                     {
                         label: 'Open',
                         data: openData,
-                        backgroundColor: 'rgba(33, 150, 243, 0.85)',
+                        backgroundColor: 'rgba(33, 150, 243, 0.85)', // Blue
                         borderColor: 'rgba(25, 118, 210, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
@@ -1340,7 +1631,7 @@ function createMonthlyChart(monthlyData) {
                     {
                         label: 'Temporary Action',
                         data: temporaryData,
-                        backgroundColor: 'rgba(76, 175, 80, 0.85)',
+                        backgroundColor: 'rgba(76, 175, 80, 0.85)', // Quality green
                         borderColor: 'rgba(56, 142, 60, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
@@ -1351,7 +1642,7 @@ function createMonthlyChart(monthlyData) {
                     {
                         label: 'No Action',
                         data: noActionData,
-                        backgroundColor: 'rgba(255, 152, 0, 0.85)',
+                        backgroundColor: 'rgba(255, 152, 0, 0.85)', // Quality orange
                         borderColor: 'rgba(245, 124, 0, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
@@ -1363,7 +1654,7 @@ function createMonthlyChart(monthlyData) {
                         label: '%Closed',
                         data: closedPercentage,
                         type: 'line',
-                        borderColor: '#4caf50',
+                        borderColor: '#4caf50', // Quality green
                         backgroundColor: 'rgba(76, 175, 80, 0.1)',
                         borderWidth: 4,
                         pointBackgroundColor: '#4caf50',
@@ -1434,7 +1725,7 @@ function createMonthlyChart(monthlyData) {
                     tempMeta.data.forEach(function(bar, index) {
                         const value = temporaryData[index];
                         if (value > 0) {
-                            ctx.fillStyle = "rgba(27, 94, 32, 1)";
+                            ctx.fillStyle = "rgba(27, 94, 32, 1)"; // Dark green
                             ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
                         }
                     });
@@ -1466,7 +1757,7 @@ function createMonthlyChart(monthlyData) {
                         const lineMeta = chart.getDatasetMeta(3);
                         if (lineMeta && lineMeta.data) {
                             ctx.font = "bold 12px Arial";
-                            ctx.fillStyle = "#2e7d32";
+                            ctx.fillStyle = "#2e7d32"; // Quality green
                             ctx.textBaseline = "bottom";
                             
                             lineMeta.data.forEach(function(point, index) {
@@ -1559,7 +1850,7 @@ function closeAllDropdowns() {
 
 // ===== INITIALIZATION =====
 window.onload = function() {
-    console.log('⭐ Quality Dashboard initialized');
+    console.log('⭐ Quality Dashboard initialized (Mobile Responsive)');
     
     try {
         // Close dropdowns when clicking outside
