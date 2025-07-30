@@ -962,7 +962,9 @@ function createOutstandingChart(chartsData) {
                         borderColor: 'rgba(241, 196, 15, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
-                        borderSkipped: false
+                        borderSkipped: false,
+                        barPercentage: isMobile ? 0.6 : 0.9, // ลดความกว้างแท่งบนมือถือ
+                        categoryPercentage: isMobile ? 0.7 : 0.8 // ลดความกว้างหมวดหมู่บนมือถือ
                     },
                     {
                         label: 'No Action',
@@ -971,7 +973,9 @@ function createOutstandingChart(chartsData) {
                         borderColor: 'rgba(192, 57, 43, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
-                        borderSkipped: false
+                        borderSkipped: false,
+                        barPercentage: isMobile ? 0.6 : 0.9, // ลดความกว้างแท่งบนมือถือ
+                        categoryPercentage: isMobile ? 0.7 : 0.8 // ลดความกว้างหมวดหมู่บนมือถือ
                     }
                 ]
             },
