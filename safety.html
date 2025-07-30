@@ -178,7 +178,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
-            margin-bottom: 20px;
+            margin-bottom: 50px; /* เพิ่ม margin ระหว่างกราฟ */
         }
 
         .chart-section h3 {
@@ -633,11 +633,13 @@
             /* Charts - stack vertically */
             .charts-grid {
                 grid-template-columns: 1fr !important;
-                gap: 30px;
+                gap: 60px !important; /* เพิ่มระยะห่างระหว่างกราฟบนมือถือ */
+                margin-bottom: 40px !important;
             }
             
             .chart-wrapper {
-                height: 320px !important; /* Increased height for mobile */
+                height: 520px !important; /* เพิ่มความสูงกราหมากขึ้นอีกเพื่อรองรับ labels 90 องศา */
+                margin-bottom: 30px !important; /* เพิ่ม margin ด้านล่างของแต่ละกราฟ */
             }
             
             .chart-legend {
@@ -706,7 +708,7 @@
             }
             
             .chart-wrapper {
-                height: 250px !important;
+                height: 400px !important;
             }
             
             .division-chart-wrapper {
@@ -1014,7 +1016,7 @@ let monthlyChart;
 let divisionCharts = {};
 let dashboardData = null;
 
-// ===== MAIN FUNCTIONS (copied from Quality, changed to Safety) =====
+// ===== MAIN FUNCTIONS =====
 async function loadAllData() {
     console.log('🚀 Loading Safety data from Apps Script API...');
     
@@ -1025,7 +1027,6 @@ async function loadAllData() {
         
         console.log('📡 Calling Apps Script API for Safety...');
         
-        // **แก้ไข: เรียก API สำหรับ Safety พร้อม divisions=true เพื่อได้ Division Charts**
         const apiUrl = `${APPS_SCRIPT_URL}?action=safety&divisions=true&refresh=false&t=${Date.now()}`;
         console.log('Full API URL:', apiUrl);
         
@@ -1071,7 +1072,7 @@ async function loadAllData() {
         // Load charts
         await loadChartData(safetyData);
         
-        // **เพิ่ม: Load division charts สำหรับ Safety**
+        // Load division charts สำหรับ Safety
         if (safetyData.divisionCharts) {
             console.log('🏢 Loading Safety Division Charts...');
             await loadDivisionCharts(safetyData.divisionCharts);
@@ -1260,7 +1261,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                 afterDatasetsDraw: function(chart) {
                     const ctx = chart.ctx;
                     
-                    // **Show values on Open bars (standalone bars)**
+                    // Show values on Open bars (standalone bars)
                     ctx.font = "bold 8px Arial";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "bottom";
@@ -1274,7 +1275,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                         }
                     });
 
-                    // **Show values inside bars - middle alignment**
+                    // Show values inside bars - middle alignment
                     ctx.textBaseline = "middle";
                     ctx.font = "bold 7px Arial";
                     
@@ -1298,7 +1299,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                         }
                     });
 
-                    // **Show percentage labels on line points**
+                    // Show percentage labels on line points
                     const lineDataset = chart.data.datasets[3];
                     if (lineDataset && lineDataset.type === 'line') {
                         const lineMeta = chart.getDatasetMeta(3);
@@ -1318,7 +1319,6 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                                     } else {
                                         return; // Don't show negative values
                                     }
-                                    // แสดงตัวเลข % ด้านบนจุด โดยมีพื้นที่เพียงพอ
                                     ctx.fillText(displayValue, point.x, point.y - 10);
                                 }
                             });
@@ -1480,10 +1480,17 @@ function createOutstandingChart(outstandingData) {
         const temporaryData = outstandingData.temporaryData || [];
         const noActionData = outstandingData.noActionData || [];
 
+        // ปรับปรุงการจัดการ labels สำหรับมือถือ (ใช้รูปแบบเดียวกับ Overall)
+        const isMobile = window.innerWidth <= 768;
+        const isVerySmall = window.innerWidth <= 480;
+        
+        // ไม่ตัด labels - ให้แสดงเต็ม แต่ปรับขนาดตัวอักษรแทน
+        const processedLabels = labels;
+
         outstandingChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels,
+                labels: processedLabels,
                 datasets: [
                     {
                         label: 'Temporary Action',
@@ -1492,7 +1499,9 @@ function createOutstandingChart(outstandingData) {
                         borderColor: 'rgba(241, 196, 15, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
-                        borderSkipped: false
+                        borderSkipped: false,
+                        barPercentage: isMobile ? 0.6 : 0.9, // ลดความกว้างแท่งบนมือถือ
+                        categoryPercentage: isMobile ? 0.7 : 0.8 // ลดความกว้างหมวดหมู่บนมือถือ
                     },
                     {
                         label: 'No Action',
@@ -1501,7 +1510,9 @@ function createOutstandingChart(outstandingData) {
                         borderColor: 'rgba(192, 57, 43, 1)',
                         borderWidth: 2,
                         borderRadius: 6,
-                        borderSkipped: false
+                        borderSkipped: false,
+                        barPercentage: isMobile ? 0.6 : 0.9, // ลดความกว้างแท่งบนมือถือ
+                        categoryPercentage: isMobile ? 0.7 : 0.8 // ลดความกว้างหมวดหมู่บนมือถือ
                     }
                 ]
             },
@@ -1509,7 +1520,12 @@ function createOutstandingChart(outstandingData) {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: { top: 30, bottom: 5, left: 5, right: 5 }
+                    padding: { 
+                        top: 30, 
+                        bottom: isMobile ? 100 : 20, // เพิ่ม padding ด้านล่างมากขึ้นสำหรับ labels 90 องศา
+                        left: 5, 
+                        right: 5 
+                    }
                 },
                 scales: {
                     y: { 
@@ -1522,21 +1538,41 @@ function createOutstandingChart(outstandingData) {
                         stacked: true,
                         grid: { display: false },
                         ticks: { 
-                            maxRotation: 45, 
-                            minRotation: 45,
-                            font: { size: 11 }
-                        } 
+                            maxRotation: isMobile ? 90 : 45, // หมุน 90 องศาบนมือถือ
+                            minRotation: isMobile ? 90 : 45,
+                            font: { 
+                                size: isVerySmall ? 5 : isMobile ? 6 : 11 // บีบตัวอักษรเล็กลงมาก
+                            },
+                            padding: isMobile ? 20 : 5, // เพิ่ม padding มากขึ้น
+                            maxTicksLimit: undefined, // ไม่จำกัดจำนวน ticks
+                            autoSkip: false, // ไม่ให้ skip labels เลย
+                            stepSize: 1, // แสดงทุก step
+                            callback: function(value, index, values) {
+                                // แสดงทุก labels บนมือถือ
+                                return this.getLabelForValue(value);
+                            }
+                        }
                     }
                 },
                 plugins: { 
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                // แสดง label เต็มใน tooltip
+                                return labels[context[0].dataIndex];
+                            }
+                        }
+                    }
                 }
             },
             plugins: [{
                 afterDatasetsDraw: function(chart) {
                     const ctx = chart.ctx;
                     
-                    ctx.font = "bold 11px Arial";
+                    // ปรับขนาดตัวอักษรสำหรับมือถือ
+                    const fontSize = isVerySmall ? 9 : isMobile ? 10 : 11;
+                    ctx.font = `bold ${fontSize}px Arial`;
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
                     
@@ -1555,8 +1591,9 @@ function createOutstandingChart(outstandingData) {
                         });
                     });
 
-                    // Show totals above bars
-                    ctx.font = "bold 13px Arial";
+                    // แสดงผลรวมด้านบนของแท่งกราฟ
+                    const totalFontSize = isVerySmall ? 10 : isMobile ? 11 : 13;
+                    ctx.font = `bold ${totalFontSize}px Arial`;
                     ctx.textBaseline = "bottom";
                     ctx.fillStyle = "#2c3e50";
                     
@@ -1567,7 +1604,7 @@ function createOutstandingChart(outstandingData) {
                         const total = (temporaryData[index] || 0) + (noActionData[index] || 0);
                         if (total > 0) {
                             const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
-                            ctx.fillText(total, bar.x, topY - 10);
+                            ctx.fillText(total, bar.x, topY - (isMobile ? 8 : 10));
                         }
                     });
                 }
@@ -1612,6 +1649,8 @@ function createMonthlyChart(monthlyData) {
             
             return num >= 0 && num <= 1 ? num * 100 : num;
         });
+
+        const isMobile = window.innerWidth <= 768;
 
         monthlyChart = new Chart(ctx, {
             type: 'bar',
@@ -1672,7 +1711,12 @@ function createMonthlyChart(monthlyData) {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: { top: 30, bottom: 5, left: 5, right: 5 }
+                    padding: { 
+                        top: 30, 
+                        bottom: isMobile ? 15 : 5, 
+                        left: 5, 
+                        right: 5 
+                    }
                 },
                 scales: {
                     y: { 
@@ -1696,7 +1740,7 @@ function createMonthlyChart(monthlyData) {
                         ticks: { 
                             maxRotation: 0,
                             minRotation: 0,
-                            font: { size: 11 }
+                            font: { size: isMobile ? 10 : 11 }
                         } 
                     }
                 },
@@ -1705,7 +1749,8 @@ function createMonthlyChart(monthlyData) {
             plugins: [{
                 afterDatasetsDraw: function(chart) {
                     const ctx = chart.ctx;
-                    ctx.font = "bold 11px Arial";
+                    const fontSize = isMobile ? 10 : 11;
+                    ctx.font = `bold ${fontSize}px Arial`;
                     ctx.textAlign = "center";
                     ctx.textBaseline = "bottom";
                     
@@ -1757,7 +1802,7 @@ function createMonthlyChart(monthlyData) {
                     if (lineDataset && lineDataset.type === 'line') {
                         const lineMeta = chart.getDatasetMeta(3);
                         if (lineMeta && lineMeta.data) {
-                            ctx.font = "bold 12px Arial";
+                            ctx.font = `bold ${fontSize + 1}px Arial`;
                             ctx.fillStyle = "#2ecc71"; // Green
                             ctx.textBaseline = "bottom";
                             
@@ -1799,7 +1844,7 @@ function updateLastUpdated(timestamp, source) {
         const element = document.getElementById('lastUpdated');
         if (element) {
             element.innerHTML = 
-                `อัพเดทล่าสุด: <strong>${timestamp || new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมุล: ${source || 'Google Sheets API ผ่าน Apps Script'}`;
+                `อัพเดทล่าสุด: <strong>${timestamp || new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมูล: ${source || 'Google Sheets API ผ่าน Apps Script'}`;
         }
     } catch (error) {
         console.error('Error updating last updated:', error);
@@ -1851,7 +1896,7 @@ function closeAllDropdowns() {
 
 // ===== INITIALIZATION =====
 window.onload = function() {
-    console.log('🛡️ Safety Dashboard initialized (Fixed with Quality code base)');
+    console.log('🛡️ Safety Dashboard initialized (Fixed Mobile Outstanding Chart)');
     
     try {
         // Close dropdowns when clicking outside
