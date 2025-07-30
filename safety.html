@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>TSIS - Safety Dashboard (Optimized)</title>
+    <title>TSIS - Safety Dashboard (Fixed)</title>
     
     <!-- Chart.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -1056,7 +1056,7 @@ async function loadDivisionCharts(divisionChartsData) {
     }
 }
 
-// ===== CHART CREATION FUNCTIONS =====
+// ===== CHART CREATION FUNCTIONS (แก้ไขแล้ว) =====
 function createOutstandingChart(outstandingData) {
     try {
         const ctx = document.getElementById('outstandingChart');
@@ -1369,119 +1369,6 @@ function createMonthlyChart(monthlyData) {
         });
         
     } catch (error) {
-        console.error(`❌ Error creating safety division chart ${divisionKey}:`, error);
-    }
-}
-
-// ===== UTILITY FUNCTIONS =====
-function showChartError(chartId, loadingId, errorId) {
-    try {
-        const loading = document.getElementById(loadingId);
-        const error = document.getElementById(errorId);
-        const chart = document.getElementById(chartId);
-        
-        if (loading) loading.style.display = 'none';
-        if (error) error.style.display = 'flex';
-        if (chart) chart.style.display = 'none';
-    } catch (e) {
-        console.error('Error showing chart error:', e);
-    }
-}
-
-function updateLastUpdated(timestamp, source) {
-    try {
-        const element = document.getElementById('lastUpdated');
-        if (element) {
-            element.innerHTML = 
-                `อัพเดทล่าสุด: <strong>${timestamp || new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมูล: ${source || 'Google Sheets API ผ่าน Apps Script'}`;
-        }
-    } catch (error) {
-        console.error('Error updating last updated:', error);
-    }
-}
-
-function updateConnectionStatus(message, type) {
-    try {
-        const status = document.getElementById('connectionStatus');
-        if (status) {
-            status.textContent = message;
-            status.className = `connection-status ${type}`;
-        }
-    } catch (error) {
-        console.error('Error updating connection status:', error);
-    }
-}
-
-function navigateToPage(pageName) {
-    window.location.href = pageName;
-}
-
-// ===== DROPDOWN FUNCTIONS =====
-function toggleDropdown(dropdownId) {
-    try {
-        const dropdown = document.getElementById(dropdownId);
-        const isShowing = dropdown.classList.contains('show');
-        
-        closeAllDropdowns();
-        
-        if (!isShowing) {
-            dropdown.classList.add('show');
-        }
-    } catch (error) {
-        console.error('Error toggling dropdown:', error);
-    }
-}
-
-function closeAllDropdowns() {
-    try {
-        const dropdowns = document.querySelectorAll('.dropdown-menu');
-        dropdowns.forEach(dropdown => {
-            dropdown.classList.remove('show');
-        });
-    } catch (error) {
-        console.error('Error closing dropdowns:', error);
-    }
-}
-
-// ===== INITIALIZATION =====
-window.onload = function() {
-    console.log('🛡️ Safety Dashboard initialized (Optimized)');
-    
-    try {
-        // Display current API URL
-        document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
-        
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.matches('.dropdown-btn')) {
-                closeAllDropdowns();
-            }
-        });
-        
-        // Start with basic data loading (faster)
-        setTimeout(() => {
-            loadBasicData();
-        }, 500);
-        
-    } catch (error) {
-        console.error('Error during initialization:', error);
-        document.getElementById('pageLoading').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
-        updateConnectionStatus('❌ เกิดข้อผิดพลาดในการเริ่มต้น', 'error');
-    }
-};
-</script>
-
-</body>
-</html>.x, point.y - 12);
-                                }
-                            });
-                        }
-                    }
-                }
-            }]
-        });
-    } catch (error) {
         console.error('❌ Error creating Safety Monthly chart:', error);
         showChartError('monthlyChart', 'monthlyLoading', 'monthlyError');
     }
@@ -1605,7 +1492,7 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                         borderColor: 'rgba(46, 204, 113, 1)',
                         backgroundColor: 'rgba(46, 204, 113, 0.1)',
                         borderWidth: 3,
-                        pointRadius: 5,
+                        pointRadius: 4,
                         pointBackgroundColor: 'rgba(46, 204, 113, 1)',
                         pointBorderColor: '#ffffff',
                         pointBorderWidth: 2,
@@ -1700,13 +1587,120 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                             
                             lineMeta.data.forEach(function(point, index) {
                                 const value = lineDataset.data[index];
-                                if (value !== null && value !== undefined) {
-                                    let displayValue;
-                                    if (value === 0) {
-                                        displayValue = '0%';
-                                    } else if (value > 0) {
-                                        displayValue = Math.round(value) + '%';
-                                    } else {
-                                        return;
-                                    }
-                                    ctx.fillText(displayValue, point
+                                if (value !== null && value !== undefined && value > 0) {
+                                    const displayValue = Math.round(value) + '%';
+                                    ctx.fillText(displayValue, point.x, point.y - 8);
+                                }
+                            });
+                        }
+                    }
+                }
+            }]
+        });
+        
+    } catch (error) {
+        console.error(`❌ Error creating safety division chart ${divisionKey}:`, error);
+    }
+}
+
+// ===== UTILITY FUNCTIONS =====
+function showChartError(chartId, loadingId, errorId) {
+    try {
+        const loading = document.getElementById(loadingId);
+        const error = document.getElementById(errorId);
+        const chart = document.getElementById(chartId);
+        
+        if (loading) loading.style.display = 'none';
+        if (error) error.style.display = 'flex';
+        if (chart) chart.style.display = 'none';
+    } catch (e) {
+        console.error('Error showing chart error:', e);
+    }
+}
+
+function updateLastUpdated(timestamp, source) {
+    try {
+        const element = document.getElementById('lastUpdated');
+        if (element) {
+            element.innerHTML = 
+                `อัพเดทล่าสุด: <strong>${timestamp || new Date().toLocaleString('th-TH')}</strong><br>แหล่งข้อมูล: ${source || 'Google Sheets API ผ่าน Apps Script'}`;
+        }
+    } catch (error) {
+        console.error('Error updating last updated:', error);
+    }
+}
+
+function updateConnectionStatus(message, type) {
+    try {
+        const status = document.getElementById('connectionStatus');
+        if (status) {
+            status.textContent = message;
+            status.className = `connection-status ${type}`;
+        }
+    } catch (error) {
+        console.error('Error updating connection status:', error);
+    }
+}
+
+function navigateToPage(pageName) {
+    window.location.href = pageName;
+}
+
+// ===== DROPDOWN FUNCTIONS =====
+function toggleDropdown(dropdownId) {
+    try {
+        const dropdown = document.getElementById(dropdownId);
+        const isShowing = dropdown.classList.contains('show');
+        
+        closeAllDropdowns();
+        
+        if (!isShowing) {
+            dropdown.classList.add('show');
+        }
+    } catch (error) {
+        console.error('Error toggling dropdown:', error);
+    }
+}
+
+function closeAllDropdowns() {
+    try {
+        const dropdowns = document.querySelectorAll('.dropdown-menu');
+        dropdowns.forEach(dropdown => {
+            dropdown.classList.remove('show');
+        });
+    } catch (error) {
+        console.error('Error closing dropdowns:', error);
+    }
+}
+
+// ===== INITIALIZATION =====
+window.onload = function() {
+    console.log('🛡️ Safety Dashboard initialized (Fixed)');
+    
+    try {
+        // Display current API URL
+        document.getElementById('apiUrlDisplay').textContent = `API URL: ${APPS_SCRIPT_URL}`;
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.matches('.dropdown-btn')) {
+                closeAllDropdowns();
+            }
+        });
+        
+        // Start with basic data loading (faster)
+        setTimeout(() => {
+            loadBasicData();
+        }, 500);
+        
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        document.getElementById('pageLoading').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        updateConnectionStatus('❌ เกิดข้อผิดพลาดในการเริ่มต้น', 'error');
+    }
+};
+</script>
+
+</body>
+</html>
