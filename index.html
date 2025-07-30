@@ -482,7 +482,7 @@
             }
             
             .chart-wrapper {
-                height: 480px !important; /* เพิ่มความสูงกราหมากขึ้นบนมือถือ */
+                height: 520px !important; /* เพิ่มความสูงกราหมากขึ้นอีกเพื่อรองรับ labels 90 องศา */
                 margin-bottom: 30px !important; /* เพิ่ม margin ด้านล่างของแต่ละกราฟ */
             }
             
@@ -517,7 +517,7 @@
             }
             
             .chart-wrapper {
-                height: 350px !important;
+                height: 400px !important;
             }
             
             /* Make text larger for readability */
@@ -981,7 +981,7 @@ function createOutstandingChart(chartsData) {
                 layout: {
                     padding: { 
                         top: 30, 
-                        bottom: isMobile ? 80 : 20, // เพิ่ม padding ด้านล่างมากขึ้นสำหรับ labels เต็ม
+                        bottom: isMobile ? 100 : 20, // เพิ่ม padding ด้านล่างมากขึ้นสำหรับ labels 90 องศา
                         left: 5, 
                         right: 5 
                     }
@@ -997,19 +997,17 @@ function createOutstandingChart(chartsData) {
                         stacked: true,
                         grid: { display: false },
                         ticks: { 
-                            maxRotation: isMobile ? 90 : 45, // หมุน 90 องศาบนมือถือเพื่อให้แสดงเต็ม
+                            maxRotation: isMobile ? 90 : 45, // หมุน 90 องศาบนมือถือ
                             minRotation: isMobile ? 90 : 45,
                             font: { 
-                                size: isVerySmall ? 6 : isMobile ? 7 : 11 // ลดขนาดตัวอักษรลงเพื่อให้พอดี
+                                size: isVerySmall ? 5 : isMobile ? 6 : 11 // บีบตัวอักษรเล็กลงมาก
                             },
-                            padding: isMobile ? 15 : 5, // เพิ่ม padding มากขึ้น
+                            padding: isMobile ? 20 : 5, // เพิ่ม padding มากขึ้น
                             maxTicksLimit: undefined, // ไม่จำกัดจำนวน ticks
-                            autoSkip: false, // ไม่ให้ skip labels
+                            autoSkip: false, // ไม่ให้ skip labels เลย
+                            stepSize: 1, // แสดงทุก step
                             callback: function(value, index, values) {
-                                // บนมือถือให้แสดงทุก labels แต่อาจจะข้าม label บางตัวถ้าแออัดเกินไป
-                                if (isMobile && labels.length > 12) {
-                                    return index % 2 === 0 ? this.getLabelForValue(value) : '';
-                                }
+                                // แสดงทุก labels บนมือถือ
                                 return this.getLabelForValue(value);
                             }
                         }
