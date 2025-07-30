@@ -471,62 +471,294 @@
             border-radius: 8px;
         }
 
-        /* Responsive */
-        @media (max-width: 1400px) {
-            .division-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
+        /* ===== MOBILE RESPONSIVE DESIGN ===== */
+        
+        /* Bottom Navigation for Mobile */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0 12px 0;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
 
-        @media (max-width: 900px) {
-            .charts-grid {
-                grid-template-columns: 1fr;
+        .bottom-nav .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            min-width: 60px;
+            text-decoration: none;
+            color: #666;
+        }
+
+        .bottom-nav .nav-item.active {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            color: #667eea;
+        }
+
+        .bottom-nav .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .bottom-nav .nav-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Mobile Header */
+        .mobile-header {
+            display: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 16px 16px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .mobile-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .mobile-header .subtitle {
+            font-size: 14px;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) {
+            /* Hide desktop sidebar, show mobile navigation */
+            .sidebar {
+                display: none;
             }
             
-            .division-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .bottom-nav {
+                display: flex;
+            }
+            
+            .mobile-header {
+                display: block;
+            }
+            
+            /* Adjust main container */
+            .container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
             }
             
             .main-content {
-                padding: 20px;
+                flex: 1;
+                padding: 16px;
+                padding-bottom: 100px; /* Space for bottom nav */
             }
-        }
-
-        @media (max-width: 768px) {
+            
+            /* Page title smaller */
+            .page-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            
+            /* API Info mobile */
+            .api-info {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+            
+            .api-info h4 {
+                font-size: 16px;
+            }
+            
+            .api-info p {
+                font-size: 12px;
+            }
+            
+            /* Status cards - 2x2 grid */
+            .status-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                margin-bottom: 30px;
+            }
+            
+            .status-card {
+                padding: 20px 16px;
+            }
+            
+            .status-label {
+                font-size: 12px;
+                margin-bottom: 10px;
+            }
+            
+            .status-number {
+                font-size: 32px;
+            }
+            
+            /* Action buttons mobile */
             .action-buttons {
                 flex-direction: column;
-                align-items: center;
+                gap: 12px;
+                margin: 20px 0;
             }
             
             .action-btn,
             .dropdown-btn {
-                width: 200px;
-                text-align: center;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .status-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 14px;
             }
             
+            /* Charts - stack vertically */
+            .charts-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .chart-wrapper {
+                height: 300px; /* Slightly smaller for mobile */
+            }
+            
+            .chart-legend {
+                gap: 16px;
+                margin-bottom: 12px;
+            }
+            
+            .legend-item {
+                font-size: 12px;
+            }
+            
+            /* Division charts - 1 per row */
             .division-grid {
                 grid-template-columns: 1fr;
+                gap: 20px;
             }
             
             .division-chart-container {
-                padding: 15px;
+                padding: 12px;
+            }
+            
+            .division-chart-title {
+                font-size: 12px;
+                padding: 8px;
+            }
+            
+            .division-chart-legend {
+                font-size: 8px;
+                gap: 6px;
+                padding: 8px;
             }
             
             .division-chart-wrapper {
-                height: 180px;
+                height: 250px; /* Taller for better visibility */
+            }
+            
+            /* Dropdown menus full width */
+            .dropdown-menu {
+                left: 0;
+                right: 0;
+                min-width: auto;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            /* Very small screens */
+            .main-content {
+                padding: 12px;
+            }
+            
+            .status-grid {
+                gap: 12px;
+            }
+            
+            .status-card {
+                padding: 16px 12px;
+            }
+            
+            .status-number {
+                font-size: 28px;
+            }
+            
+            .chart-wrapper {
+                height: 250px;
+            }
+            
+            .division-chart-wrapper {
+                height: 220px;
+            }
+            
+            /* Make text larger for readability */
+            body {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            
+            .page-title {
+                font-size: 20px;
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .mobile-header {
+                padding: 12px 16px 8px 16px;
+            }
+            
+            .mobile-header h1 {
+                font-size: 20px;
+                margin-bottom: 2px;
+            }
+            
+            .mobile-header .subtitle {
+                font-size: 12px;
+            }
+            
+            .main-content {
+                padding-bottom: 80px; /* Less space for bottom nav in landscape */
+            }
+            
+            .status-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+            
+            .division-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Mobile Header (Hidden on Desktop) -->
+        <div class="mobile-header">
+            <h1>TSIS</h1>
+            <div class="subtitle">Safety Dashboard</div>
+        </div>
+
         <div class="sidebar">
             <div class="logo">
                 <h1>TSIS</h1>
@@ -709,6 +941,24 @@
                     แหล่งข้อมูล: Google Sheets API ผ่าน Apps Script
                 </div>
             </div>
+        </div>
+        
+        <!-- Bottom Navigation (Mobile Only) -->
+        <div class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <div class="nav-icon">📊</div>
+                <div class="nav-label">Overall</div>
+            </a>
+            
+            <div class="nav-item active">
+                <div class="nav-icon">🛡️</div>
+                <div class="nav-label">Safety</div>
+            </div>
+            
+            <a href="quality.html" class="nav-item">
+                <div class="nav-icon">⭐</div>
+                <div class="nav-label">Quality</div>
+            </a>
         </div>
     </div>
 
