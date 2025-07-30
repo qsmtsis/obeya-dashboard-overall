@@ -481,7 +481,7 @@
             }
             
             .chart-wrapper {
-                height: 350px !important; /* เพิ่มความสูงเล็กน้อยเพื่อให้มีพื้นที่แสดง labels */
+                height: 380px !important; /* เพิ่มความสูงให้มากขึ้นสำหรับพื้นที่ labels */
             }
             
             .chart-legend {
@@ -515,7 +515,7 @@
             }
             
             .chart-wrapper {
-                height: 320px !important; /* เล็กลงเล็กน้อยสำหรับหน้าจอเล็กมาก */
+                height: 350px !important;
             }
             
             /* Make text larger for readability */
@@ -946,10 +946,10 @@ function createOutstandingChart(chartsData) {
         const isVerySmall = window.innerWidth <= 480;
         
         const processedLabels = labels.map(label => {
-            if (isVerySmall && label.length > 6) {
+            if (isVerySmall && label.length > 4) {
+                return label.substring(0, 4) + '..';
+            } else if (isMobile && label.length > 6) {
                 return label.substring(0, 6) + '..';
-            } else if (isMobile && label.length > 8) {
-                return label.substring(0, 8) + '..';
             }
             return label;
         });
@@ -985,7 +985,7 @@ function createOutstandingChart(chartsData) {
                 layout: {
                     padding: { 
                         top: 30, 
-                        bottom: isMobile ? 20 : 10, // เพิ่ม padding ด้านล่างสำหรับมือถือ
+                        bottom: isMobile ? 40 : 15, // เพิ่ม padding ด้านล่างมากขึ้นสำหรับมือถือ
                         left: 5, 
                         right: 5 
                     }
@@ -1001,13 +1001,14 @@ function createOutstandingChart(chartsData) {
                         stacked: true,
                         grid: { display: false },
                         ticks: { 
-                            maxRotation: isMobile ? 45 : 45, // ลดมุมการหมุนเล็กน้อย
-                            minRotation: isMobile ? 45 : 45,
+                            maxRotation: isMobile ? 35 : 45, // ลดมุมการหมุนเล็กน้อยสำหรับมือถือ
+                            minRotation: isMobile ? 35 : 45,
                             font: { 
-                                size: isVerySmall ? 8 : isMobile ? 9 : 11 // ปรับขนาดตัวอักษรตามขนาดหน้าจอ
+                                size: isVerySmall ? 7 : isMobile ? 8 : 11 // ลดขนาดตัวอักษรลงอีก
                             },
-                            padding: isMobile ? 8 : 5, // เพิ่ม padding สำหรับมือถือ
-                            maxTicksLimit: isMobile ? 8 : undefined // จำกัดจำนวน ticks บนมือถือ
+                            padding: isMobile ? 10 : 5, // เพิ่ม padding สำหรับมือถือ
+                            maxTicksLimit: isMobile ? 10 : undefined, // เพิ่มจำนวน ticks ที่แสดงได้
+                            autoSkip: false // ไม่ให้ skip labels
                         }
                     }
                 },
