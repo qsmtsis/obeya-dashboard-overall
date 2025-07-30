@@ -481,7 +481,7 @@
             }
             
             .chart-wrapper {
-                height: 300px !important; /* Slightly smaller for mobile */
+                height: 350px !important; /* เพิ่มความสูงเล็กน้อยเพื่อให้มีพื้นที่แสดง labels */
             }
             
             .chart-legend {
@@ -515,7 +515,7 @@
             }
             
             .chart-wrapper {
-                height: 250px !important;
+                height: 320px !important; /* เล็กลงเล็กน้อยสำหรับหน้าจอเล็กมาก */
             }
             
             /* Make text larger for readability */
@@ -941,11 +941,15 @@ function createOutstandingChart(chartsData) {
         const temporaryData = chartsData.temporaryAction?.data || [];
         const noActionData = chartsData.noAction?.data || [];
 
-        // Truncate long labels for mobile
+        // ปรับปรุงการจัดการ labels สำหรับมือถือ
         const isMobile = window.innerWidth <= 768;
+        const isVerySmall = window.innerWidth <= 480;
+        
         const processedLabels = labels.map(label => {
-            if (isMobile && label.length > 8) {
-                return label.substring(0, 8) + '...';
+            if (isVerySmall && label.length > 6) {
+                return label.substring(0, 6) + '..';
+            } else if (isMobile && label.length > 8) {
+                return label.substring(0, 8) + '..';
             }
             return label;
         });
@@ -981,7 +985,7 @@ function createOutstandingChart(chartsData) {
                 layout: {
                     padding: { 
                         top: 30, 
-                        bottom: isMobile ? 15 : 5, 
+                        bottom: isMobile ? 20 : 10, // เพิ่ม padding ด้านล่างสำหรับมือถือ
                         left: 5, 
                         right: 5 
                     }
@@ -997,10 +1001,13 @@ function createOutstandingChart(chartsData) {
                         stacked: true,
                         grid: { display: false },
                         ticks: { 
-                            maxRotation: isMobile ? 90 : 45, 
-                            minRotation: isMobile ? 90 : 45,
-                            font: { size: isMobile ? 9 : 11 },
-                            padding: 5
+                            maxRotation: isMobile ? 45 : 45, // ลดมุมการหมุนเล็กน้อย
+                            minRotation: isMobile ? 45 : 45,
+                            font: { 
+                                size: isVerySmall ? 8 : isMobile ? 9 : 11 // ปรับขนาดตัวอักษรตามขนาดหน้าจอ
+                            },
+                            padding: isMobile ? 8 : 5, // เพิ่ม padding สำหรับมือถือ
+                            maxTicksLimit: isMobile ? 8 : undefined // จำกัดจำนวน ticks บนมือถือ
                         }
                     }
                 },
@@ -1009,7 +1016,7 @@ function createOutstandingChart(chartsData) {
                     tooltip: {
                         callbacks: {
                             title: function(context) {
-                                // Show full label in tooltip
+                                // แสดง label เต็มใน tooltip
                                 return labels[context[0].dataIndex];
                             }
                         }
@@ -1020,7 +1027,9 @@ function createOutstandingChart(chartsData) {
                 afterDatasetsDraw: function(chart) {
                     const ctx = chart.ctx;
                     
-                    ctx.font = isMobile ? "bold 10px Arial" : "bold 11px Arial";
+                    // ปรับขนาดตัวอักษรสำหรับมือถือ
+                    const fontSize = isVerySmall ? 9 : isMobile ? 10 : 11;
+                    ctx.font = `bold ${fontSize}px Arial`;
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
                     
@@ -1039,8 +1048,9 @@ function createOutstandingChart(chartsData) {
                         });
                     });
 
-                    // Show totals above bars
-                    ctx.font = isMobile ? "bold 11px Arial" : "bold 13px Arial";
+                    // แสดงผลรวมด้านบนของแท่งกราฟ
+                    const totalFontSize = isVerySmall ? 10 : isMobile ? 11 : 13;
+                    ctx.font = `bold ${totalFontSize}px Arial`;
                     ctx.textBaseline = "bottom";
                     ctx.fillStyle = "#2c3e50";
                     
@@ -1051,7 +1061,7 @@ function createOutstandingChart(chartsData) {
                         const total = (temporaryData[index] || 0) + (noActionData[index] || 0);
                         if (total > 0) {
                             const topY = Math.min(tempMeta.data[index].y, noActMeta.data[index].y);
-                            ctx.fillText(total, bar.x, topY - 10);
+                            ctx.fillText(total, bar.x, topY - (isMobile ? 8 : 10));
                         }
                     });
                 }
@@ -1096,6 +1106,8 @@ function createMonthlyChart(monthlyData) {
             
             return num >= 0 && num <= 1 ? num * 100 : num;
         });
+
+        const isMobile = window.innerWidth <= 768;
 
         monthlyChart = new Chart(ctx, {
             type: 'bar',
@@ -1156,7 +1168,12 @@ function createMonthlyChart(monthlyData) {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: { top: 30, bottom: 5, left: 5, right: 5 }
+                    padding: { 
+                        top: 30, 
+                        bottom: isMobile ? 15 : 5, 
+                        left: 5, 
+                        right: 5 
+                    }
                 },
                 scales: {
                     y: { 
@@ -1180,7 +1197,7 @@ function createMonthlyChart(monthlyData) {
                         ticks: { 
                             maxRotation: 0,
                             minRotation: 0,
-                            font: { size: 11 }
+                            font: { size: isMobile ? 10 : 11 }
                         } 
                     }
                 },
@@ -1189,7 +1206,8 @@ function createMonthlyChart(monthlyData) {
             plugins: [{
                 afterDatasetsDraw: function(chart) {
                     const ctx = chart.ctx;
-                    ctx.font = "bold 11px Arial";
+                    const fontSize = isMobile ? 10 : 11;
+                    ctx.font = `bold ${fontSize}px Arial`;
                     ctx.textAlign = "center";
                     ctx.textBaseline = "bottom";
                     
@@ -1241,7 +1259,7 @@ function createMonthlyChart(monthlyData) {
                     if (lineDataset && lineDataset.type === 'line') {
                         const lineMeta = chart.getDatasetMeta(3);
                         if (lineMeta && lineMeta.data) {
-                            ctx.font = "bold 12px Arial";
+                            ctx.font = `bold ${fontSize + 1}px Arial`;
                             ctx.fillStyle = "#2ecc71";
                             ctx.textBaseline = "bottom";
                             
@@ -1308,7 +1326,7 @@ function navigateToPage(pageName) {
 
 // ===== INITIALIZATION =====
 window.onload = function() {
-    console.log('📊 Overall Dashboard initialized (Mobile Responsive)');
+    console.log('📊 Overall Dashboard initialized (Mobile Responsive - Fixed Outstanding Chart)');
     
     try {
         // Load all data on startup
