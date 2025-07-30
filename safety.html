@@ -543,37 +543,42 @@
             opacity: 0.9;
         }
 
-        /* Responsive Breakpoints */
-        @media (max-width: 768px) {
-            /* Hide desktop sidebar, show mobile navigation */
+        /* FORCE HIDE SIDEBAR ON MOBILE - IMPORTANT */
+        @media screen and (max-width: 768px) {
+            /* Hide desktop sidebar completely */
             .sidebar {
-                display: none;
+                display: none !important;
+                width: 0 !important;
+                visibility: hidden !important;
             }
             
+            /* Show mobile navigation */
             .bottom-nav {
-                display: flex;
+                display: flex !important;
             }
             
             .mobile-header {
-                display: block;
+                display: block !important;
             }
             
             /* Adjust main container */
             .container {
-                flex-direction: column;
-                height: auto;
+                flex-direction: column !important;
+                height: auto !important;
                 min-height: 100vh;
             }
             
             .main-content {
                 flex: 1;
-                padding: 16px;
-                padding-bottom: 100px; /* Space for bottom nav */
+                padding: 16px !important;
+                padding-bottom: 100px !important; /* Space for bottom nav */
+                width: 100% !important;
+                margin-left: 0 !important;
             }
             
             /* Page title smaller */
             .page-title {
-                font-size: 24px;
+                font-size: 24px !important;
                 margin-bottom: 20px;
             }
             
@@ -593,51 +598,53 @@
             
             /* Status cards - 2x2 grid */
             .status-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 16px;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 16px !important;
                 margin-bottom: 30px;
             }
             
             .status-card {
-                padding: 20px 16px;
+                padding: 20px 16px !important;
             }
             
             .status-label {
-                font-size: 12px;
+                font-size: 12px !important;
                 margin-bottom: 10px;
             }
             
             .status-number {
-                font-size: 32px;
+                font-size: 32px !important;
             }
             
             /* Action buttons mobile */
             .action-buttons {
-                flex-direction: column;
+                flex-direction: column !important;
                 gap: 12px;
                 margin: 20px 0;
             }
             
             .action-btn,
             .dropdown-btn {
-                width: 100%;
+                width: 100% !important;
                 padding: 14px 20px;
                 font-size: 14px;
             }
             
             /* Charts - stack vertically */
             .charts-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
                 gap: 30px;
             }
             
             .chart-wrapper {
-                height: 300px; /* Slightly smaller for mobile */
+                height: 300px !important; /* Slightly smaller for mobile */
             }
             
             .chart-legend {
                 gap: 16px;
                 margin-bottom: 12px;
+                justify-content: center;
+                flex-wrap: wrap;
             }
             
             .legend-item {
@@ -646,7 +653,7 @@
             
             /* Division charts - 1 per row */
             .division-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
                 gap: 20px;
             }
             
@@ -666,7 +673,7 @@
             }
             
             .division-chart-wrapper {
-                height: 250px; /* Taller for better visibility */
+                height: 250px !important; /* Taller for better visibility */
             }
             
             /* Dropdown menus full width */
@@ -680,30 +687,30 @@
             }
         }
 
-        @media (max-width: 480px) {
-            /* Very small screens */
+        @media screen and (max-width: 480px) {
+            /* Very small screens - extra small adjustments */
             .main-content {
-                padding: 12px;
+                padding: 12px !important;
             }
             
             .status-grid {
-                gap: 12px;
+                gap: 12px !important;
             }
             
             .status-card {
-                padding: 16px 12px;
+                padding: 16px 12px !important;
             }
             
             .status-number {
-                font-size: 28px;
+                font-size: 28px !important;
             }
             
             .chart-wrapper {
-                height: 250px;
+                height: 250px !important;
             }
             
             .division-chart-wrapper {
-                height: 220px;
+                height: 220px !important;
             }
             
             /* Make text larger for readability */
@@ -712,12 +719,12 @@
             }
             
             .page-title {
-                font-size: 20px;
+                font-size: 20px !important;
             }
         }
 
         /* Landscape orientation adjustments */
-        @media (max-width: 768px) and (orientation: landscape) {
+        @media screen and (max-width: 768px) and (orientation: landscape) {
             .mobile-header {
                 padding: 12px 16px 8px 16px;
             }
@@ -732,21 +739,56 @@
             }
             
             .main-content {
-                padding-bottom: 80px; /* Less space for bottom nav in landscape */
+                padding-bottom: 80px !important; /* Less space for bottom nav in landscape */
             }
             
             .status-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 12px;
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 12px !important;
             }
             
             .charts-grid {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr 1fr !important;
                 gap: 20px;
             }
             
             .division-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        /* Desktop responsive (keep existing) */
+        @media screen and (min-width: 769px) {
+            .bottom-nav {
+                display: none !important;
+            }
+            
+            .mobile-header {
+                display: none !important;
+            }
+            
+            .sidebar {
+                display: block !important;
+            }
+        }
+
+        @media screen and (max-width: 1400px) and (min-width: 769px) {
+            .division-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media screen and (max-width: 900px) and (min-width: 769px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .division-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .main-content {
+                padding: 20px;
             }
         }
     </style>
