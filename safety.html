@@ -1021,21 +1021,36 @@ async function loadChartData(safetyData) {
 
 async function loadDivisionCharts(divisionChartsData) {
     try {
-        if (!divisionChartsData) {
+        if (!divisionChartsData || typeof divisionChartsData !== 'object') {
             console.log('⚠️ No safety division charts data available');
             return;
         }
         
-        console.log('🏢 Loading Safety Division Charts:', Object.keys(divisionChartsData).length, 'divisions');
+        const divisionKeys = Object.keys(divisionChartsData);
+        console.log('🏢 Loading Safety Division Charts:', divisionKeys.length, 'divisions');
         
-        // Create HTML containers
-        createDivisionChartContainers(divisionChartsData);
+        if (divisionKeys.length === 0) {
+            console.log('⚠️ No division data found');
+            return;
+        }
+        
+        // Create HTML containers first
+        try {
+            createDivisionChartContainers(divisionChartsData);
+        } catch (containerError) {
+            console.error('❌ Error creating division containers:', containerError);
+            return;
+        }
         
         // Create charts with delay to prevent blocking
-        const divisionKeys = Object.keys(divisionChartsData);
         for (let i = 0; i < divisionKeys.length; i++) {
             const divisionKey = divisionKeys[i];
             const divisionData = divisionChartsData[divisionKey];
+            
+            if (!divisionData) {
+                console.warn(`⚠️ No data for division ${divisionKey}`);
+                continue;
+            }
             
             try {
                 createSingleDivisionChart(divisionKey, divisionData);
@@ -1377,59 +1392,92 @@ function createMonthlyChart(monthlyData) {
 function createDivisionChartContainers(divisionChartsData) {
     try {
         const container = document.getElementById('divisionChartsContainer');
-        if (!container) return;
+        if (!container) {
+            console.error('❌ Division charts container not found');
+            return;
+        }
         
         // Clear container
         container.innerHTML = '';
         
+        const divisionKeys = Object.keys(divisionChartsData);
+        console.log(`📦 Creating containers for ${divisionKeys.length} divisions`);
+        
         // Create containers for each division
-        Object.keys(divisionChartsData).forEach(divisionKey => {
-            const divisionData = divisionChartsData[divisionKey];
-            
-            const chartContainer = document.createElement('div');
-            chartContainer.className = 'division-chart-container';
-            chartContainer.innerHTML = `
-                <div class="division-chart-title">${divisionData.divisionName || divisionKey}</div>
-                <div class="division-chart-legend">
-                    <div class="division-legend-item">
-                        <div class="division-legend-color" style="background-color: rgba(52, 152, 219, 0.8);"></div>
-                        <span>Open</span>
+        divisionKeys.forEach((divisionKey, index) => {
+            try {
+                const divisionData = divisionChartsData[divisionKey];
+                
+                if (!divisionData) {
+                    console.warn(`⚠️ No data for division ${divisionKey}`);
+                    return;
+                }
+                
+                const divisionName = divisionData.divisionName || divisionKey;
+                
+                const chartContainer = document.createElement('div');
+                chartContainer.className = 'division-chart-container';
+                chartContainer.id = `divisionContainer_${divisionKey}`;
+                
+                chartContainer.innerHTML = `
+                    <div class="division-chart-title">${divisionName}</div>
+                    <div class="division-chart-legend">
+                        <div class="division-legend-item">
+                            <div class="division-legend-color" style="background-color: rgba(52, 152, 219, 0.8);"></div>
+                            <span>Open</span>
+                        </div>
+                        <div class="division-legend-item">
+                            <div class="division-legend-color" style="background-color: rgba(243, 156, 18, 0.8);"></div>
+                            <span>Temporary</span>
+                        </div>
+                        <div class="division-legend-item">
+                            <div class="division-legend-color" style="background-color: rgba(231, 76, 60, 0.8);"></div>
+                            <span>No Action</span>
+                        </div>
+                        <div class="division-legend-item">
+                            <div class="division-legend-line" style="background-color: rgba(46, 204, 113, 1);"></div>
+                            <span>%Closed</span>
+                        </div>
                     </div>
-                    <div class="division-legend-item">
-                        <div class="division-legend-color" style="background-color: rgba(243, 156, 18, 0.8);"></div>
-                        <span>Temporary</span>
+                    <div class="division-chart-wrapper">
+                        <canvas id="divisionChart_${divisionKey}"></canvas>
                     </div>
-                    <div class="division-legend-item">
-                        <div class="division-legend-color" style="background-color: rgba(231, 76, 60, 0.8);"></div>
-                        <span>No Action</span>
-                    </div>
-                    <div class="division-legend-item">
-                        <div class="division-legend-line" style="background-color: rgba(46, 204, 113, 1);"></div>
-                        <span>%Closed</span>
-                    </div>
-                </div>
-                <div class="division-chart-wrapper">
-                    <canvas id="divisionChart_${divisionKey}"></canvas>
-                </div>
-            `;
-            
-            container.appendChild(chartContainer);
+                `;
+                
+                container.appendChild(chartContainer);
+                console.log(`✅ Container created for ${divisionKey}`);
+                
+            } catch (error) {
+                console.error(`❌ Error creating container for ${divisionKey}:`, error);
+            }
         });
         
-        console.log('✅ Safety division containers created');
+        console.log('✅ All Safety division containers created successfully');
+        
     } catch (error) {
         console.error('❌ Error creating safety division containers:', error);
+        throw error;
     }
 }
 
 function createSingleDivisionChart(divisionKey, divisionData) {
     try {
         const ctx = document.getElementById(`divisionChart_${divisionKey}`);
-        if (!ctx) return;
+        if (!ctx) {
+            console.error(`❌ Canvas element not found for ${divisionKey}`);
+            return;
+        }
         
         // Destroy existing chart
         if (divisionCharts[divisionKey]) {
             divisionCharts[divisionKey].destroy();
+            delete divisionCharts[divisionKey];
+        }
+        
+        // Validate data
+        if (!divisionData || typeof divisionData !== 'object') {
+            console.error(`❌ Invalid division data for ${divisionKey}`);
+            return;
         }
         
         const months = divisionData.months || [];
@@ -1437,6 +1485,16 @@ function createSingleDivisionChart(divisionKey, divisionData) {
         const temporaryData = divisionData.temporaryData || [];
         const noActionData = divisionData.noActionData || [];
         let closedPercentage = divisionData.closedPercentage || [];
+        
+        // Ensure all arrays have the same length
+        const maxLength = Math.max(months.length, openData.length, temporaryData.length, noActionData.length, closedPercentage.length);
+        
+        // Pad arrays to same length
+        while (months.length < maxLength) months.push('');
+        while (openData.length < maxLength) openData.push(0);
+        while (temporaryData.length < maxLength) temporaryData.push(0);
+        while (noActionData.length < maxLength) noActionData.push(0);
+        while (closedPercentage.length < maxLength) closedPercentage.push(0);
         
         // Process closed percentage
         closedPercentage = closedPercentage.map(value => {
@@ -1452,6 +1510,8 @@ function createSingleDivisionChart(divisionKey, divisionData) {
             
             return num >= 0 && num <= 1 ? num * 100 : num;
         });
+        
+        console.log(`📊 Creating chart for ${divisionKey} with ${months.length} data points`);
         
         divisionCharts[divisionKey] = new Chart(ctx, {
             type: 'bar',
@@ -1540,63 +1600,76 @@ function createSingleDivisionChart(divisionKey, divisionData) {
                 afterDatasetsDraw: function(chart) {
                     const ctx = chart.ctx;
                     
-                    // Show values on Open bars
-                    ctx.font = "bold 8px Arial";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "bottom";
-                    
-                    const openMeta = chart.getDatasetMeta(0);
-                    openMeta.data.forEach(function(bar, index) {
-                        const value = openData[index];
-                        if (value > 0) {
-                            ctx.fillStyle = "rgba(41, 128, 185, 1)";
-                            ctx.fillText(value, bar.x, bar.y - 3);
-                        }
-                    });
-
-                    // Show values inside bars
-                    ctx.textBaseline = "middle";
-                    ctx.font = "bold 7px Arial";
-                    
-                    const tempMeta = chart.getDatasetMeta(1);
-                    tempMeta.data.forEach(function(bar, index) {
-                        const value = temporaryData[index];
-                        if (value > 0 && bar.height > 12) {
-                            ctx.fillStyle = "rgba(183, 149, 11, 1)";
-                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                        }
-                    });
-
-                    const noActMeta = chart.getDatasetMeta(2);
-                    noActMeta.data.forEach(function(bar, index) {
-                        const value = noActionData[index];
-                        if (value > 0 && bar.height > 12) {
-                            ctx.fillStyle = "white";
-                            ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
-                        }
-                    });
-
-                    // Show percentage labels on line points
-                    const lineDataset = chart.data.datasets[3];
-                    if (lineDataset && lineDataset.type === 'line') {
-                        const lineMeta = chart.getDatasetMeta(3);
-                        if (lineMeta && lineMeta.data) {
-                            ctx.font = "bold 7px Arial";
-                            ctx.fillStyle = "#27ae60";
-                            ctx.textBaseline = "bottom";
-                            
-                            lineMeta.data.forEach(function(point, index) {
-                                const value = lineDataset.data[index];
-                                if (value !== null && value !== undefined && value > 0) {
-                                    const displayValue = Math.round(value) + '%';
-                                    ctx.fillText(displayValue, point.x, point.y - 8);
+                    try {
+                        // Show values on Open bars
+                        ctx.font = "bold 8px Arial";
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "bottom";
+                        
+                        const openMeta = chart.getDatasetMeta(0);
+                        if (openMeta && openMeta.data) {
+                            openMeta.data.forEach(function(bar, index) {
+                                const value = openData[index];
+                                if (value > 0) {
+                                    ctx.fillStyle = "rgba(41, 128, 185, 1)";
+                                    ctx.fillText(value, bar.x, bar.y - 3);
                                 }
                             });
                         }
+
+                        // Show values inside bars
+                        ctx.textBaseline = "middle";
+                        ctx.font = "bold 7px Arial";
+                        
+                        const tempMeta = chart.getDatasetMeta(1);
+                        if (tempMeta && tempMeta.data) {
+                            tempMeta.data.forEach(function(bar, index) {
+                                const value = temporaryData[index];
+                                if (value > 0 && bar.height > 12) {
+                                    ctx.fillStyle = "rgba(183, 149, 11, 1)";
+                                    ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
+                                }
+                            });
+                        }
+
+                        const noActMeta = chart.getDatasetMeta(2);
+                        if (noActMeta && noActMeta.data) {
+                            noActMeta.data.forEach(function(bar, index) {
+                                const value = noActionData[index];
+                                if (value > 0 && bar.height > 12) {
+                                    ctx.fillStyle = "white";
+                                    ctx.fillText(value, bar.x, bar.y + (bar.height / 2));
+                                }
+                            });
+                        }
+
+                        // Show percentage labels on line points
+                        const lineDataset = chart.data.datasets[3];
+                        if (lineDataset && lineDataset.type === 'line') {
+                            const lineMeta = chart.getDatasetMeta(3);
+                            if (lineMeta && lineMeta.data) {
+                                ctx.font = "bold 7px Arial";
+                                ctx.fillStyle = "#27ae60";
+                                ctx.textBaseline = "bottom";
+                                
+                                lineMeta.data.forEach(function(point, index) {
+                                    const value = lineDataset.data[index];
+                                    if (value !== null && value !== undefined && value > 0) {
+                                        const displayValue = Math.round(value) + '%';
+                                        ctx.fillText(displayValue, point.x, point.y - 8);
+                                    }
+                                });
+                            }
+                        }
+                        
+                    } catch (drawError) {
+                        console.error(`❌ Error drawing labels for ${divisionKey}:`, drawError);
                     }
                 }
             }]
         });
+        
+        console.log(`✅ Chart created successfully for ${divisionKey}`);
         
     } catch (error) {
         console.error(`❌ Error creating safety division chart ${divisionKey}:`, error);
