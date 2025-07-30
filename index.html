@@ -178,7 +178,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
-            margin-bottom: 20px;
+            margin-bottom: 50px; /* เพิ่ม margin ระหว่างกราฟ */
         }
 
         .chart-section h3 {
@@ -477,11 +477,13 @@
             /* Charts - stack vertically */
             .charts-grid {
                 grid-template-columns: 1fr !important;
-                gap: 30px;
+                gap: 60px !important; /* เพิ่มระยะห่างระหว่างกราฟบนมือถือ */
+                margin-bottom: 40px !important;
             }
             
             .chart-wrapper {
-                height: 420px !important; /* เพิ่มความสูงให้มากขึ้นอีกเพื่อรองรับ labels เต็ม */
+                height: 480px !important; /* เพิ่มความสูงกราหมากขึ้นบนมือถือ */
+                margin-bottom: 30px !important; /* เพิ่ม margin ด้านล่างของแต่ละกราฟ */
             }
             
             .chart-legend {
@@ -979,7 +981,7 @@ function createOutstandingChart(chartsData) {
                 layout: {
                     padding: { 
                         top: 30, 
-                        bottom: isMobile ? 60 : 20, // เพิ่ม padding ด้านล่างมากขึ้นสำหรับ labels เต็ม
+                        bottom: isMobile ? 80 : 20, // เพิ่ม padding ด้านล่างมากขึ้นสำหรับ labels เต็ม
                         left: 5, 
                         right: 5 
                     }
