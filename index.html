@@ -941,10 +941,19 @@ function createOutstandingChart(chartsData) {
         const temporaryData = chartsData.temporaryAction?.data || [];
         const noActionData = chartsData.noAction?.data || [];
 
+        // Truncate long labels for mobile
+        const isMobile = window.innerWidth <= 768;
+        const processedLabels = labels.map(label => {
+            if (isMobile && label.length > 8) {
+                return label.substring(0, 8) + '...';
+            }
+            return label;
+        });
+
         outstandingChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels,
+                labels: processedLabels,
                 datasets: [
                     {
                         label: 'Temporary Action',
@@ -970,7 +979,12 @@ function createOutstandingChart(chartsData) {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: { top: 30, bottom: 5, left: 5, right: 5 }
+                    padding: { 
+                        top: 30, 
+                        bottom: isMobile ? 15 : 5, 
+                        left: 5, 
+                        right: 5 
+                    }
                 },
                 scales: {
                     y: { 
@@ -983,21 +997,30 @@ function createOutstandingChart(chartsData) {
                         stacked: true,
                         grid: { display: false },
                         ticks: { 
-                            maxRotation: 45, 
-                            minRotation: 45,
-                            font: { size: 11 }
-                        } 
+                            maxRotation: isMobile ? 90 : 45, 
+                            minRotation: isMobile ? 90 : 45,
+                            font: { size: isMobile ? 9 : 11 },
+                            padding: 5
+                        }
                     }
                 },
                 plugins: { 
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                // Show full label in tooltip
+                                return labels[context[0].dataIndex];
+                            }
+                        }
+                    }
                 }
             },
             plugins: [{
                 afterDatasetsDraw: function(chart) {
                     const ctx = chart.ctx;
                     
-                    ctx.font = "bold 11px Arial";
+                    ctx.font = isMobile ? "bold 10px Arial" : "bold 11px Arial";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
                     
@@ -1017,7 +1040,7 @@ function createOutstandingChart(chartsData) {
                     });
 
                     // Show totals above bars
-                    ctx.font = "bold 13px Arial";
+                    ctx.font = isMobile ? "bold 11px Arial" : "bold 13px Arial";
                     ctx.textBaseline = "bottom";
                     ctx.fillStyle = "#2c3e50";
                     
