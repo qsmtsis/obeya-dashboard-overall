@@ -276,9 +276,71 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
 
-        .action-btn:hover {
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .dropdown-btn::after {
+            content: '▼';
+            font-size: 10px;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 200px;
+            display: none;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #333;
+            display: block;
+            font-size: 13px;
+            transition: background-color 0.2s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #667eea;
         }
 
         .page-loading {
@@ -468,10 +530,21 @@
                 margin: 20px 0;
             }
             
-            .action-btn {
+            .action-btn,
+            .dropdown-btn {
                 width: 100% !important;
                 padding: 14px 20px;
                 font-size: 14px;
+            }
+            
+            /* Dropdown menus full width */
+            .dropdown-menu {
+                left: 0;
+                right: 0;
+                min-width: auto;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
             }
             
             /* Charts - stack vertically */
@@ -635,6 +708,53 @@
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
+                    <!-- Near miss Button -->
+                    <a href="https://script.google.com/macros/s/AKfycbz61p1WT5NS17ZheAKgkWgwPXFErM9_ldeskMxTsW1bOo-ryB6pkGcGYZrxEnq26n0X/exec" 
+                       target="_blank" class="action-btn">📋 ตาราง Near miss</a>
+
+                    <!-- แก้ไข Dropdown -->
+                    <div class="dropdown-container">
+                        <button class="dropdown-btn" onclick="toggleDropdown('editDropdown')">
+                            🔧 แก้ไข
+                        </button>
+                        <div id="editDropdown" class="dropdown-menu">
+                            <a href="https://script.google.com/macros/s/AKfycbwif8TTLnCN84_d0xoxvCZmEYb1mu9EO6_DlNkYt8Cc0hmr2dLGS_dnXKhSjKVENSYSEg/exec" 
+                               target="_blank" class="dropdown-item">
+                                🔄 แก้ไขชั่วคราว
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwYBMxA_ymzl1uIS66ZgkAXgHXeCsJvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
+                               target="_blank" class="dropdown-item">
+                                ✅ แก้ไขถาวร
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- อนุมัติ Dropdown -->
+                    <div class="dropdown-container">
+                        <button class="dropdown-btn" onclick="toggleDropdown('approvalDropdown')">
+                            ✅ อนุมัติ
+                        </button>
+                        <div id="approvalDropdown" class="dropdown-menu">
+                            <a href="https://script.google.com/macros/s/AKfycbzzrYpo7XErNPvokQO_uQX8uUJAJqGQdAIm6v3E8AL61bNedxJu3pVxuv9PoXk0X6kilA/exec" 
+                               target="_blank" class="dropdown-item">
+                                🔄 Q&S อนุมัติชั่วคราว
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwJdH1TAIG1KDFv7yLK3YfhqgvKAGTj5MgCyWjNdAp7DMUEqx_C3nPMZ3XKOg_8w/exec" 
+                               target="_blank" class="dropdown-item">
+                                ✅ Q&S อนุมัติถาวร
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwsbkICpwuCzLgIbXJlgWdF7PCUP6vYUsM3la5iqZdOLqXl1nG3qUkiY-4_bkQs8c1NEA/exec" 
+                               target="_blank" class="dropdown-item">
+                                👨‍💼 Manager Approval
+                            </a>
+                            <a href="https://script.google.com/macros/s/AKfycbwxtj0YS_MfR1BezMLGCw7hx25FkAha1cN-RKkeuYPukd2jc1AYfXu07i9CC4LHwG88MQ/exec" 
+                               target="_blank" class="dropdown-item">
+                                🏢 GM Approval
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Other Buttons -->
                     <button class="action-btn" onclick="loadAllData()">🔄 รีเฟรชข้อมูล</button>
                     <a href="safety.html" class="action-btn">🛡️ ไปหน้า Safety</a>
                     <a href="quality.html" class="action-btn">⭐ ไปหน้า Quality</a>
@@ -1330,11 +1450,45 @@ function navigateToPage(pageName) {
     window.location.href = pageName;
 }
 
+// ===== DROPDOWN FUNCTIONS =====
+function toggleDropdown(dropdownId) {
+    try {
+        const dropdown = document.getElementById(dropdownId);
+        const isShowing = dropdown.classList.contains('show');
+        
+        closeAllDropdowns();
+        
+        if (!isShowing) {
+            dropdown.classList.add('show');
+        }
+    } catch (error) {
+        console.error('Error toggling dropdown:', error);
+    }
+}
+
+function closeAllDropdowns() {
+    try {
+        const dropdowns = document.querySelectorAll('.dropdown-menu');
+        dropdowns.forEach(dropdown => {
+            dropdown.classList.remove('show');
+        });
+    } catch (error) {
+        console.error('Error closing dropdowns:', error);
+    }
+}
+
 // ===== INITIALIZATION =====
 window.onload = function() {
     console.log('📊 Overall Dashboard initialized (Mobile Responsive - Fixed Outstanding Chart)');
     
     try {
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.matches('.dropdown-btn')) {
+                closeAllDropdowns();
+            }
+        });
+        
         // Load all data on startup
         setTimeout(() => {
             loadAllData();
